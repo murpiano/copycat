@@ -11,7 +11,7 @@ module.exports = {
       preset: 'ts-jest',
       testEnvironment: 'jsdom',
       testMatch: ['**/tests/unit/renderer/**/*.test.{ts,tsx}'],
-      setupFilesAfterEach: [],
+      setupFilesAfterEnv: ['@testing-library/jest-dom'],
     },
   ],
 };
