@@ -1,0 +1,13 @@
+appId: com.copycat.app
+productName: Copycat
+directories:
+  output: release
+files:
+  - out/**/*
+  - resources/**/*
+win:
+  target: nsis
+  icon: resources/tray-icon.png
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
