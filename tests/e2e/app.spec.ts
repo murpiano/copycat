@@ -10,7 +10,7 @@ test('copy, search, tag-filter, and paste flow', async () => {
     return (window as any).copycat.getItems({});
   });
 
-  await expect(win.getByPlaceholderText('Search clipboard history...')).toBeVisible();
+  await expect(win.getByPlaceholder('Search clipboard history...')).toBeVisible();
   await expect(win.getByText('History')).toBeVisible();
   await expect(win.getByText('Starred')).toBeVisible();
 

@@ -1,9 +1,11 @@
+import { readFileSync } from 'node:fs';
 import type { IpcMain } from 'electron';
-import { clipboard } from 'electron';
+import { clipboard, nativeImage } from 'electron';
 import { IPC } from '../../shared/ipc-channels';
 import type { ClipboardItem, GetItemsQuery } from '../../shared/types';
 import type { ItemsRepo } from '../storage/items-repo';
 import type { TagsRepo } from '../storage/tags-repo';
+import { hashContent } from '../clipboard/hash';
 import {
   handleGetItems,
   handleCopyItem,
@@ -18,20 +20,37 @@ import {
 export interface RegisterIpcDeps {
   itemsRepo: ItemsRepo;
   tagsRepo: TagsRepo;
+  /**
+   * Tells the ClipboardWatcher to treat the given content hash as already
+   * seen, so our own clipboard writes below don't get re-captured as new
+   * history entries on the watcher's next poll.
+   */
+  markSelfWrite: (hash: string) => void;
 }
 
-function copyItemToClipboard(item: ClipboardItem): void {
-  if (item.type === 'text') clipboard.writeText(item.content);
-  else if (item.type === 'file') clipboard.writeText(JSON.parse(item.content).join('\n'));
-  // images: clipboard.writeImage requires loading the PNG from disk; deferred to Task 10 polish.
+function copyItemToClipboard(item: ClipboardItem, markSelfWrite: (hash: string) => void): void {
+  if (item.type === 'text') {
+    markSelfWrite(hashContent(item.content));
+    clipboard.writeText(item.content);
+  } else if (item.type === 'file') {
+    const paths: string[] = JSON.parse(item.content);
+    markSelfWrite(hashContent(paths.join('|')));
+    clipboard.writeText(paths.join('\n'));
+  } else if (item.type === 'image') {
+    const pngBuffer = readFileSync(item.content);
+    markSelfWrite(hashContent(pngBuffer));
+    clipboard.writeImage(nativeImage.createFromPath(item.content));
+  }
 }
 
 export function registerIpcHandlers(ipcMain: IpcMain, deps: RegisterIpcDeps): void {
+  const copyToClipboard = (item: ClipboardItem): void =>
+    copyItemToClipboard(item, deps.markSelfWrite);
   const ipcDeps: IpcDeps = {
     itemsRepo: deps.itemsRepo,
     tagsRepo: deps.tagsRepo,
-    copyToClipboard: copyItemToClipboard,
-    pasteActive: copyItemToClipboard,
+    copyToClipboard,
+    pasteActive: copyToClipboard,
   };
 
   ipcMain.handle(IPC.GET_ITEMS, (_e, query: GetItemsQuery) => handleGetItems(ipcDeps, query));

@@ -1,6 +1,6 @@
 import path from 'node:path';
-import { app, globalShortcut, ipcMain } from 'electron';
-import { createMainWindow, showWindow, toggleWindow } from './window';
+import { app, globalShortcut, ipcMain, Tray } from 'electron';
+import { createMainWindow, showWindow, toggleWindow, setQuitting } from './window';
 import { createTray } from './tray';
 import { registerHotkey } from './hotkey';
 import { createDb } from './storage/db';
@@ -12,6 +12,11 @@ import { createCapturePipeline } from './clipboard/capture-pipeline';
 import { registerIpcHandlers } from './ipc/register';
 import { IPC } from '../shared/ipc-channels';
 import { DEFAULT_HOTKEY, DEFAULT_RETENTION_LIMIT } from '../shared/config';
+
+// Kept at module scope so it is never garbage-collected (Electron Tray
+// instances are destroyed if no reference is held).
+let tray: Tray | null = null;
+let paused = false;
 
 app.whenReady().then(() => {
   const userDataDir = app.getPath('userData');
@@ -25,23 +30,34 @@ app.whenReady().then(() => {
     itemsRepo,
     previewsDir: path.join(userDataDir, 'previews'),
     retentionLimit: DEFAULT_RETENTION_LIMIT,
-    onItemAdded: (item) => win.webContents.send(IPC.ITEM_ADDED, item),
+    onItemAdded: (item) => {
+      if (!win.isDestroyed()) win.webContents.send(IPC.ITEM_ADDED, item);
+    },
   });
   const watcher = new ClipboardWatcher(new ElectronClipboardReader(), pipeline);
   watcher.start();
 
-  registerIpcHandlers(ipcMain, { itemsRepo, tagsRepo });
+  registerIpcHandlers(ipcMain, {
+    itemsRepo,
+    tagsRepo,
+    markSelfWrite: (hash) => watcher.markSelfWrite(hash),
+  });
 
-  createTray(path.join(__dirname, '../../resources/tray-icon.png'), {
+  tray = createTray(path.join(__dirname, '../../resources/tray-icon.png'), {
     onOpen: () => showWindow(win),
     onPauseToggle: () => {
-      // simple pause/resume toggle via watcher start/stop
-      watcher.stop();
+      paused = !paused;
+      if (paused) watcher.stop();
+      else watcher.start();
     },
     onQuit: () => app.quit(),
   });
 
   registerHotkey(DEFAULT_HOTKEY, () => toggleWindow(win));
+});
+
+app.on('before-quit', () => {
+  setQuitting(true);
 });
 
 app.on('will-quit', () => {

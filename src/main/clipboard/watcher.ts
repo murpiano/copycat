@@ -15,6 +15,16 @@ export class ClipboardWatcher {
     private pollMs: number = POLL_INTERVAL_MS,
   ) {}
 
+  /**
+   * Record a hash as "already seen" without emitting a capture. Call this
+   * right before writing content to the OS clipboard ourselves (e.g. when
+   * the user re-copies a history item) so the next poll doesn't mistake our
+   * own write for a new external clipboard entry.
+   */
+  markSelfWrite(hash: string): void {
+    this.lastHash = hash;
+  }
+
   pollOnce(): void {
     const snapshot = this.capture();
     if (!snapshot || snapshot.hash === this.lastHash) return;
