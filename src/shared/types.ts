@@ -29,8 +29,27 @@ export interface UpdateItemInput {
   content?: string;
 }
 
+/** A card the user types in by hand instead of copying from the clipboard. */
+export interface CreateItemInput {
+  title: string | null;
+  content: string;
+  tags: string[];
+}
+
+export interface AppSettings {
+  /** Electron accelerator that opens the window, e.g. "CommandOrControl+Shift+V". */
+  hotkey: string;
+}
+
+export interface HotkeyResult {
+  ok: boolean;
+  /** Set when the accelerator was rejected, so the dialog can say why. */
+  reason?: string;
+}
+
 export interface CopycatAPI {
   getItems(query: GetItemsQuery): Promise<ClipboardItem[]>;
+  createItem(input: CreateItemInput): Promise<ClipboardItem>;
   copyItem(id: number): Promise<void>;
   pasteItem(id: number): Promise<void>;
   toggleStar(id: number): Promise<void>;
@@ -40,6 +59,8 @@ export interface CopycatAPI {
   updateItem(id: number, input: UpdateItemInput): Promise<void>;
   reorderItems(ids: number[]): Promise<void>;
   deleteItem(id: number): Promise<void>;
+  getSettings(): Promise<AppSettings>;
+  setHotkey(accelerator: string): Promise<HotkeyResult>;
   onItemAdded(cb: (item: ClipboardItem) => void): () => void;
 }
 

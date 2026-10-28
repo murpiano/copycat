@@ -24,6 +24,7 @@ function fakeItem(overrides: Partial<ClipboardItem> = {}): ClipboardItem {
 function installFakeApi(overrides: Partial<CopycatAPI> = {}): CopycatAPI {
   const api: CopycatAPI = {
     getItems: jest.fn().mockResolvedValue([fakeItem()]),
+    createItem: jest.fn().mockResolvedValue(fakeItem()),
     copyItem: jest.fn().mockResolvedValue(undefined),
     pasteItem: jest.fn().mockResolvedValue(undefined),
     toggleStar: jest.fn().mockResolvedValue(undefined),
@@ -33,6 +34,8 @@ function installFakeApi(overrides: Partial<CopycatAPI> = {}): CopycatAPI {
     updateItem: jest.fn().mockResolvedValue(undefined),
     reorderItems: jest.fn().mockResolvedValue(undefined),
     deleteItem: jest.fn().mockResolvedValue(undefined),
+    getSettings: jest.fn().mockResolvedValue({ hotkey: 'CommandOrControl+Shift+V' }),
+    setHotkey: jest.fn().mockResolvedValue({ ok: true }),
     onItemAdded: jest.fn().mockReturnValue(() => {}),
     ...overrides,
   };

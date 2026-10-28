@@ -4,7 +4,12 @@ module.exports = {
       displayName: 'node',
       preset: 'ts-jest',
       testEnvironment: 'node',
-      testMatch: ['**/tests/unit/storage/**/*.test.ts', '**/tests/unit/clipboard/**/*.test.ts', '**/tests/unit/ipc/**/*.test.ts'],
+      testMatch: [
+        '**/tests/unit/storage/**/*.test.ts',
+        '**/tests/unit/clipboard/**/*.test.ts',
+        '**/tests/unit/ipc/**/*.test.ts',
+        '**/tests/unit/main/**/*.test.ts',
+      ],
     },
     {
       displayName: 'jsdom',

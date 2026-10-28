@@ -4,7 +4,8 @@ import { createMainWindow, showWindow, toggleWindow, setQuitting, DEV_WINDOW } f
 import { createTray } from './tray';
 import { registerContextMenu } from './context-menu';
 import { startAutoUpdates } from './updater';
-import { registerHotkey } from './hotkey';
+import { registerHotkey, rebindHotkey } from './hotkey';
+import { createSettingsStore } from './settings-store';
 import { createDb } from './storage/db';
 import { createTagsRepo } from './storage/tags-repo';
 import { createItemsRepo } from './storage/items-repo';
@@ -13,7 +14,7 @@ import { ElectronClipboardReader } from './clipboard/electron-reader';
 import { createCapturePipeline } from './clipboard/capture-pipeline';
 import { registerIpcHandlers } from './ipc/register';
 import { IPC } from '../shared/ipc-channels';
-import { DEFAULT_HOTKEY, DEFAULT_RETENTION_LIMIT } from '../shared/config';
+import { DEFAULT_RETENTION_LIMIT } from '../shared/config';
 
 // Kept at module scope so it is never garbage-collected (Electron Tray
 // instances are destroyed if no reference is held).
@@ -22,6 +23,7 @@ let paused = false;
 
 app.whenReady().then(() => {
   const userDataDir = app.getPath('userData');
+  const settingsStore = createSettingsStore(path.join(userDataDir, 'settings.json'));
   const db = createDb(path.join(userDataDir, 'db.sqlite'));
   const tagsRepo = createTagsRepo(db);
   const itemsRepo = createItemsRepo(db, tagsRepo);
@@ -41,10 +43,18 @@ app.whenReady().then(() => {
   const watcher = new ClipboardWatcher(new ElectronClipboardReader(), pipeline);
   watcher.start();
 
+  const toggle = (): void => toggleWindow(win);
+
   registerIpcHandlers(ipcMain, {
     itemsRepo,
     tagsRepo,
     markSelfWrite: (hash) => watcher.markSelfWrite(hash),
+    readSettings: () => settingsStore.get(),
+    applyHotkey: (accelerator) => {
+      const result = rebindHotkey(settingsStore.get().hotkey, accelerator, toggle);
+      if (result.ok) settingsStore.setHotkey(accelerator);
+      return result;
+    },
   });
 
   tray = createTray(path.join(__dirname, '../../resources/tray-icon.png'), {
@@ -57,7 +67,7 @@ app.whenReady().then(() => {
     onQuit: () => app.quit(),
   });
 
-  registerHotkey(DEFAULT_HOTKEY, () => toggleWindow(win));
+  registerHotkey(settingsStore.get().hotkey, toggle);
 
   startAutoUpdates(() => tray);
 });

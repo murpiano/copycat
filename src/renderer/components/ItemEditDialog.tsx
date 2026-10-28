@@ -4,24 +4,28 @@ import { KIND_LABEL } from './ItemCard';
 import { CloseIcon, PlusIcon } from './icons';
 
 interface ItemEditDialogProps {
-  item: ClipboardItem;
+  /** The card being edited, or null while composing a new one. */
+  item: ClipboardItem | null;
   /** Category names from the sidebar, offered as checkboxes. */
   categories: string[];
+  /** Pre-ticked on a new card, so a category fills up without extra clicks. */
+  initialTags?: string[];
   onClose: () => void;
-  onSave: (id: number, title: string | null, content: string, tags: string[]) => void;
+  onSave: (title: string | null, content: string, tags: string[]) => void;
   onCategoryAdd: (name: string) => void;
 }
 
 export function ItemEditDialog({
   item,
   categories,
+  initialTags = [],
   onClose,
   onSave,
   onCategoryAdd,
 }: ItemEditDialogProps) {
-  const [title, setTitle] = useState(item.title ?? '');
-  const [content, setContent] = useState(item.content);
-  const [tags, setTags] = useState<string[]>(item.tags);
+  const [title, setTitle] = useState(item?.title ?? '');
+  const [content, setContent] = useState(item?.content ?? '');
+  const [tags, setTags] = useState<string[]>(item ? item.tags : initialTags);
   const [draft, setDraft] = useState('');
 
   useEffect(() => {
@@ -35,6 +39,7 @@ export function ItemEditDialog({
   // The sidebar's categories plus any tag this item already carries, so a tag
   // added elsewhere never silently disappears when the dialog saves.
   const options = [...new Set([...categories.map((c) => c.toLowerCase()), ...tags])];
+  const contentLabel = item?.type === 'image' ? 'Путь к файлу' : 'Содержимое';
 
   function toggleTag(tag: string) {
     setTags((current) =>
@@ -56,11 +61,11 @@ export function ItemEditDialog({
       <div
         className="popup edit-dialog"
         role="dialog"
-        aria-label="Редактирование"
+        aria-label={item ? 'Редактирование' : 'Новый блок'}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="popup-head">
-          <div className="popup-title">Редактирование</div>
+          <div className="popup-title">{item ? 'Редактирование' : 'Новый блок'}</div>
           <button
             className="item-card-action"
             aria-label="Закрыть"
@@ -75,19 +80,18 @@ export function ItemEditDialog({
           <span className="field-label">Название</span>
           <input
             className="field-input"
-            autoFocus
+            autoFocus={item !== null}
             value={title}
-            placeholder={KIND_LABEL[item.type]}
+            placeholder={KIND_LABEL[item?.type ?? 'text']}
             onChange={(e) => setTitle(e.target.value)}
           />
         </label>
 
         <label className="field field-grow">
-          <span className="field-label">
-            {item.type === 'image' ? 'Путь к файлу' : 'Содержимое'}
-          </span>
+          <span className="field-label">{contentLabel}</span>
           <textarea
             className="field-input field-textarea"
+            autoFocus={item === null}
             value={content}
             onChange={(e) => setContent(e.target.value)}
           />
@@ -117,7 +121,12 @@ export function ItemEditDialog({
                   if (e.key === 'Enter') addDraft();
                 }}
               />
-              <button type="button" className="item-card-action" aria-label="Добавить" onClick={addDraft}>
+              <button
+                type="button"
+                className="item-card-action"
+                aria-label="Добавить"
+                onClick={addDraft}
+              >
                 <PlusIcon size={14} />
               </button>
             </span>
@@ -131,9 +140,10 @@ export function ItemEditDialog({
           <button
             type="button"
             className="button primary"
-            onClick={() => onSave(item.id, title.trim() || null, content, tags)}
+            disabled={!item && !content.trim()}
+            onClick={() => onSave(title.trim() || null, content, tags)}
           >
-            Сохранить
+            {item ? 'Сохранить' : 'Создать'}
           </button>
         </div>
       </div>

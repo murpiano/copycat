@@ -5,6 +5,7 @@ import { SearchBar } from './components/SearchBar';
 import { ItemGrid } from './components/ItemGrid';
 import { ItemPopup } from './components/ItemPopup';
 import { ItemEditDialog } from './components/ItemEditDialog';
+import { SettingsDialog } from './components/SettingsDialog';
 
 export function App() {
   const {
@@ -15,6 +16,9 @@ export function App() {
     activeCategory,
     expandedId,
     editingId,
+    composing,
+    settingsOpen,
+    settings,
     reorderMode,
     isOrderedView,
     setSearch,
@@ -23,6 +27,10 @@ export function App() {
     selectCategory,
     expandItem,
     editItem,
+    composeItem,
+    createItem,
+    openSettings,
+    setHotkey,
     toggleReorderMode,
     moveItem,
     persistOrder,
@@ -63,6 +71,7 @@ export function App() {
         onNavChange={setNav}
         onCategorySelect={selectCategory}
         onCategoryAdd={addCategory}
+        onSettingsOpen={() => openSettings(true)}
       />
       <div className="main">
         <div className="topbar">
@@ -73,6 +82,7 @@ export function App() {
           reorderMode={reorderMode}
           canReorder={isOrderedView()}
           onToggleReorder={toggleReorderMode}
+          onCompose={() => composeItem(true)}
           onCopy={copyItem}
           onToggleStar={toggleStar}
           onDelete={deleteItem}
@@ -100,8 +110,28 @@ export function App() {
           item={editing}
           categories={categories}
           onClose={() => editItem(null)}
-          onSave={(id, title, content, tags) => void saveEdits(id, title, content, tags)}
+          onSave={(title, content, tags) => void saveEdits(editing.id, title, content, tags)}
           onCategoryAdd={addCategory}
+        />
+      )}
+
+      {composing && (
+        <ItemEditDialog
+          item={null}
+          categories={categories}
+          // A card made while a category is open belongs to it by default.
+          initialTags={activeCategory ? [activeCategory.toLowerCase()] : []}
+          onClose={() => composeItem(false)}
+          onSave={(title, content, tags) => void createItem({ title, content, tags })}
+          onCategoryAdd={addCategory}
+        />
+      )}
+
+      {settingsOpen && (
+        <SettingsDialog
+          settings={settings}
+          onClose={() => openSettings(false)}
+          onHotkeyChange={setHotkey}
         />
       )}
     </div>

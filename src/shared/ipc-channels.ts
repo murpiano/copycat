@@ -1,5 +1,6 @@
 export const IPC = {
   GET_ITEMS: 'copycat:get-items',
+  CREATE_ITEM: 'copycat:create-item',
   COPY_ITEM: 'copycat:copy-item',
   PASTE_ITEM: 'copycat:paste-item',
   TOGGLE_STAR: 'copycat:toggle-star',
@@ -9,5 +10,7 @@ export const IPC = {
   UPDATE_ITEM: 'copycat:update-item',
   REORDER_ITEMS: 'copycat:reorder-items',
   DELETE_ITEM: 'copycat:delete-item',
+  GET_SETTINGS: 'copycat:get-settings',
+  SET_HOTKEY: 'copycat:set-hotkey',
   ITEM_ADDED: 'copycat:item-added',
 } as const;

@@ -2,12 +2,22 @@ import { readFileSync } from 'node:fs';
 import type { IpcMain } from 'electron';
 import { clipboard, nativeImage } from 'electron';
 import { IPC } from '../../shared/ipc-channels';
-import type { ClipboardItem, GetItemsQuery, UpdateItemInput } from '../../shared/types';
+import type {
+  AppSettings,
+  ClipboardItem,
+  CreateItemInput,
+  GetItemsQuery,
+  HotkeyResult,
+  UpdateItemInput,
+} from '../../shared/types';
 import type { ItemsRepo } from '../storage/items-repo';
 import type { TagsRepo } from '../storage/tags-repo';
 import { hashContent } from '../clipboard/hash';
 import {
   handleGetItems,
+  handleCreateItem,
+  handleGetSettings,
+  handleSetHotkey,
   handleCopyItem,
   handlePasteItem,
   handleToggleStar,
@@ -23,6 +33,8 @@ import {
 export interface RegisterIpcDeps {
   itemsRepo: ItemsRepo;
   tagsRepo: TagsRepo;
+  readSettings: () => AppSettings;
+  applyHotkey: (accelerator: string) => HotkeyResult;
   /**
    * Tells the ClipboardWatcher to treat the given content hash as already
    * seen, so our own clipboard writes below don't get re-captured as new
@@ -54,9 +66,18 @@ export function registerIpcHandlers(ipcMain: IpcMain, deps: RegisterIpcDeps): vo
     tagsRepo: deps.tagsRepo,
     copyToClipboard,
     pasteActive: copyToClipboard,
+    readSettings: deps.readSettings,
+    applyHotkey: deps.applyHotkey,
   };
 
   ipcMain.handle(IPC.GET_ITEMS, (_e, query: GetItemsQuery) => handleGetItems(ipcDeps, query));
+  ipcMain.handle(IPC.CREATE_ITEM, (_e, input: CreateItemInput) =>
+    handleCreateItem(ipcDeps, input),
+  );
+  ipcMain.handle(IPC.GET_SETTINGS, () => handleGetSettings(ipcDeps));
+  ipcMain.handle(IPC.SET_HOTKEY, (_e, accelerator: string) =>
+    handleSetHotkey(ipcDeps, accelerator),
+  );
   ipcMain.handle(IPC.COPY_ITEM, (_e, id: number) => handleCopyItem(ipcDeps, id));
   ipcMain.handle(IPC.PASTE_ITEM, (_e, id: number) => handlePasteItem(ipcDeps, id));
   ipcMain.handle(IPC.TOGGLE_STAR, (_e, id: number) => handleToggleStar(ipcDeps, id));
