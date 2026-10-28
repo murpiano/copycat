@@ -5,9 +5,20 @@ directories:
 files:
   - out/**/*
   - resources/**/*
+# electron-updater reads this feed from inside the installed app, so a release
+# published here is picked up by every machine that already has Copycat.
+publish:
+  provider: github
+  owner: murpiano
+  repo: copycat
 win:
   target: nsis
-  icon: resources/tray-icon.png
+  icon: resources/icon.png
+  artifactName: Copycat-Setup-${version}.${ext}
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
+  perMachine: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Copycat

@@ -3,6 +3,7 @@ import { app, globalShortcut, ipcMain, Tray } from 'electron';
 import { createMainWindow, showWindow, toggleWindow, setQuitting, DEV_WINDOW } from './window';
 import { createTray } from './tray';
 import { registerContextMenu } from './context-menu';
+import { startAutoUpdates } from './updater';
 import { registerHotkey } from './hotkey';
 import { createDb } from './storage/db';
 import { createTagsRepo } from './storage/tags-repo';
@@ -57,6 +58,8 @@ app.whenReady().then(() => {
   });
 
   registerHotkey(DEFAULT_HOTKEY, () => toggleWindow(win));
+
+  startAutoUpdates(() => tray);
 });
 
 app.on('before-quit', () => {
