@@ -1,4 +1,5 @@
 import type { DragEvent, MouseEvent } from 'react';
+import { useSelectionCursor } from '../useSelectionCursor';
 import type { ClipboardItem, ItemType } from '../../shared/types';
 import { CloseIcon, FileIcon, FolderIcon, ImageIcon, PencilIcon, StarIcon } from './icons';
 
@@ -48,6 +49,8 @@ export function ItemCard({
   onDragOver,
   onDrop,
 }: ItemCardProps) {
+  const { selecting, ref: contentRef } = useSelectionCursor<HTMLDivElement>();
+
   // The whole card opens the popup, not just its text, so there is no dead
   // area inside it. A click that ends a text selection means the user is
   // copying an excerpt by hand, so it must not open the popup over it.
@@ -128,7 +131,10 @@ export function ItemCard({
             <img src={`file://${item.content}`} alt="clipboard preview" />
           </div>
         ) : (
-          <div className="item-card-content">
+          <div
+            ref={contentRef}
+            className={selecting ? 'item-card-content selecting' : 'item-card-content'}
+          >
             {item.content}
           </div>
         )}

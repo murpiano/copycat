@@ -98,11 +98,15 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
 
   async fetchItems() {
     const { search, nav, activeCategory } = get();
+    // One view at a time: a category shows everything filed under it, images
+    // and files included, instead of inheriting the nav tab's type filter.
+    const scope =
+      activeCategory !== null
+        ? { tags: [activeCategory] }
+        : { type: NAV_TYPE[nav], onlyStarred: nav === 'starred' || undefined };
     const items = await window.copycat.getItems({
       search: search || undefined,
-      type: NAV_TYPE[nav],
-      tags: activeCategory ? [activeCategory] : undefined,
-      onlyStarred: nav === 'starred' || undefined,
+      ...scope,
       ordered: get().isOrderedView() || undefined,
     });
     set({ items });
@@ -114,7 +118,7 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
   },
 
   setNav(nav) {
-    set({ nav, activeCategory: null, reorderMode: false });
+    set({ nav, activeCategory: null, reorderMode: false, search: '' });
     void get().fetchItems();
   },
 
@@ -127,7 +131,7 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
   },
 
   selectCategory(name) {
-    set({ activeCategory: name, reorderMode: false });
+    set({ activeCategory: name, reorderMode: false, search: '' });
     void get().fetchItems();
   },
 

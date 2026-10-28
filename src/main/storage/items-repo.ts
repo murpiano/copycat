@@ -92,8 +92,14 @@ export function createItemsRepo(db: Database.Database, tagsRepo: TagsRepo): Item
         params.push(query.type);
       }
       if (query.search) {
-        clauses.push('items.content LIKE ?');
-        params.push(`%${query.search}%`);
+        // A card renamed by the user is found by that name, not only by the
+        // text it holds. lower_unicode folds Cyrillic, which SQLite's own
+        // LIKE does not.
+        clauses.push(
+          '(lower_unicode(items.content) LIKE ? OR lower_unicode(items.title) LIKE ?)',
+        );
+        const needle = `%${query.search.toLowerCase()}%`;
+        params.push(needle, needle);
       }
       if (clauses.length > 0) sql += ' WHERE ' + clauses.join(' AND ');
       // Manually ordered views put the dragged cards first; items never dragged

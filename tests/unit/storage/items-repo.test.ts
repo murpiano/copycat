@@ -36,6 +36,25 @@ describe('items-repo', () => {
     expect(itemsRepo.getById(item.id)!.title).toBeNull();
   });
 
+  it('ignores case in Cyrillic, which SQLite LIKE does not', () => {
+    const { itemsRepo } = setup();
+    const item = itemsRepo.insertItem({
+      type: 'text',
+      content: 'Здравствуйте, коллеги',
+      sourceApp: null,
+    });
+    expect(itemsRepo.getItems({ search: 'ЗДРАВСТВУЙТЕ' }).map((i) => i.id)).toEqual([item.id]);
+    expect(itemsRepo.getItems({ search: 'коллеги' }).map((i) => i.id)).toEqual([item.id]);
+  });
+
+  it('finds a card by the name the user gave it', () => {
+    const { itemsRepo } = setup();
+    const item = itemsRepo.insertItem({ type: 'text', content: 'ssh root@host', sourceApp: null });
+    itemsRepo.updateItem(item.id, { title: 'Боевой сервер' });
+    expect(itemsRepo.getItems({ search: 'боевой' }).map((i) => i.id)).toEqual([item.id]);
+    expect(itemsRepo.getItems({ search: 'ssh' }).map((i) => i.id)).toEqual([item.id]);
+  });
+
   it('serves the manual order to ordered views only', () => {
     const { itemsRepo } = setup();
     const first = itemsRepo.insertItem({ type: 'text', content: 'first', sourceApp: null });

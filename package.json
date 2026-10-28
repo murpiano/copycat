@@ -1,6 +1,6 @@
 {
   "name": "copycat",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "description": "Менеджер истории буфера обмена для Windows",
   "author": "murpiano",
