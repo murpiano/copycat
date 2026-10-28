@@ -1,4 +1,3 @@
-import { FixedSizeList } from 'react-window';
 import type { ClipboardItem } from '../../shared/types';
 import { ItemCard } from './ItemCard';
 
@@ -9,27 +8,22 @@ interface ItemGridProps {
   onDelete: (id: number) => void;
 }
 
-const CARD_WIDTH = 280;
-
 export function ItemGrid({ items, onCopy, onToggleStar, onDelete }: ItemGridProps) {
+  if (items.length === 0) {
+    return <div className="empty-state">Ничего не найдено</div>;
+  }
+
   return (
-    <FixedSizeList
-      layout="horizontal"
-      height={420}
-      width={window.innerWidth}
-      itemCount={items.length}
-      itemSize={CARD_WIDTH}
-    >
-      {({ index, style }) => (
-        <div style={style}>
-          <ItemCard
-            item={items[index]}
-            onCopy={onCopy}
-            onToggleStar={onToggleStar}
-            onDelete={onDelete}
-          />
-        </div>
-      )}
-    </FixedSizeList>
+    <div className="item-grid">
+      {items.map((item) => (
+        <ItemCard
+          key={item.id}
+          item={item}
+          onCopy={onCopy}
+          onToggleStar={onToggleStar}
+          onDelete={onDelete}
+        />
+      ))}
+    </div>
   );
 }

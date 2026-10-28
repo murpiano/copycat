@@ -1,19 +1,44 @@
 import { create } from 'zustand';
 import type { ClipboardItem, ItemType } from '../../shared/types';
 
-export type ActiveTab = 'history' | 'starred';
+export type NavKey = 'history' | 'starred' | 'images' | 'files';
+
+const NAV_TYPE: Partial<Record<NavKey, ItemType>> = {
+  images: 'image',
+  files: 'file',
+};
+
+const CATEGORIES_STORAGE_KEY = 'copycat.categories';
+
+function loadCategories(): string[] {
+  try {
+    const raw = localStorage.getItem(CATEGORIES_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCategories(categories: string[]): void {
+  try {
+    localStorage.setItem(CATEGORIES_STORAGE_KEY, JSON.stringify(categories));
+  } catch {
+    // Storage is unavailable (private mode, cleared site data) — categories
+    // stay in memory for this session only.
+  }
+}
 
 interface ClipboardState {
   items: ClipboardItem[];
   search: string;
-  typeFilter: ItemType | null;
-  tagFilters: string[];
-  activeTab: ActiveTab;
+  nav: NavKey;
+  categories: string[];
+  activeCategory: string | null;
   fetchItems: () => Promise<void>;
   setSearch: (value: string) => void;
-  setTypeFilter: (type: ItemType | null) => void;
-  toggleTagFilter: (tag: string) => void;
-  setActiveTab: (tab: ActiveTab) => void;
+  setNav: (nav: NavKey) => void;
+  addCategory: (name: string) => void;
+  selectCategory: (name: string | null) => void;
   copyItem: (id: number) => Promise<void>;
   pasteItem: (id: number) => Promise<void>;
   toggleStar: (id: number) => Promise<void>;
@@ -26,17 +51,17 @@ interface ClipboardState {
 export const useClipboardStore = create<ClipboardState>((set, get) => ({
   items: [],
   search: '',
-  typeFilter: null,
-  tagFilters: [],
-  activeTab: 'history',
+  nav: 'history',
+  categories: loadCategories(),
+  activeCategory: null,
 
   async fetchItems() {
-    const { search, typeFilter, tagFilters, activeTab } = get();
+    const { search, nav, activeCategory } = get();
     const items = await window.copycat.getItems({
       search: search || undefined,
-      type: typeFilter ?? undefined,
-      tags: tagFilters.length > 0 ? tagFilters : undefined,
-      onlyStarred: activeTab === 'starred' || undefined,
+      type: NAV_TYPE[nav],
+      tags: activeCategory ? [activeCategory] : undefined,
+      onlyStarred: nav === 'starred' || undefined,
     });
     set({ items });
   },
@@ -46,22 +71,21 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
     void get().fetchItems();
   },
 
-  setTypeFilter(type) {
-    set({ typeFilter: type });
+  setNav(nav) {
+    set({ nav, activeCategory: null });
     void get().fetchItems();
   },
 
-  toggleTagFilter(tag) {
-    const current = get().tagFilters;
-    const next = current.includes(tag)
-      ? current.filter((t) => t !== tag)
-      : [...current, tag];
-    set({ tagFilters: next });
-    void get().fetchItems();
+  addCategory(name) {
+    const trimmed = name.trim();
+    if (!trimmed || get().categories.includes(trimmed)) return;
+    const categories = [...get().categories, trimmed];
+    saveCategories(categories);
+    set({ categories });
   },
 
-  setActiveTab(tab) {
-    set({ activeTab: tab });
+  selectCategory(name) {
+    set({ activeCategory: name });
     void get().fetchItems();
   },
 

@@ -10,9 +10,9 @@ test('copy, search, tag-filter, and paste flow', async () => {
     return (window as any).copycat.getItems({});
   });
 
-  await expect(win.getByPlaceholder('Search clipboard history...')).toBeVisible();
-  await expect(win.getByText('History')).toBeVisible();
-  await expect(win.getByText('Starred')).toBeVisible();
+  await expect(win.getByPlaceholder('Поиск по буферу обмена...')).toBeVisible();
+  await expect(win.getByText('Все')).toBeVisible();
+  await expect(win.getByText('Избранное')).toBeVisible();
 
   await app.close();
 });

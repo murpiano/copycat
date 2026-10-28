@@ -20,10 +20,13 @@ beforeEach(() => {
 });
 
 describe('App', () => {
-  it('renders the search bar and tab bar', () => {
+  it('renders the search bar and sidebar navigation', () => {
     render(<App />);
-    expect(screen.getByPlaceholderText('Search clipboard history...')).toBeInTheDocument();
-    expect(screen.getByText('History')).toBeInTheDocument();
-    expect(screen.getByText('Starred')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Поиск по буферу обмена...')).toBeInTheDocument();
+    expect(screen.getByText('Все')).toBeInTheDocument();
+    expect(screen.getByText('Избранное')).toBeInTheDocument();
+    expect(screen.getByText('Изображения')).toBeInTheDocument();
+    expect(screen.getByText('Файлы')).toBeInTheDocument();
+    expect(screen.getByText('Категории')).toBeInTheDocument();
   });
 });

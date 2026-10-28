@@ -48,12 +48,34 @@ describe('useClipboardStore', () => {
     expect(useClipboardStore.getState().items).toHaveLength(1);
   });
 
-  it('toggleTagFilter adds and removes a tag from the active filter set', () => {
+  it('setNav maps the images tab onto a type filter', async () => {
+    const api = installFakeApi();
+    await act(async () => {
+      useClipboardStore.getState().setNav('images');
+      await useClipboardStore.getState().fetchItems();
+    });
+    expect(api.getItems).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'image' }),
+    );
+  });
+
+  it('selectCategory filters items by that category tag', async () => {
+    const api = installFakeApi();
+    await act(async () => {
+      useClipboardStore.getState().selectCategory('work');
+      await useClipboardStore.getState().fetchItems();
+    });
+    expect(api.getItems).toHaveBeenCalledWith(
+      expect.objectContaining({ tags: ['work'] }),
+    );
+  });
+
+  it('addCategory ignores blank and duplicate names', () => {
     installFakeApi();
-    useClipboardStore.getState().toggleTagFilter('work');
-    expect(useClipboardStore.getState().tagFilters).toEqual(['work']);
-    useClipboardStore.getState().toggleTagFilter('work');
-    expect(useClipboardStore.getState().tagFilters).toEqual([]);
+    useClipboardStore.getState().addCategory('work');
+    useClipboardStore.getState().addCategory('work');
+    useClipboardStore.getState().addCategory('   ');
+    expect(useClipboardStore.getState().categories).toEqual(['work']);
   });
 
   it('copyItem calls the API with the item id', async () => {
