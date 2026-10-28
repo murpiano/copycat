@@ -48,6 +48,11 @@ body {
 
 button {
   font-family: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
 }
 
 ::-webkit-scrollbar {
@@ -151,9 +156,61 @@ button {
   flex: 0 0 auto;
 }
 
-.nav-chevron {
+/* Categories row: label, then "+", then the chevron. */
+.nav-row {
+  gap: 0;
+  padding: 0;
+}
+
+.nav-row-main {
+  flex: 1 1 auto;
+  min-width: 0;
   display: flex;
-  margin-left: auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0 10px 12px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+  text-align: left;
+}
+
+.nav-row-add {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  margin-right: 2px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-faint);
+  transition:
+    color 110ms ease,
+    background 110ms ease,
+    transform 90ms ease;
+}
+
+.nav-row-add:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+}
+
+.nav-row-add:active {
+  transform: scale(0.88);
+}
+
+.nav-chevron {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 10px 12px 10px 0;
+  border: none;
+  background: transparent;
   color: var(--text-faint);
   transition: transform 0.15s ease;
 }
@@ -199,25 +256,6 @@ button {
   color: #ffffff;
 }
 
-.category-add {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid var(--surface-border);
-  border-radius: 9px;
-  background: var(--surface);
-  color: var(--text-dim);
-  font-size: 12.5px;
-  text-align: left;
-  cursor: pointer;
-}
-
-.category-add:hover {
-  color: var(--text);
-}
-
 .category-input {
   width: 100%;
   padding: 8px 10px;
@@ -245,12 +283,15 @@ button {
   align-items: center;
   padding: 0 24px;
   border-bottom: 1px solid var(--divider);
+  /* Drag handle for the frameless overlay: the topbar moves the window. */
+  -webkit-app-region: drag;
 }
 
 .search-field {
   flex: 1 1 auto;
   position: relative;
   max-width: 560px;
+  -webkit-app-region: no-drag;
 }
 
 .search-field svg {
@@ -292,12 +333,62 @@ button {
 
 /* Grid */
 
+.grid-section {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.grid-toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  padding: 14px 24px 0;
+}
+
+.grid-reorder-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 12px;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease,
+    transform 90ms ease;
+}
+
+.grid-reorder-toggle:hover {
+  border-color: var(--nav-active-border);
+  background: var(--nav-active-bg);
+  color: var(--text);
+}
+
+.grid-reorder-toggle:active {
+  transform: scale(0.97);
+}
+
+.grid-reorder-toggle.active {
+  border-color: var(--nav-active-border);
+  background: var(--nav-active-bg);
+  color: var(--accent-text);
+}
+
 .item-grid {
   flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   padding: 20px 24px 32px;
+  /* Strict columns: every row gets the same column count and width, computed
+     from the container, not from each row's own content like flex-wrap did. */
   display: grid;
-  grid-template-columns: repeat(auto-fill, 336px);
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   grid-auto-rows: 186px;
   gap: 24px;
   align-content: start;
@@ -315,11 +406,64 @@ button {
 /* Card */
 
 .item-card {
+  /* Width comes from the grid track (.item-grid), which shrinks down to a
+     width where three clamped lines of content are still readable. */
+  min-width: 0;
+  height: 100%;
   display: flex;
   overflow: hidden;
+  cursor: pointer;
   border: 1px solid var(--surface-border);
   border-radius: 12px;
   background: var(--surface);
+  transition:
+    border-color 130ms ease,
+    box-shadow 130ms ease,
+    transform 110ms ease;
+}
+
+.item-card:hover {
+  border-color: var(--nav-active-border);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.36);
+  transform: translateY(-2px);
+}
+
+.item-card:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Reorder mode: the shaking card signals it can be dragged. */
+@keyframes card-jiggle {
+  0% {
+    transform: rotate(-0.7deg) translateY(0);
+  }
+  50% {
+    transform: rotate(0.7deg) translateY(-1px);
+  }
+  100% {
+    transform: rotate(-0.7deg) translateY(0);
+  }
+}
+
+.item-card.jiggle {
+  animation: card-jiggle 220ms ease-in-out infinite;
+  cursor: grab;
+}
+
+.item-card.jiggle:hover {
+  transform: none;
+}
+
+.item-card.jiggle:active {
+  cursor: grabbing;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item-card.jiggle {
+    animation: none;
+    border-color: var(--accent-text);
+  }
 }
 
 .item-card-bar {
@@ -378,7 +522,32 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
+  border: none;
   border-radius: 7px;
+  cursor: pointer;
+  transition:
+    transform 110ms ease,
+    filter 110ms ease;
+}
+
+.item-card-badge:hover {
+  transform: scale(1.1);
+  filter: brightness(1.25);
+}
+
+.item-card-badge:active {
+  transform: scale(0.94);
+}
+
+/* The popup's badge is decoration, not the copy button. */
+.item-card-badge.static {
+  cursor: default;
+}
+
+.item-card-badge.static:hover {
+  transform: none;
+  filter: none;
 }
 
 .item-card[data-type='text'] .item-card-badge {
@@ -412,15 +581,25 @@ button {
 
 .item-card-action {
   display: flex;
-  padding: 2px;
+  padding: 3px;
   border: none;
+  border-radius: 6px;
   background: transparent;
   color: var(--text-faint);
   cursor: pointer;
+  transition:
+    color 110ms ease,
+    background 110ms ease,
+    transform 90ms ease;
 }
 
 .item-card-action:hover {
   color: var(--text);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.item-card-action:active {
+  transform: scale(0.88);
 }
 
 .item-card-action.starred {
@@ -429,6 +608,11 @@ button {
 
 .item-card-action.delete:hover {
   color: var(--accent-danger);
+  background: rgba(224, 93, 93, 0.12);
+}
+
+.item-card-action.starred:hover {
+  color: var(--accent-star);
 }
 
 .item-card-content {
@@ -441,15 +625,37 @@ button {
   line-height: 1.5;
   color: #b6c0d1;
   word-break: break-word;
-  cursor: pointer;
+  cursor: text;
+  /* Partial copy by hand must keep working, so the text stays selectable. */
+  user-select: text;
+  border-radius: 6px;
+  transition: color 110ms ease;
+}
+
+.item-card-content:hover {
+  color: var(--text);
+}
+
+.item-card-content::selection,
+.popup-content::selection {
+  background: rgba(69, 161, 249, 0.35);
 }
 
 .item-card-preview {
   flex: 1 1 auto;
+  min-height: 0;
   overflow: hidden;
   border-radius: 8px;
   background: #1a2338;
   cursor: pointer;
+}
+
+.item-card-preview img {
+  transition: transform 160ms ease;
+}
+
+.item-card-preview:hover img {
+  transform: scale(1.04);
 }
 
 .item-card-preview img {
@@ -472,4 +678,254 @@ button {
   background: #1a2435;
   color: #8e9bb0;
   font-size: 10.5px;
+}
+
+.tag-chip.selectable {
+  cursor: pointer;
+  transition:
+    border-color 110ms ease,
+    background 110ms ease,
+    color 110ms ease,
+    transform 90ms ease;
+}
+
+.tag-chip.selectable:hover {
+  border-color: var(--nav-active-border);
+  color: var(--text);
+}
+
+.tag-chip.selectable:active {
+  transform: scale(0.95);
+}
+
+.tag-chip.selectable.on {
+  border-color: var(--accent-text);
+  background: rgba(69, 161, 249, 0.16);
+  color: var(--text);
+}
+
+/* Popup and dialog */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 36px;
+  background: rgba(6, 10, 18, 0.62);
+  backdrop-filter: blur(2px);
+  cursor: pointer;
+  animation: overlay-in 120ms ease-out;
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.popup {
+  cursor: default;
+  width: min(720px, 100%);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px solid var(--surface-border);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.55);
+  animation: popup-in 140ms ease-out;
+}
+
+@keyframes popup-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.popup-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.popup-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.popup-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 14px;
+  border: 1px solid var(--field-border);
+  border-radius: 10px;
+  background: var(--field-bg);
+  font-size: 13px;
+  line-height: 1.6;
+  color: #c6cfdd;
+  white-space: pre-wrap;
+  word-break: break-word;
+  user-select: text;
+}
+
+.popup-image {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #121a2b;
+}
+
+.popup-image img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Edit dialog */
+
+.edit-dialog {
+  width: min(560px, 100%);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field-grow {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.field-label {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.field-input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--field-border);
+  border-radius: 9px;
+  background: var(--field-bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease;
+}
+
+.field-input:hover {
+  border-color: var(--nav-active-border);
+}
+
+.field-input:focus {
+  outline: none;
+  border-color: var(--accent-text);
+}
+
+.field-textarea {
+  min-height: 140px;
+  max-height: 320px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.category-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-new {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.category-new .field-input {
+  width: 160px;
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.dialog-actions {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.button {
+  padding: 8px 16px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease,
+    transform 90ms ease;
+}
+
+.button:active {
+  transform: scale(0.97);
+}
+
+.button.ghost {
+  border-color: var(--surface-border);
+  background: transparent;
+  color: var(--text-dim);
+}
+
+.button.ghost:hover {
+  border-color: var(--nav-active-border);
+  background: var(--nav-active-bg);
+  color: var(--text);
+}
+
+.button.primary {
+  background: var(--accent-text);
+  color: #06101f;
+  font-weight: 600;
+}
+
+.button.primary:hover {
+  filter: brightness(1.1);
+}
+
+.nav-item:active,
+.category-item:active,
+.icon-button:active {
+  transform: scale(0.97);
 }

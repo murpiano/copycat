@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import type { IpcMain } from 'electron';
 import { clipboard, nativeImage } from 'electron';
 import { IPC } from '../../shared/ipc-channels';
-import type { ClipboardItem, GetItemsQuery } from '../../shared/types';
+import type { ClipboardItem, GetItemsQuery, UpdateItemInput } from '../../shared/types';
 import type { ItemsRepo } from '../storage/items-repo';
 import type { TagsRepo } from '../storage/tags-repo';
 import { hashContent } from '../clipboard/hash';
@@ -13,6 +13,9 @@ import {
   handleToggleStar,
   handleAddTag,
   handleRemoveTag,
+  handleSetTags,
+  handleUpdateItem,
+  handleReorderItems,
   handleDeleteItem,
   type IpcDeps,
 } from './handlers';
@@ -61,5 +64,12 @@ export function registerIpcHandlers(ipcMain: IpcMain, deps: RegisterIpcDeps): vo
   ipcMain.handle(IPC.REMOVE_TAG, (_e, id: number, tag: string) =>
     handleRemoveTag(ipcDeps, id, tag),
   );
+  ipcMain.handle(IPC.SET_TAGS, (_e, id: number, tags: string[]) =>
+    handleSetTags(ipcDeps, id, tags),
+  );
+  ipcMain.handle(IPC.UPDATE_ITEM, (_e, id: number, input: UpdateItemInput) =>
+    handleUpdateItem(ipcDeps, id, input),
+  );
+  ipcMain.handle(IPC.REORDER_ITEMS, (_e, ids: number[]) => handleReorderItems(ipcDeps, ids));
   ipcMain.handle(IPC.DELETE_ITEM, (_e, id: number) => handleDeleteItem(ipcDeps, id));
 }

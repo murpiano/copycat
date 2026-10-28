@@ -1,4 +1,4 @@
-import type { ClipboardItem, GetItemsQuery } from '../../shared/types';
+import type { ClipboardItem, GetItemsQuery, UpdateItemInput } from '../../shared/types';
 import type { ItemsRepo } from '../storage/items-repo';
 import type { TagsRepo } from '../storage/tags-repo';
 
@@ -38,6 +38,30 @@ export async function handleAddTag(deps: IpcDeps, id: number, tag: string): Prom
 
 export async function handleRemoveTag(deps: IpcDeps, id: number, tag: string): Promise<void> {
   deps.tagsRepo.removeTagFromItem(id, tag);
+}
+
+export async function handleSetTags(deps: IpcDeps, id: number, tags: string[]): Promise<void> {
+  const item = deps.itemsRepo.getById(id);
+  if (!item) return;
+  const next = new Set(tags.map((t) => t.trim().toLowerCase()).filter(Boolean));
+  for (const tag of item.tags) {
+    if (!next.has(tag)) deps.tagsRepo.removeTagFromItem(id, tag);
+  }
+  for (const tag of next) {
+    if (!item.tags.includes(tag)) deps.tagsRepo.addTagToItem(id, tag);
+  }
+}
+
+export async function handleUpdateItem(
+  deps: IpcDeps,
+  id: number,
+  input: UpdateItemInput,
+): Promise<void> {
+  deps.itemsRepo.updateItem(id, input);
+}
+
+export async function handleReorderItems(deps: IpcDeps, ids: number[]): Promise<void> {
+  deps.itemsRepo.reorderItems(ids);
 }
 
 export async function handleDeleteItem(deps: IpcDeps, id: number): Promise<void> {

@@ -30,13 +30,13 @@ describe('Sidebar', () => {
     expect(screen.queryByText('работа')).not.toBeInTheDocument();
     fireEvent.click(screen.getByText('Категории'));
     expect(screen.getByText('работа')).toBeInTheDocument();
-    expect(screen.getByText('Добавить категорию')).toBeInTheDocument();
+    expect(screen.getByLabelText('Добавить категорию')).toBeInTheDocument();
   });
 
   it('adds a category from the inline input on Enter', () => {
     const props = renderSidebar();
     fireEvent.click(screen.getByText('Категории'));
-    fireEvent.click(screen.getByText('Добавить категорию'));
+    fireEvent.click(screen.getByLabelText('Добавить категорию'));
     const input = screen.getByPlaceholderText('Название категории');
     fireEvent.change(input, { target: { value: 'личное' } });
     fireEvent.keyDown(input, { key: 'Enter' });

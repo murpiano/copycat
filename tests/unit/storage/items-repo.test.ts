@@ -20,6 +20,32 @@ describe('items-repo', () => {
     expect(found!.tags).toEqual(['work']);
   });
 
+  it('renames an item and edits its content', () => {
+    const { itemsRepo } = setup();
+    const item = itemsRepo.insertItem({ type: 'text', content: 'hello', sourceApp: null });
+    expect(item.title).toBeNull();
+    itemsRepo.updateItem(item.id, { title: '  Моя команда  ', content: 'bye' });
+    expect(itemsRepo.getById(item.id)).toMatchObject({ title: 'Моя команда', content: 'bye' });
+  });
+
+  it('clears the title back to the default label when it is blanked', () => {
+    const { itemsRepo } = setup();
+    const item = itemsRepo.insertItem({ type: 'text', content: 'hello', sourceApp: null });
+    itemsRepo.updateItem(item.id, { title: 'named' });
+    itemsRepo.updateItem(item.id, { title: '   ' });
+    expect(itemsRepo.getById(item.id)!.title).toBeNull();
+  });
+
+  it('serves the manual order to ordered views only', () => {
+    const { itemsRepo } = setup();
+    const first = itemsRepo.insertItem({ type: 'text', content: 'first', sourceApp: null });
+    const second = itemsRepo.insertItem({ type: 'text', content: 'second', sourceApp: null });
+    itemsRepo.reorderItems([first.id, second.id]);
+    expect(itemsRepo.getItems({ ordered: true }).map((i) => i.id)).toEqual([first.id, second.id]);
+    // Without the flag the newest capture still comes first.
+    expect(itemsRepo.getItems({}).map((i) => i.id)).toEqual([second.id, first.id]);
+  });
+
   it('truncates content longer than MAX_CONTENT_LENGTH', () => {
     const { itemsRepo } = setup();
     const longText = 'a'.repeat(MAX_CONTENT_LENGTH + 500);
