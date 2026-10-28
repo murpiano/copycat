@@ -1,5 +1,12 @@
 import { create } from 'zustand';
-import type { ClipboardItem, ItemType, UpdateItemInput } from '../../shared/types';
+import type {
+  AppSettings,
+  ClipboardItem,
+  CreateItemInput,
+  HotkeyResult,
+  ItemType,
+  UpdateItemInput,
+} from '../../shared/types';
 
 export type NavKey = 'history' | 'starred' | 'images' | 'files';
 
@@ -38,6 +45,10 @@ interface ClipboardState {
   expandedId: number | null;
   /** Card open in the edit dialog, or null when the dialog is closed. */
   editingId: number | null;
+  /** True while the dialog is composing a new card instead of editing one. */
+  composing: boolean;
+  settingsOpen: boolean;
+  settings: AppSettings | null;
   /** Drag-to-reorder mode; only reachable from starred and category views. */
   reorderMode: boolean;
   isOrderedView: () => boolean;
@@ -48,6 +59,11 @@ interface ClipboardState {
   selectCategory: (name: string | null) => void;
   expandItem: (id: number | null) => void;
   editItem: (id: number | null) => void;
+  composeItem: (on: boolean) => void;
+  createItem: (input: CreateItemInput) => Promise<void>;
+  openSettings: (on: boolean) => void;
+  loadSettings: () => Promise<void>;
+  setHotkey: (accelerator: string) => Promise<HotkeyResult>;
   toggleReorderMode: () => void;
   moveItem: (dragId: number, overId: number) => void;
   persistOrder: () => Promise<void>;
@@ -70,6 +86,9 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
   activeCategory: null,
   expandedId: null,
   editingId: null,
+  composing: false,
+  settingsOpen: false,
+  settings: null,
   reorderMode: false,
 
   isOrderedView() {
@@ -118,6 +137,31 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
 
   editItem(id) {
     set({ editingId: id });
+  },
+
+  composeItem(on) {
+    set({ composing: on });
+  },
+
+  async createItem(input) {
+    await window.copycat.createItem(input);
+    set({ composing: false });
+    await get().fetchItems();
+  },
+
+  openSettings(on) {
+    set({ settingsOpen: on });
+    if (on && !get().settings) void get().loadSettings();
+  },
+
+  async loadSettings() {
+    set({ settings: await window.copycat.getSettings() });
+  },
+
+  async setHotkey(accelerator) {
+    const result = await window.copycat.setHotkey(accelerator);
+    if (result.ok) set({ settings: { ...(get().settings ?? { hotkey: accelerator }), hotkey: accelerator } });
+    return result;
   },
 
   toggleReorderMode() {

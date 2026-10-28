@@ -1,4 +1,11 @@
-import type { ClipboardItem, GetItemsQuery, UpdateItemInput } from '../../shared/types';
+import type {
+  AppSettings,
+  ClipboardItem,
+  CreateItemInput,
+  GetItemsQuery,
+  HotkeyResult,
+  UpdateItemInput,
+} from '../../shared/types';
 import type { ItemsRepo } from '../storage/items-repo';
 import type { TagsRepo } from '../storage/tags-repo';
 
@@ -7,6 +14,8 @@ export interface IpcDeps {
   tagsRepo: TagsRepo;
   copyToClipboard: (item: ClipboardItem) => void;
   pasteActive: (item: ClipboardItem) => void;
+  readSettings: () => AppSettings;
+  applyHotkey: (accelerator: string) => HotkeyResult;
 }
 
 export async function handleGetItems(
@@ -14,6 +23,31 @@ export async function handleGetItems(
   query: GetItemsQuery,
 ): Promise<ClipboardItem[]> {
   return deps.itemsRepo.getItems(query);
+}
+
+export async function handleCreateItem(
+  deps: IpcDeps,
+  input: CreateItemInput,
+): Promise<ClipboardItem> {
+  const item = deps.itemsRepo.insertItem({
+    type: 'text',
+    content: input.content,
+    sourceApp: null,
+  });
+  if (input.title) deps.itemsRepo.updateItem(item.id, { title: input.title });
+  for (const tag of input.tags) deps.tagsRepo.addTagToItem(item.id, tag);
+  return deps.itemsRepo.getById(item.id) ?? item;
+}
+
+export async function handleGetSettings(deps: IpcDeps): Promise<AppSettings> {
+  return deps.readSettings();
+}
+
+export async function handleSetHotkey(
+  deps: IpcDeps,
+  accelerator: string,
+): Promise<HotkeyResult> {
+  return deps.applyHotkey(accelerator);
 }
 
 export async function handleCopyItem(deps: IpcDeps, id: number): Promise<void> {

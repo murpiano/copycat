@@ -25,6 +25,7 @@ interface SidebarProps {
   onNavChange: (nav: NavKey) => void;
   onCategorySelect: (name: string) => void;
   onCategoryAdd: (name: string) => void;
+  onSettingsOpen: () => void;
 }
 
 export function Sidebar({
@@ -34,6 +35,7 @@ export function Sidebar({
   onNavChange,
   onCategorySelect,
   onCategoryAdd,
+  onSettingsOpen,
 }: SidebarProps) {
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const [draft, setDraft] = useState<string | null>(null);
@@ -47,7 +49,7 @@ export function Sidebar({
     <div className="sidebar">
       <div className="sidebar-head">
         <span className="sidebar-title">CopyCat</span>
-        <button className="icon-button" aria-label="Настройки">
+        <button className="icon-button" aria-label="Настройки" onClick={onSettingsOpen}>
           <SettingsIcon size={17} />
         </button>
       </div>

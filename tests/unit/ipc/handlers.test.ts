@@ -12,6 +12,9 @@ import {
   handleUpdateItem,
   handleReorderItems,
   handleDeleteItem,
+  handleCreateItem,
+  handleGetSettings,
+  handleSetHotkey,
   type IpcDeps,
 } from '../../../src/main/ipc/handlers';
 
@@ -21,13 +24,19 @@ function setup() {
   const itemsRepo = createItemsRepo(db, tagsRepo);
   const copied: unknown[] = [];
   const pasted: unknown[] = [];
+  const applied: string[] = [];
   const deps: IpcDeps = {
     itemsRepo,
     tagsRepo,
     copyToClipboard: (item) => copied.push(item),
     pasteActive: (item) => pasted.push(item),
+    readSettings: () => ({ hotkey: 'CommandOrControl+Shift+V' }),
+    applyHotkey: (accelerator) => {
+      applied.push(accelerator);
+      return { ok: true };
+    },
   };
-  return { deps, itemsRepo, copied, pasted };
+  return { deps, itemsRepo, copied, pasted, applied };
 }
 
 describe('ipc handlers', () => {
@@ -96,5 +105,28 @@ describe('ipc handlers', () => {
     expect(itemsRepo.getById(first.id)).toMatchObject({ title: 'named', content: 'edited' });
     await handleReorderItems(deps, [second.id, first.id]);
     expect(itemsRepo.getItems({ ordered: true }).map((i) => i.id)).toEqual([second.id, first.id]);
+  });
+
+  it('create-item stores a hand-written card with its title and tags', async () => {
+    const { deps, itemsRepo } = setup();
+    const created = await handleCreateItem(deps, {
+      title: 'Шаблон письма',
+      content: 'Здравствуйте,',
+      tags: ['Работа'],
+    });
+    expect(created).toMatchObject({
+      type: 'text',
+      title: 'Шаблон письма',
+      content: 'Здравствуйте,',
+    });
+    expect(created.tags).toEqual(['работа']);
+    expect(itemsRepo.getItems({}).map((i) => i.id)).toContain(created.id);
+  });
+
+  it('get-settings and set-hotkey go through to the host', async () => {
+    const { deps, applied } = setup();
+    expect(await handleGetSettings(deps)).toEqual({ hotkey: 'CommandOrControl+Shift+V' });
+    expect(await handleSetHotkey(deps, 'Alt+Space')).toEqual({ ok: true });
+    expect(applied).toEqual(['Alt+Space']);
   });
 });

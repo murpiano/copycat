@@ -12,6 +12,7 @@ function renderSidebar(overrides: Partial<Parameters<typeof Sidebar>[0]> = {}) {
     onNavChange: jest.fn(),
     onCategorySelect: jest.fn(),
     onCategoryAdd: jest.fn(),
+    onSettingsOpen: jest.fn(),
     ...overrides,
   };
   render(<Sidebar {...props} />);
