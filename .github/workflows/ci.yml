@@ -1,0 +1,32 @@
+name: ci
+
+# kysaro only reads commit messages, so without this nothing stops code that
+# does not compile from reaching master.
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # 22, not 24: better-sqlite3 ships a prebuilt binary for this ABI,
+          # so npm ci needs no C++ toolchain.
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run typecheck
+
+      - run: npm test
+
+      # Packaging is what the release workflow does with these bundles; a
+      # broken build must fail here, not at tag time.
+      - run: npm run build
