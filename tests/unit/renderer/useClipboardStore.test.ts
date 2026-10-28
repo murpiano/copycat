@@ -91,4 +91,35 @@ describe('useClipboardStore', () => {
     await useClipboardStore.getState().copyItem(42);
     expect(api.copyItem).toHaveBeenCalledWith(42);
   });
+
+  it('shows everything in a category, ignoring the nav tab filter', async () => {
+    const api = installFakeApi();
+    await act(async () => {
+      useClipboardStore.getState().setNav('images');
+      await Promise.resolve();
+    });
+    await act(async () => {
+      useClipboardStore.getState().selectCategory('работа');
+      await Promise.resolve();
+    });
+    const query = (api.getItems as jest.Mock).mock.calls.at(-1)![0];
+    expect(query.tags).toEqual(['работа']);
+    expect(query.type).toBeUndefined();
+    expect(query.onlyStarred).toBeUndefined();
+  });
+
+  it('drops the category when a nav tab is chosen', async () => {
+    const api = installFakeApi();
+    await act(async () => {
+      useClipboardStore.getState().selectCategory('работа');
+      await Promise.resolve();
+    });
+    await act(async () => {
+      useClipboardStore.getState().setNav('files');
+      await Promise.resolve();
+    });
+    const query = (api.getItems as jest.Mock).mock.calls.at(-1)![0];
+    expect(query.tags).toBeUndefined();
+    expect(query.type).toBe('file');
+  });
 });

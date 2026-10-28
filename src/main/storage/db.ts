@@ -54,5 +54,16 @@ export function createDb(dbPath: string): Database.Database {
   db.pragma('foreign_keys = ON');
   db.exec(SCHEMA);
   migrate(db);
+  registerUnicodeLower(db);
   return db;
+}
+
+/**
+ * SQLite's own LOWER() and LIKE fold ASCII only, so a search for "боевой"
+ * would miss "Боевой". JavaScript knows the full Unicode case map.
+ */
+function registerUnicodeLower(db: Database.Database): void {
+  db.function('lower_unicode', { deterministic: true }, (value: unknown) =>
+    typeof value === 'string' ? value.toLowerCase() : null,
+  );
 }

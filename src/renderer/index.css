@@ -30,6 +30,19 @@
   box-sizing: border-box;
 }
 
+/* Nothing is selectable by default: dragging across the sidebar or a card's
+   header used to smear a blue highlight over labels nobody wants to copy.
+   The places that hold real content opt back in below. */
+body {
+  user-select: none;
+}
+
+/* Form fields stay selectable: editing their text requires it. */
+input,
+textarea {
+  user-select: text;
+}
+
 html,
 body,
 #root {
@@ -212,6 +225,13 @@ button:disabled {
   border: none;
   background: transparent;
   color: var(--text-faint);
+}
+
+/* The chevron lights up with the label: they are one row to the eye, so
+   highlighting only the word looks like the arrow is dead. */
+.nav-row:hover .nav-chevron,
+.nav-row-main:hover ~ .nav-chevron {
+  color: var(--text);
 }
 
 /* The glyph spins, not the button: rotating the padded button itself would
@@ -631,11 +651,21 @@ button:disabled {
   line-height: 1.5;
   color: #b6c0d1;
   word-break: break-word;
-  cursor: text;
+  /* The preview keeps the line breaks the full text has, so a snippet looks
+     the same clamped as it does expanded. */
+  white-space: pre-wrap;
+  /* Pointer by default — the card is one big button. The caret appears only
+     once a selection actually starts (.selecting, set on selectstart). */
+  cursor: pointer;
   /* Partial copy by hand must keep working, so the text stays selectable. */
   user-select: text;
   border-radius: 6px;
   transition: color 110ms ease;
+}
+
+.item-card-content.selecting,
+.popup-content.selecting {
+  cursor: text;
 }
 
 .item-card-content:hover {

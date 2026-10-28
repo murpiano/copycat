@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import type { ClipboardItem } from '../../shared/types';
 import { KIND_LABEL, badgeIcon, formatAge } from './ItemCard';
 import { CloseIcon, CopyIcon, PencilIcon } from './icons';
+import { useSelectionCursor } from '../useSelectionCursor';
 
 interface ItemPopupProps {
   item: ClipboardItem;
@@ -11,6 +12,8 @@ interface ItemPopupProps {
 }
 
 export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
+  const { selecting, ref: contentRef } = useSelectionCursor<HTMLDivElement>();
+
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
       if (event.key === 'Escape') onClose();
@@ -63,7 +66,12 @@ export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
             <img src={`file://${item.content}`} alt="clipboard preview" />
           </div>
         ) : (
-          <div className="popup-content">{item.content}</div>
+          <div
+            ref={contentRef}
+            className={selecting ? 'popup-content selecting' : 'popup-content'}
+          >
+            {item.content}
+          </div>
         )}
 
         {item.tags.length > 0 && (
