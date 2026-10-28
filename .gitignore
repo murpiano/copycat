@@ -6,3 +6,4 @@ release/
 test-results/
 playwright-report/
 .kysaro/*.md
+raw/template*.png
