@@ -19,7 +19,9 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          # 22, not 24: better-sqlite3 ships a prebuilt binary for this ABI,
+          # so neither npm ci nor the Electron rebuild needs a C++ toolchain.
+          node-version: 22
           cache: npm
 
       - run: npm ci
