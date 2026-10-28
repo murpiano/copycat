@@ -11,6 +11,9 @@ publish:
   provider: github
   owner: murpiano
   repo: copycat
+  # Published outright, not as a draft: electron-updater cannot see drafts,
+  # so a drafted release would reach nobody until someone published it by hand.
+  releaseType: release
 win:
   target: nsis
   icon: resources/icon.png
