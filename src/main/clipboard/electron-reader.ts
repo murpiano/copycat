@@ -7,7 +7,13 @@ export class ElectronClipboardReader implements ClipboardReader {
   }
 
   hasImage(): boolean {
-    return !clipboard.readImage().isEmpty();
+    // Chromium's nativeImage decoder recognises the clipboard image formats
+    // it ships with, but some cross-OS clipboard bridges (e.g. Windows ->
+    // WSLg) advertise an image/* MIME type whose payload it fails to decode;
+    // readImage() then comes back empty and the capture would wrongly fall
+    // through to readText(), storing the raw bytes as garbled text.
+    if (!clipboard.readImage().isEmpty()) return true;
+    return clipboard.availableFormats().some((format) => format.startsWith('image/'));
   }
 
   readText(): string {

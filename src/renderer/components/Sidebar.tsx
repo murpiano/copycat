@@ -64,36 +64,39 @@ export function Sidebar({
           </button>
         ))}
 
-        <button
-          className="nav-item"
-          aria-expanded={categoriesOpen}
-          onClick={() => setCategoriesOpen((open) => !open)}
-        >
-          <TagIcon />
-          <span>Категории</span>
-          <span className={categoriesOpen ? 'nav-chevron open' : 'nav-chevron'}>
+        {/* A row, not one button: the "+" sits inside it and must stay its own
+            control, and HTML forbids nesting a button in a button. */}
+        <div className="nav-item nav-row">
+          <button
+            className="nav-row-main"
+            aria-expanded={categoriesOpen}
+            onClick={() => setCategoriesOpen((open) => !open)}
+          >
+            <TagIcon />
+            <span>Категории</span>
+          </button>
+          {categoriesOpen && (
+            <button
+              className="nav-row-add"
+              aria-label="Добавить категорию"
+              title="Добавить категорию"
+              onClick={() => setDraft('')}
+            >
+              <PlusIcon size={14} />
+            </button>
+          )}
+          <button
+            className={categoriesOpen ? 'nav-chevron open' : 'nav-chevron'}
+            aria-label={categoriesOpen ? 'Свернуть категории' : 'Развернуть категории'}
+            onClick={() => setCategoriesOpen((open) => !open)}
+          >
             <ChevronDownIcon size={14} />
-          </span>
-        </button>
+          </button>
+        </div>
 
         {categoriesOpen && (
           <div className="category-list">
-            {categories.map((name) => (
-              <button
-                key={name}
-                className={activeCategory === name ? 'category-item active' : 'category-item'}
-                onClick={() => onCategorySelect(name)}
-              >
-                <span>{name}</span>
-              </button>
-            ))}
-
-            {draft === null ? (
-              <button className="category-add" onClick={() => setDraft('')}>
-                <PlusIcon size={13} />
-                Добавить категорию
-              </button>
-            ) : (
+            {draft !== null && (
               <input
                 className="category-input"
                 autoFocus
@@ -107,6 +110,16 @@ export function Sidebar({
                 }}
               />
             )}
+
+            {categories.map((name) => (
+              <button
+                key={name}
+                className={activeCategory === name ? 'category-item active' : 'category-item'}
+                onClick={() => onCategorySelect(name)}
+              >
+                <span>{name}</span>
+              </button>
+            ))}
           </div>
         )}
       </nav>

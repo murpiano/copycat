@@ -8,6 +8,9 @@ import {
   handleToggleStar,
   handleAddTag,
   handleRemoveTag,
+  handleSetTags,
+  handleUpdateItem,
+  handleReorderItems,
   handleDeleteItem,
   type IpcDeps,
 } from '../../../src/main/ipc/handlers';
@@ -74,5 +77,24 @@ describe('ipc handlers', () => {
 
     await handleDeleteItem(deps, item.id);
     expect(itemsRepo.getById(item.id)).toBeNull();
+  });
+
+  it('set-tags replaces the whole tag set of an item', async () => {
+    const { deps, itemsRepo } = setup();
+    const item = itemsRepo.insertItem({ type: 'text', content: 'hello', sourceApp: null });
+    await handleSetTags(deps, item.id, ['Work', 'docs']);
+    expect(itemsRepo.getById(item.id)!.tags).toEqual(['docs', 'work']);
+    await handleSetTags(deps, item.id, ['docs']);
+    expect(itemsRepo.getById(item.id)!.tags).toEqual(['docs']);
+  });
+
+  it('update-item and reorder-items reach storage', async () => {
+    const { deps, itemsRepo } = setup();
+    const first = itemsRepo.insertItem({ type: 'text', content: 'a', sourceApp: null });
+    const second = itemsRepo.insertItem({ type: 'text', content: 'b', sourceApp: null });
+    await handleUpdateItem(deps, first.id, { title: 'named', content: 'edited' });
+    expect(itemsRepo.getById(first.id)).toMatchObject({ title: 'named', content: 'edited' });
+    await handleReorderItems(deps, [second.id, first.id]);
+    expect(itemsRepo.getItems({ ordered: true }).map((i) => i.id)).toEqual([second.id, first.id]);
   });
 });

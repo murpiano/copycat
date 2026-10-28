@@ -17,7 +17,12 @@ export function createMainWindow(): BrowserWindow {
   const win = new BrowserWindow({
     width: 900,
     height: 600,
-    frame: false,
+    minWidth: 600,
+    minHeight: 400,
+    // The overlay is frameless by design, but a frameless window under WSLg has
+    // no decoration the compositor can move or resize, so dev gets a real frame.
+    frame: DEV_WINDOW,
+    resizable: true,
     show: false,
     webPreferences: {
       preload: `${__dirname}/../preload/index.js`,
