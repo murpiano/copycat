@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { app, globalShortcut, ipcMain, Tray } from 'electron';
-import { createMainWindow, showWindow, toggleWindow, setQuitting } from './window';
+import { createMainWindow, showWindow, toggleWindow, setQuitting, DEV_WINDOW } from './window';
 import { createTray } from './tray';
 import { registerHotkey } from './hotkey';
 import { createDb } from './storage/db';
@@ -25,6 +25,7 @@ app.whenReady().then(() => {
   const itemsRepo = createItemsRepo(db, tagsRepo);
 
   const win = createMainWindow();
+  if (DEV_WINDOW) showWindow(win);
 
   const pipeline = createCapturePipeline({
     itemsRepo,

@@ -1,5 +1,10 @@
 import { BrowserWindow } from 'electron';
 
+// Escape hatch for compositors that never focus a new window (WSLg): the
+// blur-hide below would fire immediately and the overlay could never be seen.
+// Unset in real builds, where the overlay hides on blur as designed.
+export const DEV_WINDOW = process.env.COPYCAT_DEV_WINDOW === '1';
+
 // Set from the app's 'before-quit' handler so the close guard below lets a
 // real quit through instead of trapping the window in a hide loop forever.
 let isQuitting = false;
@@ -21,7 +26,7 @@ export function createMainWindow(): BrowserWindow {
   win.loadURL(
     process.env.ELECTRON_RENDERER_URL ?? `file://${__dirname}/../renderer/index.html`,
   );
-  win.on('blur', () => win.hide());
+  if (!DEV_WINDOW) win.on('blur', () => win.hide());
   win.on('close', (event) => {
     if (isQuitting) return;
     event.preventDefault();
