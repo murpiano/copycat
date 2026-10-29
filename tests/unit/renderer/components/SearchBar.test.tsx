@@ -13,4 +13,19 @@ describe('SearchBar', () => {
     });
     expect(onChange).toHaveBeenCalledWith('docker');
   });
+
+  it('takes focus on mount and again when the window is raised', () => {
+    render(<SearchBar value="" onChange={() => {}} />);
+    const input = screen.getByPlaceholderText('Поиск по буферу обмена...');
+    expect(input).toHaveFocus();
+
+    // Move focus away the way another control would, then raise the window.
+    const elsewhere = document.createElement('input');
+    document.body.appendChild(elsewhere);
+    elsewhere.focus();
+    expect(input).not.toHaveFocus();
+
+    fireEvent.focus(window);
+    expect(input).toHaveFocus();
+  });
 });

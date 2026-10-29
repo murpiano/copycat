@@ -51,9 +51,11 @@ export function ItemCard({
 }: ItemCardProps) {
   const { selecting, ref: contentRef } = useSelectionCursor<HTMLDivElement>();
 
-  // The whole card opens the popup, not just its text, so there is no dead
-  // area inside it. A click that ends a text selection means the user is
-  // copying an excerpt by hand, so it must not open the popup over it.
+  // The whole card opens the popup, so there is no dead area inside it. A
+  // click that leaves text highlighted is the end of picking an excerpt and
+  // must not open anything. A later click clears that highlight first (see
+  // useSelectionDismiss), so by this point the selection is empty again and
+  // the card opens as any click would.
   function handleCardClick() {
     if (reorderMode) return;
     if (window.getSelection()?.toString()) return;

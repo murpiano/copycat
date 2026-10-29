@@ -47,8 +47,9 @@ describe('ItemCard', () => {
     expect(onExpand).toHaveBeenCalledWith(1);
   });
 
-  it('keeps the popup closed while the user is selecting text to copy', () => {
+  it('ignores the click that finishes picking an excerpt', () => {
     const onExpand = jest.fn();
+    // The click that ends a drag still has the excerpt highlighted.
     jest
       .spyOn(window, 'getSelection')
       .mockReturnValue({ toString: () => 'hello' } as unknown as Selection);
@@ -56,6 +57,15 @@ describe('ItemCard', () => {
     fireEvent.click(screen.getByText('hello world'));
     expect(onExpand).not.toHaveBeenCalled();
     jest.restoreAllMocks();
+  });
+
+  it('opens on a later click, once the highlight has been dropped', () => {
+    const onExpand = jest.fn();
+    // useSelectionDismiss clears the highlight on that press, so by click
+    // time the selection is empty again.
+    render(<ItemCard {...noopHandlers} item={item} onExpand={onExpand} />);
+    fireEvent.click(screen.getByText('hello world'));
+    expect(onExpand).toHaveBeenCalledWith(1);
   });
 
   it('expands from anywhere on the card, not just its text', () => {

@@ -6,6 +6,7 @@ import { ItemGrid } from './components/ItemGrid';
 import { ItemPopup } from './components/ItemPopup';
 import { ItemEditDialog } from './components/ItemEditDialog';
 import { SettingsDialog } from './components/SettingsDialog';
+import { useSelectionDismiss } from './useSelectionDismiss';
 
 export function App() {
   const {
@@ -42,6 +43,8 @@ export function App() {
     deleteItem,
     subscribeToNewItems,
   } = useClipboardStore();
+
+  useSelectionDismiss();
 
   useEffect(() => {
     void fetchItems();

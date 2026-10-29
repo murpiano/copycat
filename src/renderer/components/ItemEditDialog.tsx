@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { ClipboardItem } from '../../shared/types';
 import { KIND_LABEL } from './ItemCard';
 import { CloseIcon, PlusIcon } from './icons';
+import { Overlay } from './Overlay';
 
 interface ItemEditDialogProps {
   /** The card being edited, or null while composing a new one. */
@@ -57,12 +58,11 @@ export function ItemEditDialog({
   }
 
   return (
-    <div className="overlay" onClick={onClose}>
+    <Overlay onClose={onClose}>
       <div
         className="popup edit-dialog"
         role="dialog"
         aria-label={item ? 'Редактирование' : 'Новый блок'}
-        onClick={(e) => e.stopPropagation()}
       >
         <div className="popup-head">
           <div className="popup-title">{item ? 'Редактирование' : 'Новый блок'}</div>
@@ -147,6 +147,6 @@ export function ItemEditDialog({
           </button>
         </div>
       </div>
-    </div>
+    </Overlay>
   );
 }
