@@ -3,6 +3,7 @@ import type { ClipboardItem } from '../../shared/types';
 import { KIND_LABEL, badgeIcon, formatAge } from './ItemCard';
 import { CloseIcon, CopyIcon, PencilIcon } from './icons';
 import { useSelectionCursor } from '../useSelectionCursor';
+import { Overlay } from './Overlay';
 
 interface ItemPopupProps {
   item: ClipboardItem;
@@ -23,13 +24,12 @@ export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
   }, [onClose]);
 
   return (
-    <div className="overlay" onClick={onClose}>
+    <Overlay onClose={onClose}>
       <div
         className="popup"
         data-type={item.type}
         role="dialog"
         aria-label="Содержимое"
-        onClick={(e) => e.stopPropagation()}
       >
         <div className="popup-head">
           <div className="item-card-badge static">{badgeIcon(item.type, 15)}</div>
@@ -84,6 +84,6 @@ export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
           </div>
         )}
       </div>
-    </div>
+    </Overlay>
   );
 }

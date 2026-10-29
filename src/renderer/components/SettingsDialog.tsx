@@ -1,6 +1,7 @@
 import { useEffect, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import type { AppSettings } from '../../shared/types';
 import { CloseIcon } from './icons';
+import { Overlay } from './Overlay';
 
 /** Modifiers alone are not a shortcut; the field waits for a real key. */
 const MODIFIER_KEYS = new Set(['Control', 'Alt', 'Shift', 'Meta']);
@@ -91,12 +92,11 @@ export function SettingsDialog({ settings, onClose, onHotkeyChange }: SettingsDi
   }
 
   return (
-    <div className="overlay" onClick={onClose}>
+    <Overlay onClose={onClose}>
       <div
         className="popup settings-dialog"
         role="dialog"
         aria-label="Настройки"
-        onClick={(e) => e.stopPropagation()}
       >
         <div className="popup-head">
           <div className="popup-title">Настройки</div>
@@ -140,6 +140,6 @@ export function SettingsDialog({ settings, onClose, onHotkeyChange }: SettingsDi
           </button>
         </div>
       </div>
-    </div>
+    </Overlay>
   );
 }
