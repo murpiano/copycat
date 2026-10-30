@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type DragEvent } from 'react';
+import appIcon from '../assets/icon.png';
 import type { NavKey, SidebarEntry } from '../store/useClipboardStore';
 import {
   CheckIcon,
@@ -202,7 +203,10 @@ export function Sidebar({
   return (
     <div className={reorderMode ? 'sidebar reordering' : 'sidebar'}>
       <div className="sidebar-head">
-        <span className="sidebar-title">CopyCat</span>
+        <div className="sidebar-title-group">
+          <img className="sidebar-logo" src={appIcon} alt="" />
+          <span className="sidebar-title">CopyCat</span>
+        </div>
         {reorderMode ? (
           <div className="sidebar-head-actions">
             <button

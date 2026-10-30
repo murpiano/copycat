@@ -1,5 +1,8 @@
 import { BrowserWindow, screen } from 'electron';
+import path from 'node:path';
 import type { WindowBounds } from '../shared/types';
+
+const ICON_PATH = path.join(__dirname, '../../resources/icon.png');
 
 // Escape hatch for compositors that never focus a new window (WSLg): the
 // blur-hide below would fire immediately and the overlay could never be seen.
@@ -48,6 +51,7 @@ export function createMainWindow({ bounds, onBoundsChange }: MainWindowOptions):
     frame: DEV_WINDOW,
     resizable: true,
     show: false,
+    icon: ICON_PATH,
     webPreferences: {
       preload: `${__dirname}/../preload/index.js`,
     },
