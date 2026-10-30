@@ -23,6 +23,7 @@ export function App() {
     settingsOpen,
     settings,
     reorderMode,
+    itemOrderDirty,
     navReorderMode,
     navOrderDirty,
     isOrderedView,
@@ -58,6 +59,7 @@ export function App() {
   } = useClipboardStore();
 
   const [askNavOrder, setAskNavOrder] = useState(false);
+  const [askItemOrder, setAskItemOrder] = useState(false);
 
   useSelectionDismiss();
 
@@ -74,7 +76,7 @@ export function App() {
     function onKey(event: KeyboardEvent) {
       if (event.key !== 'Escape') return;
       if (expandedId !== null || editingId !== null || composing || settingsOpen) return;
-      if (askNavOrder) return;
+      if (askNavOrder || askItemOrder) return;
 
       if (navReorderMode) {
         if (navOrderDirty) setAskNavOrder(true);
@@ -82,7 +84,10 @@ export function App() {
         return;
       }
       if (reorderMode) {
-        toggleReorderMode();
+        // Each drag already wrote its new position to storage, so leaving
+        // without a choice would silently keep an accidental rearrangement.
+        if (itemOrderDirty) setAskItemOrder(true);
+        else toggleReorderMode();
         return;
       }
       void hideWindow();
@@ -97,7 +102,9 @@ export function App() {
     navReorderMode,
     navOrderDirty,
     reorderMode,
+    itemOrderDirty,
     askNavOrder,
+    askItemOrder,
   ]);
 
   const expanded = items.find((item) => item.id === expandedId) ?? null;
@@ -219,6 +226,23 @@ export function App() {
           onCancel={() => {
             setAskNavOrder(false);
             cancelNavOrder();
+          }}
+        />
+      )}
+
+      {askItemOrder && (
+        <ConfirmDialog
+          title="Порядок блоков изменён"
+          message="Сохранить новый порядок блоков или вернуть прежний?"
+          confirmLabel="Сохранить"
+          cancelLabel="Отменить изменения"
+          onConfirm={() => {
+            setAskItemOrder(false);
+            toggleReorderMode();
+          }}
+          onCancel={() => {
+            setAskItemOrder(false);
+            void cancelItemReorder();
           }}
         />
       )}
