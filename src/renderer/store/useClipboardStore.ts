@@ -62,6 +62,7 @@ interface ClipboardState {
   reorderMode: boolean;
   /** Card order as it stood before this reorder session, for Cancel. */
   itemOrderSnapshot: number[] | null;
+  itemOrderDirty: boolean;
   isOrderedView: () => boolean;
   fetchItems: () => Promise<void>;
   setSearch: (value: string) => void;
@@ -113,6 +114,7 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
   navOrderDirty: false,
   reorderMode: false,
   itemOrderSnapshot: null,
+  itemOrderDirty: false,
 
   isOrderedView() {
     const { nav, activeCategory } = get();
@@ -255,12 +257,13 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
       // Snapshot only on entry: each drag already commits to storage, so
       // Cancel needs the order from before this session to undo them.
       itemOrderSnapshot: entering ? get().items.map((item) => item.id) : null,
+      itemOrderDirty: false,
     });
   },
 
   async cancelItemReorder() {
     const snapshot = get().itemOrderSnapshot;
-    set({ reorderMode: false, itemOrderSnapshot: null });
+    set({ reorderMode: false, itemOrderSnapshot: null, itemOrderDirty: false });
     if (!snapshot) return;
     await window.copycat.reorderItems(snapshot);
     await get().fetchItems();
@@ -274,7 +277,7 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
     if (from === -1 || to === -1) return;
     const [moved] = items.splice(from, 1);
     items.splice(to, 0, moved);
-    set({ items });
+    set({ items, itemOrderDirty: true });
   },
 
   async persistOrder() {

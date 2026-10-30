@@ -204,4 +204,42 @@ describe('useClipboardStore', () => {
     ]);
     expect(useClipboardStore.getState().navReorderMode).toBe(false);
   });
+
+  it('flags the card order dirty only once it actually changes', async () => {
+    const api = installFakeApi({
+      getItems: jest.fn().mockResolvedValue([fakeItem({ id: 1 }), fakeItem({ id: 2 })]),
+    });
+    await act(async () => {
+      useClipboardStore.getState().setNav('starred');
+      await useClipboardStore.getState().fetchItems();
+    });
+
+    act(() => useClipboardStore.getState().toggleReorderMode());
+    expect(useClipboardStore.getState().itemOrderDirty).toBe(false);
+
+    act(() => useClipboardStore.getState().moveItem(2, 1));
+    expect(useClipboardStore.getState().items.map((item) => item.id)).toEqual([2, 1]);
+    expect(useClipboardStore.getState().itemOrderDirty).toBe(true);
+    expect(api.reorderItems).not.toHaveBeenCalled();
+  });
+
+  it('restores the original card order when the arrangement is cancelled', async () => {
+    const api = installFakeApi({
+      getItems: jest.fn().mockResolvedValue([fakeItem({ id: 1 }), fakeItem({ id: 2 })]),
+    });
+    await act(async () => {
+      useClipboardStore.getState().setNav('starred');
+      await useClipboardStore.getState().fetchItems();
+    });
+
+    act(() => useClipboardStore.getState().toggleReorderMode());
+    act(() => useClipboardStore.getState().moveItem(2, 1));
+
+    await act(async () => {
+      await useClipboardStore.getState().cancelItemReorder();
+    });
+    expect(api.reorderItems).toHaveBeenCalledWith([1, 2]);
+    expect(useClipboardStore.getState().reorderMode).toBe(false);
+    expect(useClipboardStore.getState().itemOrderDirty).toBe(false);
+  });
 });
