@@ -1,6 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { AppSettings, NavKey, UpdateSettingsInput, WindowBounds } from '../shared/types';
+import type {
+  AppSettings,
+  SidebarEntry,
+  UpdateSettingsInput,
+  WindowBounds,
+} from '../shared/types';
 import { DEFAULT_HOTKEY, DEFAULT_NAV_ORDER } from '../shared/config';
 
 export interface SettingsStore {
@@ -19,9 +24,11 @@ function defaults(): AppSettings {
 }
 
 /** Keeps every known entry exactly once, whatever the stored list looks like. */
-function sanitizeNavOrder(value: unknown): NavKey[] {
-  const known = new Set<NavKey>(DEFAULT_NAV_ORDER);
-  const stored = Array.isArray(value) ? value.filter((key): key is NavKey => known.has(key)) : [];
+function sanitizeNavOrder(value: unknown): SidebarEntry[] {
+  const known = new Set<SidebarEntry>(DEFAULT_NAV_ORDER);
+  const stored = Array.isArray(value)
+    ? value.filter((key): key is SidebarEntry => known.has(key))
+    : [];
   const seen = new Set(stored);
   return [...new Set(stored), ...DEFAULT_NAV_ORDER.filter((key) => !seen.has(key))];
 }

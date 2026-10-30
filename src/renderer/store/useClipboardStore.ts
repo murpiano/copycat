@@ -6,12 +6,13 @@ import type {
   HotkeyResult,
   ItemType,
   NavKey,
+  SidebarEntry,
   UpdateItemInput,
   UpdateSettingsInput,
 } from '../../shared/types';
 import { DEFAULT_NAV_ORDER } from '../../shared/config';
 
-export type { NavKey };
+export type { NavKey, SidebarEntry };
 
 const NAV_TYPE: Partial<Record<NavKey, ItemType>> = {
   images: 'image',
@@ -55,10 +56,12 @@ interface ClipboardState {
   /** Sidebar drag-to-reorder; the rest of the UI is inert while it runs. */
   navReorderMode: boolean;
   /** Draft order held while dragging, written out only when the user confirms. */
-  navOrder: NavKey[];
+  navOrder: SidebarEntry[];
   navOrderDirty: boolean;
   /** Drag-to-reorder mode; only reachable from starred and category views. */
   reorderMode: boolean;
+  /** Card order as it stood before this reorder session, for Cancel. */
+  itemOrderSnapshot: number[] | null;
   isOrderedView: () => boolean;
   fetchItems: () => Promise<void>;
   setSearch: (value: string) => void;
@@ -74,12 +77,13 @@ interface ClipboardState {
   setHotkey: (accelerator: string) => Promise<HotkeyResult>;
   updateSettings: (input: UpdateSettingsInput) => Promise<void>;
   startNavReorder: () => void;
-  moveNav: (dragKey: NavKey, overKey: NavKey) => void;
+  moveNav: (dragKey: SidebarEntry, overKey: SidebarEntry) => void;
   moveCategory: (dragName: string, overName: string) => void;
   commitNavOrder: () => Promise<void>;
   cancelNavOrder: () => void;
   hideWindow: () => Promise<void>;
   toggleReorderMode: () => void;
+  cancelItemReorder: () => Promise<void>;
   moveItem: (dragId: number, overId: number) => void;
   persistOrder: () => Promise<void>;
   copyItem: (id: number) => Promise<void>;
@@ -108,6 +112,7 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
   navOrder: [...DEFAULT_NAV_ORDER],
   navOrderDirty: false,
   reorderMode: false,
+  itemOrderSnapshot: null,
 
   isOrderedView() {
     const { nav, activeCategory } = get();
@@ -244,7 +249,21 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
 
   toggleReorderMode() {
     if (!get().isOrderedView()) return;
-    set({ reorderMode: !get().reorderMode });
+    const entering = !get().reorderMode;
+    set({
+      reorderMode: entering,
+      // Snapshot only on entry: each drag already commits to storage, so
+      // Cancel needs the order from before this session to undo them.
+      itemOrderSnapshot: entering ? get().items.map((item) => item.id) : null,
+    });
+  },
+
+  async cancelItemReorder() {
+    const snapshot = get().itemOrderSnapshot;
+    set({ reorderMode: false, itemOrderSnapshot: null });
+    if (!snapshot) return;
+    await window.copycat.reorderItems(snapshot);
+    await get().fetchItems();
   },
 
   moveItem(dragId, overId) {

@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import type { ClipboardItem } from '../../shared/types';
 import { ItemCard } from './ItemCard';
-import { CheckIcon, PencilIcon, PlusIcon } from './icons';
+import { CheckIcon, CloseIcon, PencilIcon, PlusIcon } from './icons';
 
 interface ItemGridProps {
   items: ClipboardItem[];
@@ -9,6 +9,7 @@ interface ItemGridProps {
   /** Starred and category views can be reordered; the history view cannot. */
   canReorder: boolean;
   onToggleReorder: () => void;
+  onCancelReorder: () => void;
   onCompose: () => void;
   onCopy: (id: number) => void;
   onToggleStar: (id: number) => void;
@@ -24,6 +25,7 @@ export function ItemGrid({
   reorderMode,
   canReorder,
   onToggleReorder,
+  onCancelReorder,
   onCompose,
   onCopy,
   onToggleStar,
@@ -60,14 +62,17 @@ export function ItemGrid({
             <span>{reorderMode ? 'Готово' : 'Порядок'}</span>
           </button>
         )}
-        <button
-          className="grid-reorder-toggle"
-          title="Создать блок"
-          onClick={onCompose}
-        >
-          <PlusIcon size={15} />
-          <span>Блок</span>
-        </button>
+        {reorderMode ? (
+          <button className="grid-reorder-toggle" title="Отменить" onClick={onCancelReorder}>
+            <CloseIcon size={15} />
+            <span>Отмена</span>
+          </button>
+        ) : (
+          <button className="grid-reorder-toggle" title="Создать блок" onClick={onCompose}>
+            <PlusIcon size={15} />
+            <span>Блок</span>
+          </button>
+        )}
       </div>
 
       {items.length === 0 ? (

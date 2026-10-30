@@ -118,6 +118,13 @@ button:disabled {
   color: var(--accent-text);
 }
 
+.sidebar-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  -webkit-app-region: no-drag;
+}
+
 .sidebar-title {
   font-size: 18px;
   font-weight: 700;

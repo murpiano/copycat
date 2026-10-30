@@ -31,7 +31,7 @@ describe('settings-store', () => {
       categoriesExpanded: true,
     });
     const stored = createSettingsStore(file).get();
-    expect(stored.navOrder).toEqual(['files', 'history', 'starred', 'images']);
+    expect(stored.navOrder).toEqual(['files', 'history', 'starred', 'images', 'categories']);
     expect(stored.categoriesExpanded).toBe(true);
   });
 
@@ -46,6 +46,7 @@ describe('settings-store', () => {
       'history',
       'starred',
       'images',
+      'categories',
     ]);
   });
 
