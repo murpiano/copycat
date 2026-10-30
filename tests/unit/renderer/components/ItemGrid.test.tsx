@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { ItemGrid } from '../../../../src/renderer/components/ItemGrid';
 import type { ClipboardItem } from '../../../../src/shared/types';
 
@@ -23,6 +23,7 @@ function makeItem(id: number): ClipboardItem {
 const handlers = {
   reorderMode: false,
   onToggleReorder: () => {},
+  onCancelReorder: () => {},
   onCompose: () => {},
   onCopy: () => {},
   onToggleStar: () => {},
@@ -47,5 +48,21 @@ describe('ItemGrid', () => {
   it('always offers creating a block', () => {
     render(<ItemGrid {...handlers} items={[]} canReorder={false} />);
     expect(screen.getByTitle('Создать блок')).toBeInTheDocument();
+  });
+
+  it('swaps the create-block button for Отмена while reordering', () => {
+    const onCancelReorder = jest.fn();
+    render(
+      <ItemGrid
+        {...handlers}
+        onCancelReorder={onCancelReorder}
+        items={[makeItem(1), makeItem(2)]}
+        canReorder
+        reorderMode
+      />,
+    );
+    expect(screen.queryByTitle('Создать блок')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTitle('Отменить'));
+    expect(onCancelReorder).toHaveBeenCalled();
   });
 });

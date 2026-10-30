@@ -38,6 +38,10 @@ export interface CreateItemInput {
 
 export type NavKey = 'history' | 'starred' | 'images' | 'files';
 
+/** A sidebar row: the four nav tabs, plus the "Категории" entry itself,
+ * which can be dragged anywhere among them like any other row. */
+export type SidebarEntry = NavKey | 'categories';
+
 export interface WindowBounds {
   x: number;
   y: number;
@@ -51,7 +55,7 @@ export interface AppSettings {
   /** Opens the sidebar's category selector on start instead of collapsed. */
   categoriesExpanded: boolean;
   /** Sidebar entries in the order the user dragged them into. */
-  navOrder: NavKey[];
+  navOrder: SidebarEntry[];
   /** Where the window was left, so it comes back there after a restart. */
   windowBounds: WindowBounds | null;
 }

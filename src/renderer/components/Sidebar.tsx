@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type DragEvent } from 'react';
-import type { NavKey } from '../store/useClipboardStore';
+import type { NavKey, SidebarEntry } from '../store/useClipboardStore';
 import {
   CheckIcon,
   ChevronDownIcon,
+  CloseIcon,
   FileIcon,
   FolderIcon,
   ImageIcon,
@@ -21,7 +22,7 @@ const NAV_ITEMS: Record<NavKey, { label: string; icon: JSX.Element }> = {
 
 interface SidebarProps {
   nav: NavKey;
-  navOrder: NavKey[];
+  navOrder: SidebarEntry[];
   categories: string[];
   activeCategory: string | null;
   /** Opens the category selector on start, per the matching setting. */
@@ -31,9 +32,10 @@ interface SidebarProps {
   onCategorySelect: (name: string) => void;
   onCategoryAdd: (name: string) => void;
   onSettingsOpen: () => void;
-  onNavMove: (dragKey: NavKey, overKey: NavKey) => void;
+  onNavMove: (dragKey: SidebarEntry, overKey: SidebarEntry) => void;
   onCategoryMove: (dragName: string, overName: string) => void;
   onReorderDone: () => void;
+  onReorderCancel: () => void;
 }
 
 export function Sidebar({
@@ -50,6 +52,7 @@ export function Sidebar({
   onNavMove,
   onCategoryMove,
   onReorderDone,
+  onReorderCancel,
 }: SidebarProps) {
   const [categoriesOpen, setCategoriesOpen] = useState(categoriesExpanded);
   const [draft, setDraft] = useState<string | null>(null);
@@ -69,67 +72,65 @@ export function Sidebar({
     setDraft(null);
   }
 
-  function dragOver(kind: 'nav' | 'category', id: string) {
-    return (event: DragEvent<HTMLElement>) => {
-      if (!reorderMode || dragged.current?.kind !== kind) return;
-      event.preventDefault();
-      if (kind === 'nav') onNavMove(dragged.current.id as NavKey, id as NavKey);
-      else onCategoryMove(dragged.current.id, id);
+  function navDragProps(key: SidebarEntry) {
+    return {
+      draggable: reorderMode,
+      onDragStart: () => {
+        dragged.current = { kind: 'nav', id: key };
+      },
+      onDragOver: (event: DragEvent<HTMLElement>) => {
+        if (!reorderMode || dragged.current?.kind !== 'nav') return;
+        event.preventDefault();
+        onNavMove(dragged.current.id as SidebarEntry, key);
+      },
+      onDragEnd: () => {
+        dragged.current = null;
+      },
     };
   }
 
-  return (
-    <div className={reorderMode ? 'sidebar reordering' : 'sidebar'}>
-      <div className="sidebar-head">
-        <span className="sidebar-title">CopyCat</span>
-        {reorderMode ? (
-          <button
-            className="icon-button done"
-            aria-label="Готово"
-            title="Готово"
-            onClick={onReorderDone}
-          >
-            <CheckIcon size={17} />
-          </button>
-        ) : (
-          <button className="icon-button" aria-label="Настройки" onClick={onSettingsOpen}>
-            <SettingsIcon size={17} />
-          </button>
-        )}
-      </div>
+  function categoryDragOver(name: string) {
+    return (event: DragEvent<HTMLElement>) => {
+      if (!reorderMode || dragged.current?.kind !== 'category') return;
+      event.preventDefault();
+      onCategoryMove(dragged.current.id, name);
+    };
+  }
 
-      <nav className="sidebar-nav">
-        {navOrder.map((key) => (
-          <button
-            key={key}
-            className={[
-              nav === key && !activeCategory ? 'nav-item active' : 'nav-item',
-              reorderMode ? 'jiggle' : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
-            draggable={reorderMode}
-            onDragStart={() => {
-              dragged.current = { kind: 'nav', id: key };
-            }}
-            onDragOver={dragOver('nav', key)}
-            onDragEnd={() => {
-              dragged.current = null;
-            }}
-            onClick={() => !reorderMode && onNavChange(key)}
-          >
-            {NAV_ITEMS[key].icon}
-            <span>{NAV_ITEMS[key].label}</span>
-          </button>
-        ))}
+  function renderNavItem(key: NavKey) {
+    return (
+      <button
+        key={key}
+        className={[
+          nav === key && !activeCategory ? 'nav-item active' : 'nav-item',
+          reorderMode ? 'jiggle' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        onClick={() => !reorderMode && onNavChange(key)}
+        {...navDragProps(key)}
+      >
+        {NAV_ITEMS[key].icon}
+        <span>{NAV_ITEMS[key].label}</span>
+      </button>
+    );
+  }
 
+  function renderCategories() {
+    return (
+      <div key="categories">
         {/* A row, not one button: the "+" sits inside it and must stay its own
-            control, and HTML forbids nesting a button in a button. */}
-        <div className="nav-item nav-row">
+            control, and HTML forbids nesting a button in a button. The row
+            itself is the drag handle for this whole entry, so it jiggles
+            like any other nav-item while sections are being arranged. */}
+        <div
+          className={reorderMode ? 'nav-item nav-row jiggle' : 'nav-item nav-row'}
+          {...navDragProps('categories')}
+        >
           <button
             className="nav-row-main"
             aria-expanded={categoriesOpen}
-            onClick={() => setCategoriesOpen((open) => !open)}
+            onClick={() => !reorderMode && setCategoriesOpen((open) => !open)}
           >
             <TagIcon />
             <span>Категории</span>
@@ -147,7 +148,7 @@ export function Sidebar({
           <button
             className={categoriesOpen ? 'nav-chevron open' : 'nav-chevron'}
             aria-label={categoriesOpen ? 'Свернуть категории' : 'Развернуть категории'}
-            onClick={() => setCategoriesOpen((open) => !open)}
+            onClick={() => !reorderMode && setCategoriesOpen((open) => !open)}
           >
             <ChevronDownIcon size={14} />
           </button>
@@ -183,7 +184,7 @@ export function Sidebar({
                 onDragStart={() => {
                   dragged.current = { kind: 'category', id: name };
                 }}
-                onDragOver={dragOver('category', name)}
+                onDragOver={categoryDragOver(name)}
                 onDragEnd={() => {
                   dragged.current = null;
                 }}
@@ -194,6 +195,42 @@ export function Sidebar({
             ))}
           </div>
         )}
+      </div>
+    );
+  }
+
+  return (
+    <div className={reorderMode ? 'sidebar reordering' : 'sidebar'}>
+      <div className="sidebar-head">
+        <span className="sidebar-title">CopyCat</span>
+        {reorderMode ? (
+          <div className="sidebar-head-actions">
+            <button
+              className="icon-button"
+              aria-label="Отмена"
+              title="Отмена"
+              onClick={onReorderCancel}
+            >
+              <CloseIcon size={16} />
+            </button>
+            <button
+              className="icon-button done"
+              aria-label="Готово"
+              title="Готово"
+              onClick={onReorderDone}
+            >
+              <CheckIcon size={17} />
+            </button>
+          </div>
+        ) : (
+          <button className="icon-button" aria-label="Настройки" onClick={onSettingsOpen}>
+            <SettingsIcon size={17} />
+          </button>
+        )}
+      </div>
+
+      <nav className="sidebar-nav">
+        {navOrder.map((key) => (key === 'categories' ? renderCategories() : renderNavItem(key)))}
       </nav>
     </div>
   );

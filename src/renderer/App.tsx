@@ -44,6 +44,7 @@ export function App() {
     commitNavOrder,
     cancelNavOrder,
     toggleReorderMode,
+    cancelItemReorder,
     moveItem,
     persistOrder,
     fetchItems,
@@ -129,6 +130,7 @@ export function App() {
         onNavMove={moveNav}
         onCategoryMove={moveCategory}
         onReorderDone={() => void commitNavOrder()}
+        onReorderCancel={cancelNavOrder}
       />
       {/* While the sidebar is being arranged, nothing else accepts input.
           `inert` is not in React 18's typings yet, hence the cast. */}
@@ -146,6 +148,7 @@ export function App() {
           // newest-first order.
           canReorder={isOrderedView() && items.length >= 2}
           onToggleReorder={toggleReorderMode}
+          onCancelReorder={() => void cancelItemReorder()}
           onCompose={() => composeItem(true)}
           onCopy={copyItem}
           onToggleStar={toggleStar}

@@ -4,4 +4,4 @@ export const MAX_CONTENT_LENGTH = 200_000;
 export const POLL_INTERVAL_MS = 500;
 
 /** Sidebar entries in their out-of-the-box order. */
-export const DEFAULT_NAV_ORDER = ['history', 'starred', 'images', 'files'] as const;
+export const DEFAULT_NAV_ORDER = ['history', 'starred', 'images', 'files', 'categories'] as const;
