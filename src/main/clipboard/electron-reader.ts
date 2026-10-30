@@ -1,4 +1,4 @@
-import { clipboard } from 'electron';
+import { clipboard, nativeImage } from 'electron';
 import type { ClipboardReader } from './types';
 
 export class ElectronClipboardReader implements ClipboardReader {
@@ -26,5 +26,15 @@ export class ElectronClipboardReader implements ClipboardReader {
 
   readFileDropBuffer(): Buffer {
     return clipboard.readBuffer('FileNameW');
+  }
+
+  readFileAsImagePNG(filePath: string): Buffer | null {
+    try {
+      const img = nativeImage.createFromPath(filePath);
+      if (img.isEmpty()) return null;
+      return img.toPNG();
+    } catch {
+      return null;
+    }
   }
 }

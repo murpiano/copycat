@@ -14,6 +14,7 @@ import type {
 import type { ItemsRepo } from '../storage/items-repo';
 import type { TagsRepo } from '../storage/tags-repo';
 import { hashContent } from '../clipboard/hash';
+import { buildCFDropBuffer } from '../clipboard/file-drop';
 import {
   handleGetItems,
   handleCreateItem,
@@ -55,7 +56,7 @@ function copyItemToClipboard(item: ClipboardItem, markSelfWrite: (hash: string) 
   } else if (item.type === 'file') {
     const paths: string[] = JSON.parse(item.content);
     markSelfWrite(hashContent(paths.join('|')));
-    clipboard.writeText(paths.join('\n'));
+    clipboard.writeBuffer('CF_HDROP', buildCFDropBuffer(paths));
   } else if (item.type === 'image') {
     const pngBuffer = readFileSync(item.content);
     markSelfWrite(hashContent(pngBuffer));

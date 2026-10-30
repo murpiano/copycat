@@ -3,6 +3,13 @@ import { parseFileDropBuffer } from './file-drop';
 import type { ClipboardReader, ClipboardSnapshot } from './types';
 import { POLL_INTERVAL_MS } from '../../shared/config';
 
+const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.ico', '.tiff', '.tif', '.avif']);
+
+function isImagePath(p: string): boolean {
+  const dot = p.lastIndexOf('.');
+  return dot !== -1 && IMAGE_EXTS.has(p.slice(dot).toLowerCase());
+}
+
 export type CaptureCallback = (snapshot: ClipboardSnapshot) => void;
 
 export class ClipboardWatcher {
@@ -36,6 +43,12 @@ export class ClipboardWatcher {
     if (this.reader.hasFileDrop()) {
       const paths = parseFileDropBuffer(this.reader.readFileDropBuffer());
       if (paths.length === 0) return null;
+      if (paths.length === 1 && isImagePath(paths[0]) && this.reader.readFileAsImagePNG) {
+        const pngBuffer = this.reader.readFileAsImagePNG(paths[0]);
+        if (pngBuffer && pngBuffer.length > 0) {
+          return { type: 'image', pngBuffer, hash: hashContent(pngBuffer) };
+        }
+      }
       return { type: 'file', paths, hash: hashContent(paths.join('|')) };
     }
     if (this.reader.hasImage()) {
