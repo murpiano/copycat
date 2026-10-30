@@ -105,6 +105,17 @@ button:disabled {
   justify-content: space-between;
   padding: 0 20px;
   border-bottom: 1px solid var(--divider);
+  /* The whole top strip moves the window, both halves of it. */
+  -webkit-app-region: drag;
+}
+
+/* The gear and the done tick stay clickable inside the drag strip. */
+.sidebar-head .icon-button {
+  -webkit-app-region: no-drag;
+}
+
+.icon-button.done {
+  color: var(--accent-text);
 }
 
 .sidebar-title {
@@ -1000,4 +1011,63 @@ button:disabled {
 .hotkey-field.capturing {
   border-color: var(--accent-text);
   color: var(--accent-text);
+}
+
+
+/* Arranging the sidebar */
+
+/* Sidebar entries shake the way cards do, to say they can be dragged. */
+.sidebar.reordering .nav-item.jiggle,
+.sidebar.reordering .category-item.jiggle {
+  animation: card-jiggle 240ms ease-in-out infinite;
+  cursor: grab;
+}
+
+.sidebar.reordering .nav-item.jiggle:active,
+.sidebar.reordering .category-item.jiggle:active {
+  cursor: grabbing;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar.reordering .nav-item.jiggle,
+  .sidebar.reordering .category-item.jiggle {
+    animation: none;
+    border-color: var(--accent-text);
+  }
+}
+
+/* Everything outside the sidebar is inert meanwhile, and says so. */
+.app.arranging .main {
+  opacity: 0.45;
+  filter: saturate(0.6);
+}
+
+.confirm-dialog {
+  width: min(420px, 100%);
+}
+
+.confirm-message {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-dim);
+}
+
+.field-row {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.field-row input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--accent-text);
+  cursor: pointer;
+}
+
+.button.wide {
+  width: 100%;
 }

@@ -14,6 +14,14 @@ beforeEach(() => {
     addTag: jest.fn(),
     removeTag: jest.fn(),
     deleteItem: jest.fn(),
+    getSettings: jest.fn().mockResolvedValue({
+      hotkey: 'CommandOrControl+Shift+V',
+      categoriesExpanded: false,
+      navOrder: ['history', 'starred', 'images', 'files'],
+      windowBounds: null,
+    }),
+    updateSettings: jest.fn(),
+    hideWindow: jest.fn(),
     onItemAdded: jest.fn().mockReturnValue(() => {}),
   } as unknown as CopycatAPI;
   (window as unknown as { copycat: CopycatAPI }).copycat = api;
