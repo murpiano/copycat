@@ -50,9 +50,16 @@ describe('SettingsDialog', () => {
     const onHotkeyChange = jest.fn().mockResolvedValue({ ok: true });
     render(
       <SettingsDialog
-        settings={{ hotkey: 'CommandOrControl+Shift+V' }}
+        settings={{
+          hotkey: 'CommandOrControl+Shift+V',
+          categoriesExpanded: false,
+          navOrder: ['history', 'starred', 'images', 'files'],
+          windowBounds: null,
+        }}
         onClose={() => {}}
         onHotkeyChange={onHotkeyChange}
+        onCategoriesExpandedChange={() => {}}
+        onNavReorderStart={() => {}}
       />,
     );
     const field = screen.getByLabelText('Горячая клавиша открытия');
@@ -69,9 +76,16 @@ describe('SettingsDialog', () => {
     const onHotkeyChange = jest.fn().mockResolvedValue({ ok: false, reason: 'Сочетание занято' });
     render(
       <SettingsDialog
-        settings={{ hotkey: 'CommandOrControl+Shift+V' }}
+        settings={{
+          hotkey: 'CommandOrControl+Shift+V',
+          categoriesExpanded: false,
+          navOrder: ['history', 'starred', 'images', 'files'],
+          windowBounds: null,
+        }}
         onClose={() => {}}
         onHotkeyChange={onHotkeyChange}
+        onCategoriesExpandedChange={() => {}}
+        onNavReorderStart={() => {}}
       />,
     );
     fireEvent.click(screen.getByLabelText('Горячая клавиша открытия'));

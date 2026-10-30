@@ -5,6 +5,7 @@ import type {
   GetItemsQuery,
   HotkeyResult,
   UpdateItemInput,
+  UpdateSettingsInput,
 } from '../../shared/types';
 import type { ItemsRepo } from '../storage/items-repo';
 import type { TagsRepo } from '../storage/tags-repo';
@@ -16,6 +17,8 @@ export interface IpcDeps {
   pasteActive: (item: ClipboardItem) => void;
   readSettings: () => AppSettings;
   applyHotkey: (accelerator: string) => HotkeyResult;
+  writeSettings: (input: UpdateSettingsInput) => AppSettings;
+  hideWindow: () => void;
 }
 
 export async function handleGetItems(
@@ -48,6 +51,17 @@ export async function handleSetHotkey(
   accelerator: string,
 ): Promise<HotkeyResult> {
   return deps.applyHotkey(accelerator);
+}
+
+export async function handleUpdateSettings(
+  deps: IpcDeps,
+  input: UpdateSettingsInput,
+): Promise<AppSettings> {
+  return deps.writeSettings(input);
+}
+
+export async function handleHideWindow(deps: IpcDeps): Promise<void> {
+  deps.hideWindow();
 }
 
 export async function handleCopyItem(deps: IpcDeps, id: number): Promise<void> {

@@ -35,11 +35,20 @@ describe('useSelectionDismiss', () => {
     expect(removeAllRanges).toHaveBeenCalled();
   });
 
-  it('leaves a press inside the highlight to the browser', () => {
+  it('drops the highlight even when the press lands on the text itself', () => {
+    // Pressing inside the old highlight used to be skipped, which left it
+    // standing and cost the user a second click.
     const removeAllRanges = fakeSelection({ containsNode: () => true });
     const { getByTestId } = render(<Harness />);
     fireEvent.mouseDown(getByTestId('text'));
-    expect(removeAllRanges).not.toHaveBeenCalled();
+    expect(removeAllRanges).toHaveBeenCalled();
+  });
+
+  it('drops the highlight when the window loses focus', () => {
+    const removeAllRanges = fakeSelection();
+    render(<Harness />);
+    fireEvent.blur(window);
+    expect(removeAllRanges).toHaveBeenCalled();
   });
 
   it('drops the highlight on Escape instead of letting it close a dialog', () => {

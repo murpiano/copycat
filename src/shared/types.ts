@@ -36,10 +36,28 @@ export interface CreateItemInput {
   tags: string[];
 }
 
+export type NavKey = 'history' | 'starred' | 'images' | 'files';
+
+export interface WindowBounds {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface AppSettings {
   /** Electron accelerator that opens the window, e.g. "CommandOrControl+Shift+V". */
   hotkey: string;
+  /** Opens the sidebar's category selector on start instead of collapsed. */
+  categoriesExpanded: boolean;
+  /** Sidebar entries in the order the user dragged them into. */
+  navOrder: NavKey[];
+  /** Where the window was left, so it comes back there after a restart. */
+  windowBounds: WindowBounds | null;
 }
+
+/** Any subset of the settings; omitted keys keep their stored value. */
+export type UpdateSettingsInput = Partial<Omit<AppSettings, 'hotkey'>>;
 
 export interface HotkeyResult {
   ok: boolean;
@@ -61,6 +79,8 @@ export interface CopycatAPI {
   deleteItem(id: number): Promise<void>;
   getSettings(): Promise<AppSettings>;
   setHotkey(accelerator: string): Promise<HotkeyResult>;
+  updateSettings(input: UpdateSettingsInput): Promise<AppSettings>;
+  hideWindow(): Promise<void>;
   onItemAdded(cb: (item: ClipboardItem) => void): () => void;
 }
 

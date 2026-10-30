@@ -6,6 +6,7 @@ import type {
   CreateItemInput,
   GetItemsQuery,
   UpdateItemInput,
+  UpdateSettingsInput,
 } from '../shared/types';
 
 const api: CopycatAPI = {
@@ -23,6 +24,9 @@ const api: CopycatAPI = {
   deleteItem: (id: number) => ipcRenderer.invoke(IPC.DELETE_ITEM, id),
   getSettings: () => ipcRenderer.invoke(IPC.GET_SETTINGS),
   setHotkey: (accelerator: string) => ipcRenderer.invoke(IPC.SET_HOTKEY, accelerator),
+  updateSettings: (input: UpdateSettingsInput) =>
+    ipcRenderer.invoke(IPC.UPDATE_SETTINGS, input),
+  hideWindow: () => ipcRenderer.invoke(IPC.HIDE_WINDOW),
   onItemAdded: (cb: (item: ClipboardItem) => void) => {
     const listener = (_e: unknown, item: ClipboardItem) => cb(item);
     ipcRenderer.on(IPC.ITEM_ADDED, listener);

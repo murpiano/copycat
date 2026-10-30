@@ -34,8 +34,20 @@ function installFakeApi(overrides: Partial<CopycatAPI> = {}): CopycatAPI {
     updateItem: jest.fn().mockResolvedValue(undefined),
     reorderItems: jest.fn().mockResolvedValue(undefined),
     deleteItem: jest.fn().mockResolvedValue(undefined),
-    getSettings: jest.fn().mockResolvedValue({ hotkey: 'CommandOrControl+Shift+V' }),
+    getSettings: jest.fn().mockResolvedValue({
+      hotkey: 'CommandOrControl+Shift+V',
+      categoriesExpanded: false,
+      navOrder: ['history', 'starred', 'images', 'files'],
+      windowBounds: null,
+    }),
     setHotkey: jest.fn().mockResolvedValue({ ok: true }),
+    updateSettings: jest.fn().mockResolvedValue({
+      hotkey: 'CommandOrControl+Shift+V',
+      categoriesExpanded: false,
+      navOrder: ['history', 'starred', 'images', 'files'],
+      windowBounds: null,
+    }),
+    hideWindow: jest.fn().mockResolvedValue(undefined),
     onItemAdded: jest.fn().mockReturnValue(() => {}),
     ...overrides,
   };
@@ -121,5 +133,75 @@ describe('useClipboardStore', () => {
     const query = (api.getItems as jest.Mock).mock.calls.at(-1)![0];
     expect(query.tags).toBeUndefined();
     expect(query.type).toBe('file');
+  });
+
+  it('treats every view but the full history as hand-ordered', async () => {
+    installFakeApi();
+    const store = () => useClipboardStore.getState();
+    await act(async () => {
+      store().setNav('history');
+      await Promise.resolve();
+    });
+    expect(store().isOrderedView()).toBe(false);
+
+    for (const nav of ['starred', 'images', 'files'] as const) {
+      await act(async () => {
+        store().setNav(nav);
+        await Promise.resolve();
+      });
+      expect(store().isOrderedView()).toBe(true);
+    }
+
+    await act(async () => {
+      store().selectCategory('работа');
+      await Promise.resolve();
+    });
+    expect(store().isOrderedView()).toBe(true);
+  });
+
+  it('keeps the dragged sidebar order as a draft until it is confirmed', async () => {
+    const api = installFakeApi();
+    await act(async () => {
+      await useClipboardStore.getState().loadSettings();
+    });
+
+    act(() => useClipboardStore.getState().startNavReorder());
+    expect(useClipboardStore.getState().settingsOpen).toBe(false);
+
+    act(() => useClipboardStore.getState().moveNav('files', 'history'));
+    expect(useClipboardStore.getState().navOrder).toEqual([
+      'files',
+      'history',
+      'starred',
+      'images',
+    ]);
+    expect(useClipboardStore.getState().navOrderDirty).toBe(true);
+    expect(api.updateSettings).not.toHaveBeenCalled();
+
+    await act(async () => {
+      await useClipboardStore.getState().commitNavOrder();
+    });
+    expect(api.updateSettings).toHaveBeenCalledWith({
+      navOrder: ['files', 'history', 'starred', 'images'],
+    });
+    expect(useClipboardStore.getState().navReorderMode).toBe(false);
+  });
+
+  it('rolls the sidebar order back when the arrangement is cancelled', async () => {
+    installFakeApi();
+    await act(async () => {
+      await useClipboardStore.getState().loadSettings();
+    });
+    act(() => useClipboardStore.getState().startNavReorder());
+    act(() => useClipboardStore.getState().moveNav('files', 'history'));
+
+    act(() => useClipboardStore.getState().cancelNavOrder());
+    expect(useClipboardStore.getState().navOrder).toEqual([
+      'history',
+      'starred',
+      'images',
+      'files',
+    ]);
+    expect(useClipboardStore.getState().navReorderMode).toBe(false);
   });
 });

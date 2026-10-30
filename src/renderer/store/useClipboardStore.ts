@@ -5,10 +5,13 @@ import type {
   CreateItemInput,
   HotkeyResult,
   ItemType,
+  NavKey,
   UpdateItemInput,
+  UpdateSettingsInput,
 } from '../../shared/types';
+import { DEFAULT_NAV_ORDER } from '../../shared/config';
 
-export type NavKey = 'history' | 'starred' | 'images' | 'files';
+export type { NavKey };
 
 const NAV_TYPE: Partial<Record<NavKey, ItemType>> = {
   images: 'image',
@@ -49,6 +52,11 @@ interface ClipboardState {
   composing: boolean;
   settingsOpen: boolean;
   settings: AppSettings | null;
+  /** Sidebar drag-to-reorder; the rest of the UI is inert while it runs. */
+  navReorderMode: boolean;
+  /** Draft order held while dragging, written out only when the user confirms. */
+  navOrder: NavKey[];
+  navOrderDirty: boolean;
   /** Drag-to-reorder mode; only reachable from starred and category views. */
   reorderMode: boolean;
   isOrderedView: () => boolean;
@@ -64,6 +72,13 @@ interface ClipboardState {
   openSettings: (on: boolean) => void;
   loadSettings: () => Promise<void>;
   setHotkey: (accelerator: string) => Promise<HotkeyResult>;
+  updateSettings: (input: UpdateSettingsInput) => Promise<void>;
+  startNavReorder: () => void;
+  moveNav: (dragKey: NavKey, overKey: NavKey) => void;
+  moveCategory: (dragName: string, overName: string) => void;
+  commitNavOrder: () => Promise<void>;
+  cancelNavOrder: () => void;
+  hideWindow: () => Promise<void>;
   toggleReorderMode: () => void;
   moveItem: (dragId: number, overId: number) => void;
   persistOrder: () => Promise<void>;
@@ -89,11 +104,16 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
   composing: false,
   settingsOpen: false,
   settings: null,
+  navReorderMode: false,
+  navOrder: [...DEFAULT_NAV_ORDER],
+  navOrderDirty: false,
   reorderMode: false,
 
   isOrderedView() {
     const { nav, activeCategory } = get();
-    return activeCategory !== null || nav === 'starred';
+    // "Все" is the raw history, newest first; the filtered views are the ones
+    // worth arranging by hand.
+    return activeCategory !== null || nav !== 'history';
   },
 
   async fetchItems() {
@@ -159,12 +179,66 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
   },
 
   async loadSettings() {
-    set({ settings: await window.copycat.getSettings() });
+    const settings = await window.copycat.getSettings();
+    set({ settings, navOrder: settings.navOrder });
+  },
+
+  async updateSettings(input) {
+    const settings = await window.copycat.updateSettings(input);
+    set({ settings, navOrder: settings.navOrder });
+  },
+
+  startNavReorder() {
+    // The settings dialog gets out of the way: the sidebar is what is edited.
+    set({ navReorderMode: true, settingsOpen: false, navOrderDirty: false });
+  },
+
+  moveNav(dragKey, overKey) {
+    if (dragKey === overKey) return;
+    const order = [...get().navOrder];
+    const from = order.indexOf(dragKey);
+    const to = order.indexOf(overKey);
+    if (from === -1 || to === -1) return;
+    order.splice(to, 0, ...order.splice(from, 1));
+    set({ navOrder: order, navOrderDirty: true });
+  },
+
+  moveCategory(dragName, overName) {
+    if (dragName === overName) return;
+    const categories = [...get().categories];
+    const from = categories.indexOf(dragName);
+    const to = categories.indexOf(overName);
+    if (from === -1 || to === -1) return;
+    categories.splice(to, 0, ...categories.splice(from, 1));
+    saveCategories(categories);
+    set({ categories, navOrderDirty: true });
+  },
+
+  async commitNavOrder() {
+    await get().updateSettings({ navOrder: get().navOrder });
+    set({ navReorderMode: false, navOrderDirty: false });
+  },
+
+  cancelNavOrder() {
+    // Categories live in local storage and were already written as they moved,
+    // so only the sidebar entries roll back to what was last saved.
+    set({
+      navReorderMode: false,
+      navOrderDirty: false,
+      navOrder: get().settings?.navOrder ?? [...DEFAULT_NAV_ORDER],
+    });
+  },
+
+  async hideWindow() {
+    await window.copycat.hideWindow();
   },
 
   async setHotkey(accelerator) {
     const result = await window.copycat.setHotkey(accelerator);
-    if (result.ok) set({ settings: { ...(get().settings ?? { hotkey: accelerator }), hotkey: accelerator } });
+    if (result.ok) {
+      const settings = get().settings;
+      if (settings) set({ settings: { ...settings, hotkey: accelerator } });
+    }
     return result;
   },
 

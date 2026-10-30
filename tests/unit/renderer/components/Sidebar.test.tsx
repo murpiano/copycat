@@ -3,6 +3,7 @@
  */
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Sidebar } from '../../../../src/renderer/components/Sidebar';
+import type { NavKey } from '../../../../src/shared/types';
 
 function renderSidebar(overrides: Partial<Parameters<typeof Sidebar>[0]> = {}) {
   const props = {
@@ -13,6 +14,12 @@ function renderSidebar(overrides: Partial<Parameters<typeof Sidebar>[0]> = {}) {
     onCategorySelect: jest.fn(),
     onCategoryAdd: jest.fn(),
     onSettingsOpen: jest.fn(),
+    navOrder: ['history', 'starred', 'images', 'files'] as NavKey[],
+    categoriesExpanded: false,
+    reorderMode: false,
+    onNavMove: jest.fn(),
+    onCategoryMove: jest.fn(),
+    onReorderDone: jest.fn(),
     ...overrides,
   };
   render(<Sidebar {...props} />);

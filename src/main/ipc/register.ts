@@ -9,6 +9,7 @@ import type {
   GetItemsQuery,
   HotkeyResult,
   UpdateItemInput,
+  UpdateSettingsInput,
 } from '../../shared/types';
 import type { ItemsRepo } from '../storage/items-repo';
 import type { TagsRepo } from '../storage/tags-repo';
@@ -18,6 +19,8 @@ import {
   handleCreateItem,
   handleGetSettings,
   handleSetHotkey,
+  handleUpdateSettings,
+  handleHideWindow,
   handleCopyItem,
   handlePasteItem,
   handleToggleStar,
@@ -35,6 +38,8 @@ export interface RegisterIpcDeps {
   tagsRepo: TagsRepo;
   readSettings: () => AppSettings;
   applyHotkey: (accelerator: string) => HotkeyResult;
+  writeSettings: (input: UpdateSettingsInput) => AppSettings;
+  hideWindow: () => void;
   /**
    * Tells the ClipboardWatcher to treat the given content hash as already
    * seen, so our own clipboard writes below don't get re-captured as new
@@ -68,6 +73,8 @@ export function registerIpcHandlers(ipcMain: IpcMain, deps: RegisterIpcDeps): vo
     pasteActive: copyToClipboard,
     readSettings: deps.readSettings,
     applyHotkey: deps.applyHotkey,
+    writeSettings: deps.writeSettings,
+    hideWindow: deps.hideWindow,
   };
 
   ipcMain.handle(IPC.GET_ITEMS, (_e, query: GetItemsQuery) => handleGetItems(ipcDeps, query));
@@ -78,6 +85,10 @@ export function registerIpcHandlers(ipcMain: IpcMain, deps: RegisterIpcDeps): vo
   ipcMain.handle(IPC.SET_HOTKEY, (_e, accelerator: string) =>
     handleSetHotkey(ipcDeps, accelerator),
   );
+  ipcMain.handle(IPC.UPDATE_SETTINGS, (_e, input: UpdateSettingsInput) =>
+    handleUpdateSettings(ipcDeps, input),
+  );
+  ipcMain.handle(IPC.HIDE_WINDOW, () => handleHideWindow(ipcDeps));
   ipcMain.handle(IPC.COPY_ITEM, (_e, id: number) => handleCopyItem(ipcDeps, id));
   ipcMain.handle(IPC.PASTE_ITEM, (_e, id: number) => handlePasteItem(ipcDeps, id));
   ipcMain.handle(IPC.TOGGLE_STAR, (_e, id: number) => handleToggleStar(ipcDeps, id));

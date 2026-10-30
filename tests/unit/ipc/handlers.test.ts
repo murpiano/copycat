@@ -25,18 +25,33 @@ function setup() {
   const copied: unknown[] = [];
   const pasted: unknown[] = [];
   const applied: string[] = [];
+  const hidden: boolean[] = [];
   const deps: IpcDeps = {
     itemsRepo,
     tagsRepo,
     copyToClipboard: (item) => copied.push(item),
     pasteActive: (item) => pasted.push(item),
-    readSettings: () => ({ hotkey: 'CommandOrControl+Shift+V' }),
+    readSettings: () => ({
+      hotkey: 'CommandOrControl+Shift+V',
+      categoriesExpanded: false,
+      navOrder: ['history' as const, 'starred' as const, 'images' as const, 'files' as const],
+      windowBounds: null,
+    }),
+    writeSettings: () => ({
+      hotkey: 'CommandOrControl+Shift+V',
+      categoriesExpanded: true,
+      navOrder: ['history' as const, 'starred' as const, 'images' as const, 'files' as const],
+      windowBounds: null,
+    }),
+    hideWindow: () => {
+      hidden.push(true);
+    },
     applyHotkey: (accelerator) => {
       applied.push(accelerator);
       return { ok: true };
     },
   };
-  return { deps, itemsRepo, copied, pasted, applied };
+  return { deps, itemsRepo, copied, pasted, applied, hidden };
 }
 
 describe('ipc handlers', () => {
@@ -125,7 +140,7 @@ describe('ipc handlers', () => {
 
   it('get-settings and set-hotkey go through to the host', async () => {
     const { deps, applied } = setup();
-    expect(await handleGetSettings(deps)).toEqual({ hotkey: 'CommandOrControl+Shift+V' });
+    expect((await handleGetSettings(deps)).hotkey).toBe('CommandOrControl+Shift+V');
     expect(await handleSetHotkey(deps, 'Alt+Space')).toEqual({ ok: true });
     expect(applied).toEqual(['Alt+Space']);
   });

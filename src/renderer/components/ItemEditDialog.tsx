@@ -3,6 +3,7 @@ import type { ClipboardItem } from '../../shared/types';
 import { KIND_LABEL } from './ItemCard';
 import { CloseIcon, PlusIcon } from './icons';
 import { Overlay } from './Overlay';
+import { ConfirmDialog } from './ConfirmDialog';
 
 interface ItemEditDialogProps {
   /** The card being edited, or null while composing a new one. */
@@ -28,14 +29,32 @@ export function ItemEditDialog({
   const [content, setContent] = useState(item?.content ?? '');
   const [tags, setTags] = useState<string[]>(item ? item.tags : initialTags);
   const [draft, setDraft] = useState('');
+  const [asking, setAsking] = useState(false);
+
+  const dirty =
+    title !== (item?.title ?? '') ||
+    content !== (item?.content ?? '') ||
+    tags.join('\u0000') !== (item ? item.tags : initialTags).join('\u0000');
+
+  function save() {
+    onSave(title.trim() || null, content, tags);
+  }
+
+  // Leaving with edits in hand asks first, so a stray Escape cannot drop them.
+  function requestClose() {
+    if (dirty) setAsking(true);
+    else onClose();
+  }
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
-      if (event.key === 'Escape') onClose();
+      if (event.key !== 'Escape') return;
+      if (asking) return;
+      requestClose();
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  });
 
   // The sidebar's categories plus any tag this item already carries, so a tag
   // added elsewhere never silently disappears when the dialog saves.
@@ -57,8 +76,21 @@ export function ItemEditDialog({
     setDraft('');
   }
 
+  if (asking) {
+    return (
+      <ConfirmDialog
+        title="Изменения не сохранены"
+        message="Сохранить изменения в блоке или закрыть без сохранения?"
+        confirmLabel="Сохранить"
+        cancelLabel="Закрыть без сохранения"
+        onConfirm={save}
+        onCancel={onClose}
+      />
+    );
+  }
+
   return (
-    <Overlay onClose={onClose}>
+    <Overlay onClose={requestClose}>
       <div
         className="popup edit-dialog"
         role="dialog"
@@ -70,7 +102,7 @@ export function ItemEditDialog({
             className="item-card-action"
             aria-label="Закрыть"
             title="Закрыть"
-            onClick={onClose}
+            onClick={requestClose}
           >
             <CloseIcon size={15} />
           </button>
@@ -134,14 +166,14 @@ export function ItemEditDialog({
         </div>
 
         <div className="dialog-actions">
-          <button type="button" className="button ghost" onClick={onClose}>
+          <button type="button" className="button ghost" onClick={requestClose}>
             Отмена
           </button>
           <button
             type="button"
             className="button primary"
             disabled={!item && !content.trim()}
-            onClick={() => onSave(title.trim() || null, content, tags)}
+            onClick={save}
           >
             {item ? 'Сохранить' : 'Создать'}
           </button>

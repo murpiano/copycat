@@ -1,6 +1,13 @@
 import path from 'node:path';
 import { app, globalShortcut, ipcMain, Tray } from 'electron';
-import { createMainWindow, showWindow, toggleWindow, setQuitting, DEV_WINDOW } from './window';
+import {
+  createMainWindow,
+  showWindow,
+  hideWindow,
+  toggleWindow,
+  setQuitting,
+  DEV_WINDOW,
+} from './window';
 import { createTray } from './tray';
 import { registerContextMenu } from './context-menu';
 import { startAutoUpdates } from './updater';
@@ -28,7 +35,10 @@ app.whenReady().then(() => {
   const tagsRepo = createTagsRepo(db);
   const itemsRepo = createItemsRepo(db, tagsRepo);
 
-  const win = createMainWindow();
+  const win = createMainWindow({
+    bounds: settingsStore.get().windowBounds,
+    onBoundsChange: (windowBounds) => settingsStore.update({ windowBounds }),
+  });
   if (DEV_WINDOW) showWindow(win);
   registerContextMenu(win);
 
@@ -50,6 +60,8 @@ app.whenReady().then(() => {
     tagsRepo,
     markSelfWrite: (hash) => watcher.markSelfWrite(hash),
     readSettings: () => settingsStore.get(),
+    writeSettings: (input) => settingsStore.update(input),
+    hideWindow: () => hideWindow(win),
     applyHotkey: (accelerator) => {
       const result = rebindHotkey(settingsStore.get().hotkey, accelerator, toggle);
       if (result.ok) settingsStore.setHotkey(accelerator);

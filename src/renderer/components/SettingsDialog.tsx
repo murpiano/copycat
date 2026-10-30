@@ -54,9 +54,17 @@ interface SettingsDialogProps {
   settings: AppSettings | null;
   onClose: () => void;
   onHotkeyChange: (accelerator: string) => Promise<{ ok: boolean; reason?: string }>;
+  onCategoriesExpandedChange: (expanded: boolean) => void;
+  onNavReorderStart: () => void;
 }
 
-export function SettingsDialog({ settings, onClose, onHotkeyChange }: SettingsDialogProps) {
+export function SettingsDialog({
+  settings,
+  onClose,
+  onHotkeyChange,
+  onCategoriesExpandedChange,
+  onNavReorderStart,
+}: SettingsDialogProps) {
   const [capturing, setCapturing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -131,6 +139,25 @@ export function SettingsDialog({ settings, onClose, onHotkeyChange }: SettingsDi
           </button>
           <span className="field-hint">
             {error ?? (saved ? 'Сохранено' : 'Нажмите на поле и задайте новое сочетание')}
+          </span>
+        </div>
+
+        <label className="field field-row">
+          <input
+            type="checkbox"
+            checked={settings?.categoriesExpanded ?? false}
+            onChange={(e) => onCategoriesExpandedChange(e.target.checked)}
+          />
+          <span>Развернуть раздел «Категории»</span>
+        </label>
+
+        <div className="field">
+          <span className="field-label">Разделы</span>
+          <button type="button" className="button ghost wide" onClick={onNavReorderStart}>
+            Изменить порядок разделов
+          </button>
+          <span className="field-hint">
+            Настройки свернутся, разделы и категории можно будет перетаскивать
           </span>
         </div>
 
