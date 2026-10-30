@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type DragEvent } from 'react';
-import appIcon from '../assets/icon.png';
+import appIcon from '../assets/icon.svg';
 import type { NavKey, SidebarEntry } from '../store/useClipboardStore';
 import {
   CheckIcon,
