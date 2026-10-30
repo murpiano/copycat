@@ -17,6 +17,9 @@ module.exports = {
       testEnvironment: 'jsdom',
       testMatch: ['**/tests/unit/renderer/**/*.test.{ts,tsx}'],
       setupFilesAfterEnv: ['@testing-library/jest-dom'],
+      moduleNameMapper: {
+        '\\.png$': '<rootDir>/tests/unit/__mocks__/fileMock.js',
+      },
     },
   ],
 };
