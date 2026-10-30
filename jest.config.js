@@ -18,7 +18,7 @@ module.exports = {
       testMatch: ['**/tests/unit/renderer/**/*.test.{ts,tsx}'],
       setupFilesAfterEnv: ['@testing-library/jest-dom'],
       moduleNameMapper: {
-        '\\.png$': '<rootDir>/tests/unit/__mocks__/fileMock.js',
+        '\\.(png|svg)$': '<rootDir>/tests/unit/__mocks__/fileMock.js',
       },
     },
   ],
