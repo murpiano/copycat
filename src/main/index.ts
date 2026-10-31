@@ -82,7 +82,7 @@ app.whenReady().then(() => {
     },
   });
 
-  tray = createTray(path.join(__dirname, '../../resources/icon-tray.png'), {
+  tray = createTray(path.join(__dirname, '../../resources/small/small.png'), {
     onOpen: () => showWindow(win),
     onPauseToggle: () => {
       paused = !paused;
