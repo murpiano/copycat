@@ -130,7 +130,7 @@ export function ItemCard({
 
         {item.type === 'image' ? (
           <div className="item-card-preview">
-            <img src={`file://${item.content}`} alt="clipboard preview" />
+            <img src={window.copycat.toFileUrl(item.content)} alt="clipboard preview" />
           </div>
         ) : (
           <div

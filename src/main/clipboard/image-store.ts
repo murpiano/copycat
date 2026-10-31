@@ -10,3 +10,12 @@ export function saveImagePreview(previewsDir: string, pngBuffer: Buffer): string
   }
   return filePath;
 }
+
+export function saveSvgPreview(previewsDir: string, svgBuffer: Buffer): string {
+  fs.mkdirSync(previewsDir, { recursive: true });
+  const filePath = path.join(previewsDir, `${hashContent(svgBuffer)}.svg`);
+  if (!fs.existsSync(filePath)) {
+    fs.writeFileSync(filePath, svgBuffer);
+  }
+  return filePath;
+}

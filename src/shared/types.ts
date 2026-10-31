@@ -83,6 +83,9 @@ export interface CopycatAPI {
   deleteItem(id: number): Promise<void>;
   getSettings(): Promise<AppSettings>;
   setHotkey(accelerator: string): Promise<HotkeyResult>;
+  setHotkeyCapture(capturing: boolean): Promise<void>;
+  onHotkeyCaptureCanceled(cb: () => void): () => void;
+  toFileUrl(filePath: string): string;
   updateSettings(input: UpdateSettingsInput): Promise<AppSettings>;
   hideWindow(): Promise<void>;
   onItemAdded(cb: (item: ClipboardItem) => void): () => void;
