@@ -2,7 +2,10 @@ import { BrowserWindow, screen } from 'electron';
 import path from 'node:path';
 import type { WindowBounds } from '../shared/types';
 
-const ICON_PATH = path.join(__dirname, '../../resources/large/large.png');
+const ICON_PATH = path.join(__dirname, '../../resources/medium/medium-rounded.ico');
+
+const readyWindows = new WeakSet<BrowserWindow>();
+const pendingShowWindows = new WeakSet<BrowserWindow>();
 
 // Escape hatch for compositors that never focus a new window (WSLg): the
 // blur-hide below would fire immediately and the overlay could never be seen.
@@ -56,9 +59,20 @@ export function createMainWindow({ bounds, onBoundsChange }: MainWindowOptions):
       preload: `${__dirname}/../preload/index.js`,
     },
   });
-  win.loadURL(
-    process.env.ELECTRON_RENDERER_URL ?? `file://${__dirname}/../renderer/index.html`,
-  );
+  const rendererUrl = process.env.ELECTRON_RENDERER_URL;
+  if (rendererUrl) {
+    void win.loadURL(rendererUrl);
+  } else {
+    void win.loadFile(path.join(__dirname, '../renderer/index.html'));
+  }
+  win.once('ready-to-show', () => {
+    readyWindows.add(win);
+    if (pendingShowWindows.delete(win)) showWindow(win);
+  });
+  win.once('closed', () => {
+    readyWindows.delete(win);
+    pendingShowWindows.delete(win);
+  });
   // Remembering the spot the user dragged the window to, so it opens there
   // again after a restart. 'moved' and 'resized' fire once the drag is over.
   const remember = (): void => {
@@ -78,15 +92,20 @@ export function createMainWindow({ bounds, onBoundsChange }: MainWindowOptions):
 }
 
 export function showWindow(win: BrowserWindow): void {
+  if (!readyWindows.has(win)) {
+    pendingShowWindows.add(win);
+    return;
+  }
   win.show();
   win.focus();
 }
 
 export function hideWindow(win: BrowserWindow): void {
+  pendingShowWindows.delete(win);
   win.hide();
 }
 
 export function toggleWindow(win: BrowserWindow): void {
-  if (win.isVisible()) hideWindow(win);
+  if (win.isVisible() || pendingShowWindows.has(win)) hideWindow(win);
   else showWindow(win);
 }

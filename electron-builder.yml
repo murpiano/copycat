@@ -16,12 +16,14 @@ publish:
   releaseType: release
 win:
   target: nsis
-  icon: resources/large/large.png
+  icon: resources/medium/medium-rounded.ico
   artifactName: Copycat-Setup-${version}.${ext}
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
   perMachine: false
+  installerIcon: resources/medium/medium-rounded.ico
+  uninstallerIcon: resources/medium/medium-rounded.ico
   createDesktopShortcut: true
   createStartMenuShortcut: true
   shortcutName: Copycat
