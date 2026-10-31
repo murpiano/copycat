@@ -63,7 +63,7 @@ export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
 
         {item.type === 'image' ? (
           <div className="popup-image">
-            <img src={`file://${item.content}`} alt="clipboard preview" />
+            <img src={window.copycat.toFileUrl(item.content)} alt="clipboard preview" />
           </div>
         ) : (
           <div

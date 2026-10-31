@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import { pathToFileURL } from 'node:url';
 import { IPC } from '../shared/ipc-channels';
 import type {
   ClipboardItem,
@@ -24,6 +25,14 @@ const api: CopycatAPI = {
   deleteItem: (id: number) => ipcRenderer.invoke(IPC.DELETE_ITEM, id),
   getSettings: () => ipcRenderer.invoke(IPC.GET_SETTINGS),
   setHotkey: (accelerator: string) => ipcRenderer.invoke(IPC.SET_HOTKEY, accelerator),
+  setHotkeyCapture: (capturing: boolean) =>
+    ipcRenderer.invoke(IPC.SET_HOTKEY_CAPTURE, capturing),
+  onHotkeyCaptureCanceled: (cb: () => void) => {
+    const listener = () => cb();
+    ipcRenderer.on(IPC.HOTKEY_CAPTURE_CANCELED, listener);
+    return () => ipcRenderer.removeListener(IPC.HOTKEY_CAPTURE_CANCELED, listener);
+  },
+  toFileUrl: (filePath: string) => pathToFileURL(filePath).href,
   updateSettings: (input: UpdateSettingsInput) =>
     ipcRenderer.invoke(IPC.UPDATE_SETTINGS, input),
   hideWindow: () => ipcRenderer.invoke(IPC.HIDE_WINDOW),

@@ -27,6 +27,7 @@ import { DEFAULT_RETENTION_LIMIT } from '../shared/config';
 // instances are destroyed if no reference is held).
 let tray: Tray | null = null;
 let paused = false;
+let hotkeyCaptureActive = false;
 
 app.whenReady().then(() => {
   const userDataDir = app.getPath('userData');
@@ -53,18 +54,30 @@ app.whenReady().then(() => {
   const watcher = new ClipboardWatcher(new ElectronClipboardReader(), pipeline);
   watcher.start();
 
-  const toggle = (): void => toggleWindow(win);
+  const toggle = (): void => {
+    if (hotkeyCaptureActive) {
+      hotkeyCaptureActive = false;
+      if (!win.isDestroyed()) win.webContents.send(IPC.HOTKEY_CAPTURE_CANCELED);
+    }
+    toggleWindow(win);
+  };
 
   registerIpcHandlers(ipcMain, {
     itemsRepo,
     tagsRepo,
     markSelfWrite: (hash) => watcher.markSelfWrite(hash),
     readSettings: () => settingsStore.get(),
+    setHotkeyCapture: (capturing) => {
+      hotkeyCaptureActive = capturing;
+    },
     writeSettings: (input) => settingsStore.update(input),
     hideWindow: () => hideWindow(win),
     applyHotkey: (accelerator) => {
       const result = rebindHotkey(settingsStore.get().hotkey, accelerator, toggle);
-      if (result.ok) settingsStore.setHotkey(accelerator);
+      if (result.ok) {
+        settingsStore.setHotkey(accelerator);
+        hotkeyCaptureActive = false;
+      }
       return result;
     },
   });

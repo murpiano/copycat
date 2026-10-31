@@ -76,6 +76,7 @@ interface ClipboardState {
   openSettings: (on: boolean) => void;
   loadSettings: () => Promise<void>;
   setHotkey: (accelerator: string) => Promise<HotkeyResult>;
+  setHotkeyCapture: (capturing: boolean) => Promise<void>;
   updateSettings: (input: UpdateSettingsInput) => Promise<void>;
   startNavReorder: () => void;
   moveNav: (dragKey: SidebarEntry, overKey: SidebarEntry) => void;
@@ -247,6 +248,10 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
       if (settings) set({ settings: { ...settings, hotkey: accelerator } });
     }
     return result;
+  },
+
+  async setHotkeyCapture(capturing) {
+    await window.copycat.setHotkeyCapture(capturing);
   },
 
   toggleReorderMode() {

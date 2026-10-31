@@ -1,6 +1,6 @@
-import { readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import type { IpcMain } from 'electron';
-import { clipboard, nativeImage } from 'electron';
+import { clipboard } from 'electron';
 import { IPC } from '../../shared/ipc-channels';
 import type {
   AppSettings,
@@ -34,11 +34,37 @@ import {
   type IpcDeps,
 } from './handlers';
 
+function writeFilePathsToClipboard(paths: string[]): void {
+  if (process.platform === 'win32') {
+    const result = spawnSync(
+      'powershell.exe',
+      [
+        '-NoLogo',
+        '-NoProfile',
+        '-NonInteractive',
+        '-STA',
+        '-Command',
+        '$paths = ConvertFrom-Json -InputObject $env:COPYCAT_CLIPBOARD_PATHS; Set-Clipboard -LiteralPath $paths',
+      ],
+      {
+        env: { ...process.env, COPYCAT_CLIPBOARD_PATHS: JSON.stringify(paths) },
+        windowsHide: true,
+      },
+    );
+    if (result.error) throw result.error;
+    if (result.status !== 0) throw new Error('PowerShell failed to copy file paths to clipboard');
+    return;
+  }
+
+  clipboard.writeBuffer('CF_HDROP', buildCFDropBuffer(paths));
+}
+
 export interface RegisterIpcDeps {
   itemsRepo: ItemsRepo;
   tagsRepo: TagsRepo;
   readSettings: () => AppSettings;
   applyHotkey: (accelerator: string) => HotkeyResult;
+  setHotkeyCapture: (capturing: boolean) => void;
   writeSettings: (input: UpdateSettingsInput) => AppSettings;
   hideWindow: () => void;
   /**
@@ -56,11 +82,11 @@ function copyItemToClipboard(item: ClipboardItem, markSelfWrite: (hash: string) 
   } else if (item.type === 'file') {
     const paths: string[] = JSON.parse(item.content);
     markSelfWrite(hashContent(paths.join('|')));
-    clipboard.writeBuffer('CF_HDROP', buildCFDropBuffer(paths));
+    writeFilePathsToClipboard(paths);
   } else if (item.type === 'image') {
-    const pngBuffer = readFileSync(item.content);
-    markSelfWrite(hashContent(pngBuffer));
-    clipboard.writeImage(nativeImage.createFromPath(item.content));
+    const paths = [item.content];
+    markSelfWrite(hashContent(paths.join('|')));
+    writeFilePathsToClipboard(paths);
   }
 }
 
@@ -85,6 +111,9 @@ export function registerIpcHandlers(ipcMain: IpcMain, deps: RegisterIpcDeps): vo
   ipcMain.handle(IPC.GET_SETTINGS, () => handleGetSettings(ipcDeps));
   ipcMain.handle(IPC.SET_HOTKEY, (_e, accelerator: string) =>
     handleSetHotkey(ipcDeps, accelerator),
+  );
+  ipcMain.handle(IPC.SET_HOTKEY_CAPTURE, (_e, capturing: boolean) =>
+    deps.setHotkeyCapture(capturing),
   );
   ipcMain.handle(IPC.UPDATE_SETTINGS, (_e, input: UpdateSettingsInput) =>
     handleUpdateSettings(ipcDeps, input),
