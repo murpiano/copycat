@@ -2,7 +2,7 @@ import { BrowserWindow, screen } from 'electron';
 import path from 'node:path';
 import type { WindowBounds } from '../shared/types';
 
-const ICON_PATH = path.join(__dirname, '../../resources/icon.png');
+const ICON_PATH = path.join(__dirname, '../../resources/large/large.png');
 
 // Escape hatch for compositors that never focus a new window (WSLg): the
 // blur-hide below would fire immediately and the overlay could never be seen.
