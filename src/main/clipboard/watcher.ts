@@ -33,6 +33,14 @@ export class ClipboardWatcher {
   }
 
   pollOnce(): void {
+    // Copycat copies image entries as file references so they can be pasted
+    // into Explorer. Skip those references before image promotion changes the
+    // clipboard hash from the stored path to the image bytes.
+    if (this.reader.hasFileDrop()) {
+      const paths = parseFileDropBuffer(this.reader.readFileDropBuffer());
+      if (paths.length > 0 && hashContent(paths.join('|')) === this.lastHash) return;
+    }
+
     const snapshot = this.capture();
     if (!snapshot || snapshot.hash === this.lastHash) return;
     this.lastHash = snapshot.hash;
@@ -43,6 +51,16 @@ export class ClipboardWatcher {
     if (this.reader.hasFileDrop()) {
       const paths = parseFileDropBuffer(this.reader.readFileDropBuffer());
       if (paths.length === 0) return null;
+      if (
+        paths.length === 1 &&
+        paths[0].toLowerCase().endsWith('.svg') &&
+        this.reader.readFileAsSVG
+      ) {
+        const svgBuffer = this.reader.readFileAsSVG(paths[0]);
+        if (svgBuffer && svgBuffer.length > 0) {
+          return { type: 'svg', svgBuffer, hash: hashContent(svgBuffer) };
+        }
+      }
       if (paths.length === 1 && isImagePath(paths[0]) && this.reader.readFileAsImagePNG) {
         const pngBuffer = this.reader.readFileAsImagePNG(paths[0]);
         if (pngBuffer && pngBuffer.length > 0) {

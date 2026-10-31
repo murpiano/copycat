@@ -38,6 +38,7 @@ export function App() {
     openSettings,
     loadSettings,
     setHotkey,
+    setHotkeyCapture,
     updateSettings,
     startNavReorder,
     moveNav,
@@ -68,6 +69,14 @@ export function App() {
     void loadSettings();
     return subscribeToNewItems();
   }, []);
+
+  useEffect(
+    () =>
+      window.copycat.onHotkeyCaptureCanceled?.(() => {
+        openSettings(false);
+      }),
+    [openSettings],
+  );
 
   // Escape unwinds one layer at a time and closes the window only once there
   // is nothing left to undo. Dialogs handle their own Escape, so this skips
@@ -206,6 +215,7 @@ export function App() {
           settings={settings}
           onClose={() => openSettings(false)}
           onHotkeyChange={setHotkey}
+          onHotkeyCapture={setHotkeyCapture}
           onCategoriesExpandedChange={(categoriesExpanded) =>
             void updateSettings({ categoriesExpanded })
           }
