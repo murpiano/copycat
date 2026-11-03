@@ -1,5 +1,4 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { pathToFileURL } from 'node:url';
 import { IPC } from '../shared/ipc-channels';
 import type {
   ClipboardItem,
@@ -9,6 +8,19 @@ import type {
   UpdateItemInput,
   UpdateSettingsInput,
 } from '../shared/types';
+
+function toFileUrl(filePath: string): string {
+  const normalized = filePath.replaceAll('\\', '/');
+  const windowsDrive = normalized.match(/^[A-Za-z]:/);
+  const root = windowsDrive ? `/${normalized.slice(0, 2)}` : '';
+  const pathPart = (windowsDrive ? normalized.slice(2) : normalized).replace(/^\/+/, '');
+  const encodedPath = pathPart
+    .split('/')
+    .filter(Boolean)
+    .map((part) => encodeURIComponent(part))
+    .join('/');
+  return `file://${root}/${encodedPath}`;
+}
 
 const api: CopycatAPI = {
   getItems: (query: GetItemsQuery) => ipcRenderer.invoke(IPC.GET_ITEMS, query),
@@ -32,7 +44,7 @@ const api: CopycatAPI = {
     ipcRenderer.on(IPC.HOTKEY_CAPTURE_CANCELED, listener);
     return () => ipcRenderer.removeListener(IPC.HOTKEY_CAPTURE_CANCELED, listener);
   },
-  toFileUrl: (filePath: string) => pathToFileURL(filePath).href,
+  toFileUrl,
   updateSettings: (input: UpdateSettingsInput) =>
     ipcRenderer.invoke(IPC.UPDATE_SETTINGS, input),
   hideWindow: () => ipcRenderer.invoke(IPC.HIDE_WINDOW),
