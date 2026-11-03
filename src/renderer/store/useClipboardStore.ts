@@ -11,7 +11,7 @@ import type {
   UpdateSettingsInput,
 } from '../../shared/types';
 import { DEFAULT_NAV_ORDER } from '../../shared/config';
-import { fileGroupOf, type FileGroup } from '../../shared/file-kind';
+import { DEFAULT_FILE_SECTION_ORDER, fileGroupOf, type FileGroup, type FileSection } from '../../shared/file-kind';
 
 export type { NavKey, SidebarEntry };
 
@@ -60,6 +60,7 @@ interface ClipboardState {
   /** Draft order held while dragging, written out only when the user confirms. */
   navOrder: SidebarEntry[];
   hiddenNavEntries: SidebarEntry[];
+  fileSectionOrder: FileSection[];
   navOrderDirty: boolean;
   /** Drag-to-reorder mode; only reachable from starred and category views. */
   reorderMode: boolean;
@@ -85,6 +86,9 @@ interface ClipboardState {
   startNavReorder: () => void;
   moveNav: (dragKey: SidebarEntry, overKey: SidebarEntry) => void;
   toggleNavVisibility: (key: SidebarEntry) => Promise<void>;
+  toggleFileSectionVisibility: (key: FileSection) => Promise<void>;
+  toggleCategoryVisibility: (name: string) => Promise<void>;
+  moveFileSection: (dragKey: FileSection, overKey: FileSection) => void;
   moveCategory: (dragName: string, overName: string) => void;
   commitNavOrder: () => Promise<void>;
   cancelNavOrder: () => void;
@@ -120,6 +124,7 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
   navReorderMode: false,
   navOrder: [...DEFAULT_NAV_ORDER],
   hiddenNavEntries: [],
+  fileSectionOrder: [...DEFAULT_FILE_SECTION_ORDER],
   navOrderDirty: false,
   reorderMode: false,
   itemOrderSnapshot: null,
@@ -204,12 +209,18 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
 
   async loadSettings() {
     const settings = await window.copycat.getSettings();
-    set({ settings, navOrder: settings.navOrder, hiddenNavEntries: settings.hiddenNavEntries ?? [] });
+    set({ settings, navOrder: settings.navOrder, hiddenNavEntries: settings.hiddenNavEntries ?? [], fileSectionOrder: settings.fileSectionOrder ?? [...DEFAULT_FILE_SECTION_ORDER] });
   },
 
   async updateSettings(input) {
     const settings = await window.copycat.updateSettings(input);
-    set({ settings, navOrder: settings.navOrder, hiddenNavEntries: settings.hiddenNavEntries ?? [] });
+    const keepDraft = get().navReorderMode && input.navOrder === undefined && input.fileSectionOrder === undefined;
+    set({
+      settings,
+      navOrder: keepDraft ? get().navOrder : settings.navOrder,
+      hiddenNavEntries: settings.hiddenNavEntries ?? [],
+      fileSectionOrder: keepDraft ? get().fileSectionOrder : settings.fileSectionOrder ?? [...DEFAULT_FILE_SECTION_ORDER],
+    });
   },
 
   startNavReorder() {
@@ -234,6 +245,26 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
     await get().updateSettings({ hiddenNavEntries: hidden });
   },
 
+  async toggleFileSectionVisibility(key) {
+    const current = get().settings?.hiddenFileSections ?? [];
+    await get().updateSettings({ hiddenFileSections: current.includes(key) ? current.filter((entry) => entry !== key) : [...current, key] });
+  },
+
+  async toggleCategoryVisibility(name) {
+    const current = get().settings?.hiddenCategories ?? [];
+    await get().updateSettings({ hiddenCategories: current.includes(name) ? current.filter((entry) => entry !== name) : [...current, name] });
+  },
+
+  moveFileSection(dragKey, overKey) {
+    if (dragKey === overKey) return;
+    const order = [...get().fileSectionOrder];
+    const from = order.indexOf(dragKey);
+    const to = order.indexOf(overKey);
+    if (from < 0 || to < 0) return;
+    order.splice(to, 0, ...order.splice(from, 1));
+    set({ fileSectionOrder: order, navOrderDirty: true });
+  },
+
   moveCategory(dragName, overName) {
     if (dragName === overName) return;
     const categories = [...get().categories];
@@ -246,7 +277,7 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
   },
 
   async commitNavOrder() {
-    await get().updateSettings({ navOrder: get().navOrder });
+    await get().updateSettings({ navOrder: get().navOrder, fileSectionOrder: get().fileSectionOrder });
     set({ navReorderMode: false, navOrderDirty: false });
   },
 
@@ -257,6 +288,7 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
       navReorderMode: false,
       navOrderDirty: false,
       navOrder: get().settings?.navOrder ?? [...DEFAULT_NAV_ORDER],
+      fileSectionOrder: get().settings?.fileSectionOrder ?? [...DEFAULT_FILE_SECTION_ORDER],
     });
   },
 

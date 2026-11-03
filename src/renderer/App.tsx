@@ -16,6 +16,7 @@ export function App() {
     nav,
     navOrder,
     hiddenNavEntries,
+    fileSectionOrder,
     categories,
     activeCategory,
     activeFileGroup,
@@ -46,6 +47,9 @@ export function App() {
     startNavReorder,
     moveNav,
     toggleNavVisibility,
+    toggleFileSectionVisibility,
+    toggleCategoryVisibility,
+    moveFileSection,
     moveCategory,
     commitNavOrder,
     cancelNavOrder,
@@ -153,6 +157,9 @@ export function App() {
         nav={nav}
         navOrder={navOrder}
         hiddenNavEntries={hiddenNavEntries}
+        fileSectionOrder={fileSectionOrder}
+        hiddenFileSections={settings?.hiddenFileSections ?? []}
+        hiddenCategories={settings?.hiddenCategories ?? []}
         categories={categories}
         activeCategory={activeCategory}
         activeFileGroup={activeFileGroup}
@@ -166,6 +173,9 @@ export function App() {
         onSettingsOpen={() => openSettings(true)}
         onNavMove={moveNav}
         onNavVisibilityToggle={(key) => void toggleNavVisibility(key)}
+        onFileSectionVisibilityToggle={(key) => void toggleFileSectionVisibility(key)}
+        onCategoryVisibilityToggle={(name) => void toggleCategoryVisibility(name)}
+        onFileSectionMove={moveFileSection}
         onCategoryMove={moveCategory}
         onReorderDone={() => void commitNavOrder()}
         onReorderCancel={cancelNavOrder}

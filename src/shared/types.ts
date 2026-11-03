@@ -68,6 +68,9 @@ export interface AppSettings {
   /** Sidebar entries in the order the user dragged them into. */
   navOrder: SidebarEntry[];
   hiddenNavEntries?: SidebarEntry[];
+  fileSectionOrder?: import('./file-kind').FileSection[];
+  hiddenFileSections?: import('./file-kind').FileSection[];
+  hiddenCategories?: string[];
   /** Where the window was left, so it comes back there after a restart. */
   windowBounds: WindowBounds | null;
 }

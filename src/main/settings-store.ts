@@ -7,6 +7,7 @@ import type {
   WindowBounds,
 } from '../shared/types';
 import { DEFAULT_HOTKEY, DEFAULT_NAV_ORDER } from '../shared/config';
+import { DEFAULT_FILE_SECTION_ORDER, type FileSection } from '../shared/file-kind';
 
 const NAV_ORDER_VERSION = 2;
 
@@ -23,6 +24,9 @@ function defaults(): AppSettings {
     filesExpanded: false,
     navOrder: [...DEFAULT_NAV_ORDER],
     hiddenNavEntries: [],
+    fileSectionOrder: [...DEFAULT_FILE_SECTION_ORDER],
+    hiddenFileSections: [],
+    hiddenCategories: [],
     windowBounds: null,
   };
 }
@@ -44,6 +48,21 @@ function sanitizeHiddenEntries(value: unknown): SidebarEntry[] {
   return Array.isArray(value)
     ? [...new Set(value.filter((key): key is SidebarEntry => known.has(key as SidebarEntry)))]
     : [];
+}
+
+function sanitizeFileSections(value: unknown): FileSection[] {
+  const valid = new Set<string>(DEFAULT_FILE_SECTION_ORDER);
+  const entries = Array.isArray(value) ? value.filter((entry): entry is FileSection => valid.has(entry)) : [];
+  return [...new Set(entries), ...DEFAULT_FILE_SECTION_ORDER.filter((entry) => !entries.includes(entry))];
+}
+
+function sanitizeHiddenFileSections(value: unknown): FileSection[] {
+  const valid = new Set<string>(DEFAULT_FILE_SECTION_ORDER);
+  return Array.isArray(value) ? [...new Set(value.filter((entry): entry is FileSection => valid.has(entry)))] : [];
+}
+
+function sanitizeHiddenCategories(value: unknown): string[] {
+  return Array.isArray(value) ? [...new Set(value.filter((entry): entry is string => typeof entry === 'string'))] : [];
 }
 
 function sanitizeBounds(value: unknown): WindowBounds | null {
@@ -74,6 +93,9 @@ export function createSettingsStore(filePath: string): SettingsStore {
         filesExpanded: raw.filesExpanded === true,
         navOrder,
         hiddenNavEntries: sanitizeHiddenEntries(raw.hiddenNavEntries),
+        fileSectionOrder: sanitizeFileSections(raw.fileSectionOrder),
+        hiddenFileSections: sanitizeHiddenFileSections(raw.hiddenFileSections),
+        hiddenCategories: sanitizeHiddenCategories(raw.hiddenCategories),
         windowBounds: sanitizeBounds(raw.windowBounds),
       };
     } catch {
@@ -105,6 +127,9 @@ export function createSettingsStore(filePath: string): SettingsStore {
         ...(input.filesExpanded !== undefined ? { filesExpanded: input.filesExpanded } : {}),
         ...(input.navOrder !== undefined ? { navOrder: sanitizeNavOrder(input.navOrder) } : {}),
         ...(input.hiddenNavEntries !== undefined ? { hiddenNavEntries: sanitizeHiddenEntries(input.hiddenNavEntries) } : {}),
+        ...(input.fileSectionOrder !== undefined ? { fileSectionOrder: sanitizeFileSections(input.fileSectionOrder) } : {}),
+        ...(input.hiddenFileSections !== undefined ? { hiddenFileSections: sanitizeHiddenFileSections(input.hiddenFileSections) } : {}),
+        ...(input.hiddenCategories !== undefined ? { hiddenCategories: sanitizeHiddenCategories(input.hiddenCategories) } : {}),
         ...(input.windowBounds !== undefined
           ? { windowBounds: sanitizeBounds(input.windowBounds) }
           : {}),

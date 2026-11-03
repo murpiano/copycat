@@ -188,6 +188,7 @@ describe('useClipboardStore', () => {
     });
     expect(api.updateSettings).toHaveBeenCalledWith({
       navOrder: ['files', 'history', 'starred', 'images'],
+      fileSectionOrder: ['all', 'documents', 'images', 'audio', 'files', 'folders'],
     });
     expect(useClipboardStore.getState().navReorderMode).toBe(false);
   });

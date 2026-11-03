@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { createSettingsStore } from '../../../src/main/settings-store';
 import { DEFAULT_HOTKEY, DEFAULT_NAV_ORDER } from '../../../src/shared/config';
+import { DEFAULT_FILE_SECTION_ORDER } from '../../../src/shared/file-kind';
 
 function tempFile(): string {
   return path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'copycat-settings-')), 'settings.json');
@@ -16,8 +17,20 @@ describe('settings-store', () => {
       filesExpanded: false,
       navOrder: [...DEFAULT_NAV_ORDER],
       hiddenNavEntries: [],
+      fileSectionOrder: DEFAULT_FILE_SECTION_ORDER,
+      hiddenFileSections: [],
+      hiddenCategories: [],
       windowBounds: null,
     });
+  });
+
+  it('persists local file order and hidden subgroups', () => {
+    const file = tempFile();
+    createSettingsStore(file).update({ fileSectionOrder: ['images', 'all', 'documents', 'audio', 'files', 'folders'], hiddenFileSections: ['audio'], hiddenCategories: ['работа'] });
+    const saved = createSettingsStore(file).get();
+    expect(saved.fileSectionOrder?.slice(0, 2)).toEqual(['images', 'all']);
+    expect(saved.hiddenFileSections).toEqual(['audio']);
+    expect(saved.hiddenCategories).toEqual(['работа']);
   });
 
   it('persists a new hotkey across stores', () => {

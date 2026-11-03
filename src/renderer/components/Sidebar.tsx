@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type DragEvent } from 'react';
 import appIcon from '../assets/icon.svg';
 import type { NavKey, SidebarEntry } from '../store/useClipboardStore';
-import type { FileGroup } from '../../shared/file-kind';
+import { DEFAULT_FILE_SECTION_ORDER, type FileGroup, type FileSection } from '../../shared/file-kind';
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -24,11 +24,15 @@ const NAV_ITEMS: Record<NavKey, { label: string; icon: JSX.Element }> = {
   files: { label: 'Файлы', icon: <FileIcon /> },
 };
 const FILE_GROUPS: Array<[FileGroup, string]> = [['documents', 'Документы'], ['images', 'Изображения'], ['audio', 'Аудио'], ['files', 'Файлы'], ['folders', 'Папки']];
+const FILE_LABELS: Record<FileSection, string> = { all: 'Все файлы', ...Object.fromEntries(FILE_GROUPS) } as Record<FileSection, string>;
 
 interface SidebarProps {
   nav: NavKey;
   navOrder: SidebarEntry[];
   hiddenNavEntries?: SidebarEntry[];
+  fileSectionOrder?: FileSection[];
+  hiddenFileSections?: FileSection[];
+  hiddenCategories?: string[];
   categories: string[];
   activeCategory: string | null;
   activeFileGroup?: FileGroup | null;
@@ -43,6 +47,9 @@ interface SidebarProps {
   onSettingsOpen: () => void;
   onNavMove: (dragKey: SidebarEntry, overKey: SidebarEntry) => void;
   onNavVisibilityToggle?: (key: SidebarEntry) => void;
+  onFileSectionVisibilityToggle?: (key: FileSection) => void;
+  onCategoryVisibilityToggle?: (name: string) => void;
+  onFileSectionMove?: (dragKey: FileSection, overKey: FileSection) => void;
   onCategoryMove: (dragName: string, overName: string) => void;
   onReorderDone: () => void;
   onReorderCancel: () => void;
@@ -52,6 +59,9 @@ export function Sidebar({
   nav,
   navOrder,
   hiddenNavEntries = [],
+  fileSectionOrder = DEFAULT_FILE_SECTION_ORDER,
+  hiddenFileSections = [],
+  hiddenCategories = [],
   categories,
   activeCategory,
   activeFileGroup = null,
@@ -65,6 +75,9 @@ export function Sidebar({
   onSettingsOpen,
   onNavMove,
   onNavVisibilityToggle = () => {},
+  onFileSectionVisibilityToggle = () => {},
+  onCategoryVisibilityToggle = () => {},
+  onFileSectionMove = () => {},
   onCategoryMove,
   onReorderDone,
   onReorderCancel,
@@ -72,7 +85,7 @@ export function Sidebar({
   const [categoriesOpen, setCategoriesOpen] = useState(categoriesExpanded);
   const [filesOpen, setFilesOpen] = useState(false);
   const [draft, setDraft] = useState<string | null>(null);
-  const dragged = useRef<{ kind: 'nav' | 'category'; id: string } | null>(null);
+  const dragged = useRef<{ kind: 'nav' | 'category' | 'file'; id: string } | null>(null);
 
   useEffect(() => {
     setCategoriesOpen(categoriesExpanded);
@@ -84,7 +97,10 @@ export function Sidebar({
 
   useEffect(() => {
     // Categories can only be rearranged while they are on screen.
-    if (reorderMode) setCategoriesOpen(true);
+    if (reorderMode) {
+      setCategoriesOpen(true);
+      setFilesOpen(true);
+    }
   }, [reorderMode]);
 
   function commitDraft() {
@@ -119,12 +135,12 @@ export function Sidebar({
 
   function renderNavItem(key: NavKey) {
     if (key === 'files') return <div key="files">
-      <div className={nav === key && !activeCategory ? 'nav-item nav-row active' : 'nav-item nav-row'} {...navDragProps(key)}>
+      <div className={[nav === key && !activeCategory ? 'nav-item nav-row active' : 'nav-item nav-row', reorderMode ? 'jiggle' : '', hiddenNavEntries.includes(key) ? 'nav-hidden' : ''].join(' ')} {...navDragProps(key)}>
         <button className="nav-row-main" onClick={() => !reorderMode && onNavChange(key)}><FileIcon /><span>Файлы</span></button>
         {reorderMode && <button className="nav-visibility" aria-label={hiddenNavEntries.includes(key) ? 'Показать Файлы' : 'Скрыть Файлы'} onClick={() => onNavVisibilityToggle(key)}><EyeIcon closed={hiddenNavEntries.includes(key)} size={15} /></button>}
         <button className={filesOpen ? 'nav-chevron open' : 'nav-chevron'} aria-label="Группы файлов" onClick={() => !reorderMode && setFilesOpen((value) => !value)}><ChevronDownIcon size={14} /></button>
       </div>
-      {filesOpen && <div className="category-list"><button className={activeFileGroup === null ? 'category-item active' : 'category-item'} onClick={() => onFileGroupSelect(null)}>Все файлы</button>{FILE_GROUPS.map(([group, label]) => <button key={group} className={activeFileGroup === group ? 'category-item active' : 'category-item'} onClick={() => onFileGroupSelect(group)}>{label}</button>)}</div>}
+      {filesOpen && <div className="category-list">{fileSectionOrder.filter((section) => reorderMode || !hiddenFileSections.includes(section)).map((section) => <div key={section} className={['category-item', nav === 'files' && !activeCategory && activeFileGroup === (section === 'all' ? null : section) ? 'active' : '', reorderMode ? 'jiggle' : '', hiddenFileSections.includes(section) ? 'nav-hidden' : ''].join(' ')} draggable={reorderMode} onDragStart={() => { dragged.current = { kind: 'file', id: section }; }} onDragOver={(event) => { if (reorderMode && dragged.current?.kind === 'file') { event.preventDefault(); onFileSectionMove(dragged.current.id as FileSection, section); } }} onDragEnd={() => { dragged.current = null; }}><button className="category-item-main" onClick={() => !reorderMode && onFileGroupSelect(section === 'all' ? null : section)}>{FILE_LABELS[section]}</button>{reorderMode && <button className="nav-visibility" aria-label={`${hiddenFileSections.includes(section) ? 'Показать' : 'Скрыть'} ${FILE_LABELS[section]}`} onClick={() => onFileSectionVisibilityToggle(section)}><EyeIcon closed={hiddenFileSections.includes(section)} size={15} /></button>}</div>)}</div>}
     </div>;
     return (
       <div
@@ -132,6 +148,7 @@ export function Sidebar({
         className={[
           nav === key && !activeCategory ? 'nav-item active' : 'nav-item',
           reorderMode ? 'jiggle' : '',
+          hiddenNavEntries.includes(key) ? 'nav-hidden' : '',
         ]
           .filter(Boolean)
           .join(' ')}
@@ -151,7 +168,7 @@ export function Sidebar({
             itself is the drag handle for this whole entry, so it jiggles
             like any other nav-item while sections are being arranged. */}
         <div
-          className={reorderMode ? 'nav-item nav-row jiggle' : 'nav-item nav-row'}
+          className={['nav-item nav-row', reorderMode ? 'jiggle' : '', hiddenNavEntries.includes('categories') ? 'nav-hidden' : ''].join(' ')}
           {...navDragProps('categories')}
         >
           <button
@@ -199,12 +216,13 @@ export function Sidebar({
               />
             )}
 
-            {categories.map((name) => (
-              <button
+            {categories.filter((name) => reorderMode || !hiddenCategories.includes(name)).map((name) => (
+              <div
                 key={name}
                 className={[
                   activeCategory === name ? 'category-item active' : 'category-item',
                   reorderMode ? 'jiggle' : '',
+                  hiddenCategories.includes(name) ? 'nav-hidden' : '',
                 ]
                   .filter(Boolean)
                   .join(' ')}
@@ -216,10 +234,10 @@ export function Sidebar({
                 onDragEnd={() => {
                   dragged.current = null;
                 }}
-                onClick={() => !reorderMode && onCategorySelect(name)}
               >
-                <span>{name}</span>
-              </button>
+                <button className="category-item-main" onClick={() => !reorderMode && onCategorySelect(name)}><span>{name}</span></button>
+                {reorderMode && <button className="nav-visibility" aria-label={`${hiddenCategories.includes(name) ? 'Показать' : 'Скрыть'} ${name}`} onClick={() => onCategoryVisibilityToggle(name)}><EyeIcon closed={hiddenCategories.includes(name)} size={15} /></button>}
+              </div>
             ))}
           </div>
         )}
