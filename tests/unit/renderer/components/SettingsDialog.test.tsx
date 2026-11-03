@@ -62,7 +62,7 @@ describe('SettingsDialog', () => {
         onNavReorderStart={() => {}}
       />,
     );
-    const field = screen.getByLabelText('Горячая клавиша открытия');
+    const field = screen.getByLabelText('Горячая клавиша');
     expect(field).toHaveTextContent('Ctrl + Shift + V');
 
     fireEvent.click(field);
@@ -89,7 +89,7 @@ describe('SettingsDialog', () => {
         onNavReorderStart={() => {}}
       />,
     );
-    const field = screen.getByLabelText('Горячая клавиша открытия');
+    const field = screen.getByLabelText('Горячая клавиша');
     fireEvent.click(field);
     await screen.findByText('Нажмите сочетание…');
     fireEvent.keyDown(field, {

@@ -8,6 +8,8 @@ import type {
 } from '../shared/types';
 import { DEFAULT_HOTKEY, DEFAULT_NAV_ORDER } from '../shared/config';
 
+const NAV_ORDER_VERSION = 2;
+
 export interface SettingsStore {
   get(): AppSettings;
   setHotkey(accelerator: string): AppSettings;
@@ -18,7 +20,9 @@ function defaults(): AppSettings {
   return {
     hotkey: DEFAULT_HOTKEY,
     categoriesExpanded: false,
+    filesExpanded: false,
     navOrder: [...DEFAULT_NAV_ORDER],
+    hiddenNavEntries: [],
     windowBounds: null,
   };
 }
@@ -33,6 +37,13 @@ function sanitizeNavOrder(value: unknown): SidebarEntry[] {
     : [];
   const seen = new Set(stored);
   return [...new Set(stored), ...DEFAULT_NAV_ORDER.filter((key) => !seen.has(key))];
+}
+
+function sanitizeHiddenEntries(value: unknown): SidebarEntry[] {
+  const known = new Set<SidebarEntry>(DEFAULT_NAV_ORDER);
+  return Array.isArray(value)
+    ? [...new Set(value.filter((key): key is SidebarEntry => known.has(key as SidebarEntry)))]
+    : [];
 }
 
 function sanitizeBounds(value: unknown): WindowBounds | null {
@@ -52,11 +63,17 @@ export function createSettingsStore(filePath: string): SettingsStore {
   function read(): AppSettings {
     const base = defaults();
     try {
-      const raw = JSON.parse(fs.readFileSync(filePath, 'utf8')) as Partial<AppSettings>;
+      const raw = JSON.parse(fs.readFileSync(filePath, 'utf8')) as Partial<AppSettings> & { navOrderVersion?: number };
+      // Reset arrangements from pre-default-order releases once.
+      const navOrder = raw.navOrderVersion === NAV_ORDER_VERSION
+        ? sanitizeNavOrder(raw.navOrder)
+        : [...DEFAULT_NAV_ORDER];
       return {
         hotkey: typeof raw.hotkey === 'string' && raw.hotkey ? raw.hotkey : base.hotkey,
         categoriesExpanded: raw.categoriesExpanded === true,
-        navOrder: sanitizeNavOrder(raw.navOrder),
+        filesExpanded: raw.filesExpanded === true,
+        navOrder,
+        hiddenNavEntries: sanitizeHiddenEntries(raw.hiddenNavEntries),
         windowBounds: sanitizeBounds(raw.windowBounds),
       };
     } catch {
@@ -67,7 +84,7 @@ export function createSettingsStore(filePath: string): SettingsStore {
 
   function write(settings: AppSettings): AppSettings {
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    fs.writeFileSync(filePath, `${JSON.stringify(settings, null, 2)}\n`);
+    fs.writeFileSync(filePath, `${JSON.stringify({ ...settings, navOrderVersion: NAV_ORDER_VERSION }, null, 2)}\n`);
     return settings;
   }
 
@@ -85,7 +102,9 @@ export function createSettingsStore(filePath: string): SettingsStore {
         ...(input.categoriesExpanded !== undefined
           ? { categoriesExpanded: input.categoriesExpanded }
           : {}),
+        ...(input.filesExpanded !== undefined ? { filesExpanded: input.filesExpanded } : {}),
         ...(input.navOrder !== undefined ? { navOrder: sanitizeNavOrder(input.navOrder) } : {}),
+        ...(input.hiddenNavEntries !== undefined ? { hiddenNavEntries: sanitizeHiddenEntries(input.hiddenNavEntries) } : {}),
         ...(input.windowBounds !== undefined
           ? { windowBounds: sanitizeBounds(input.windowBounds) }
           : {}),

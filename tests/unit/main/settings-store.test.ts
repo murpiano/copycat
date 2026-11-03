@@ -13,7 +13,9 @@ describe('settings-store', () => {
     expect(createSettingsStore(tempFile()).get()).toEqual({
       hotkey: DEFAULT_HOTKEY,
       categoriesExpanded: false,
+      filesExpanded: false,
       navOrder: [...DEFAULT_NAV_ORDER],
+      hiddenNavEntries: [],
       windowBounds: null,
     });
   });

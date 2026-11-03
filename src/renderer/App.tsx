@@ -15,6 +15,7 @@ export function App() {
     search,
     nav,
     navOrder,
+    hiddenNavEntries,
     categories,
     activeCategory,
     activeFileGroup,
@@ -44,6 +45,7 @@ export function App() {
     updateSettings,
     startNavReorder,
     moveNav,
+    toggleNavVisibility,
     moveCategory,
     commitNavOrder,
     cancelNavOrder,
@@ -150,10 +152,12 @@ export function App() {
       <Sidebar
         nav={nav}
         navOrder={navOrder}
+        hiddenNavEntries={hiddenNavEntries}
         categories={categories}
         activeCategory={activeCategory}
         activeFileGroup={activeFileGroup}
         categoriesExpanded={settings?.categoriesExpanded ?? false}
+        filesExpanded={settings?.filesExpanded ?? false}
         reorderMode={navReorderMode}
         onNavChange={setNav}
         onCategorySelect={selectCategory}
@@ -161,6 +165,7 @@ export function App() {
         onCategoryAdd={addCategory}
         onSettingsOpen={() => openSettings(true)}
         onNavMove={moveNav}
+        onNavVisibilityToggle={(key) => void toggleNavVisibility(key)}
         onCategoryMove={moveCategory}
         onReorderDone={() => void commitNavOrder()}
         onReorderCancel={cancelNavOrder}
@@ -236,6 +241,7 @@ export function App() {
           onCategoriesExpandedChange={(categoriesExpanded) =>
             void updateSettings({ categoriesExpanded })
           }
+          onFilesExpandedChange={(filesExpanded) => void updateSettings({ filesExpanded })}
           onNavReorderStart={startNavReorder}
           categories={categories}
           onClearHistory={clearHistory}

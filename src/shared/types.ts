@@ -64,8 +64,10 @@ export interface AppSettings {
   hotkey: string;
   /** Opens the sidebar's category selector on start instead of collapsed. */
   categoriesExpanded: boolean;
+  filesExpanded?: boolean;
   /** Sidebar entries in the order the user dragged them into. */
   navOrder: SidebarEntry[];
+  hiddenNavEntries?: SidebarEntry[];
   /** Where the window was left, so it comes back there after a restart. */
   windowBounds: WindowBounds | null;
 }
