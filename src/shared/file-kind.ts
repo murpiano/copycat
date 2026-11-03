@@ -1,6 +1,8 @@
 import type { ClipboardItem, ItemKind } from './types';
 
 export type FileGroup = 'documents' | 'images' | 'audio' | 'files' | 'folders';
+export type FileSection = FileGroup | 'all';
+export const DEFAULT_FILE_SECTION_ORDER: FileSection[] = ['all', 'documents', 'images', 'audio', 'files', 'folders'];
 
 export function firstPath(content: string): string {
   try { return JSON.parse(content)[0] ?? content; } catch { return content; }

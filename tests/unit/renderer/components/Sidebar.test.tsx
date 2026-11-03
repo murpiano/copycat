@@ -30,7 +30,7 @@ function renderSidebar(overrides: Partial<Parameters<typeof Sidebar>[0]> = {}) {
 describe('Sidebar', () => {
   it('reports the chosen navigation entry', () => {
     const props = renderSidebar();
-    fireEvent.click(screen.getByText('Изображения'));
+    fireEvent.click(screen.getAllByText('Изображения')[0]);
     expect(props.onNavChange).toHaveBeenCalledWith('images');
   });
 
@@ -72,11 +72,27 @@ describe('Sidebar', () => {
 
   it('ignores taps on nav entries and categories while arranging', () => {
     const props = renderSidebar({ reorderMode: true });
-    fireEvent.click(screen.getByText('Изображения'));
+    fireEvent.click(screen.getAllByText('Изображения')[0]);
     expect(props.onNavChange).not.toHaveBeenCalled();
     // The list stays open throughout a reorder (there is nothing to arrange
     // if it is collapsed), but a tap on an entry must not select it.
     fireEvent.click(screen.getByText('работа'));
     expect(props.onCategorySelect).not.toHaveBeenCalled();
+  });
+
+  it('does not highlight file subgroups while another section is active', () => {
+    renderSidebar({ filesExpanded: true, nav: 'history' });
+    expect(screen.getByText('Все файлы').closest('.category-item')).not.toHaveClass('active');
+  });
+
+  it('reorders file subgroups locally and allows hiding a category', () => {
+    const props = renderSidebar({ reorderMode: true, filesExpanded: true, onFileSectionMove: jest.fn(), onCategoryVisibilityToggle: jest.fn() });
+    const images = screen.getAllByText('Изображения').find((node) => node.closest('.category-item'))!.closest('.category-item')!;
+    const audio = screen.getByText('Аудио').closest('.category-item')!;
+    fireEvent.dragStart(images);
+    fireEvent.dragOver(audio);
+    expect(props.onFileSectionMove).toHaveBeenCalledWith('images', 'audio');
+    fireEvent.click(screen.getByLabelText('Скрыть работа'));
+    expect(props.onCategoryVisibilityToggle).toHaveBeenCalledWith('работа');
   });
 });

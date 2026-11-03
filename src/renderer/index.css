@@ -199,6 +199,12 @@ button:disabled {
   flex: 0 0 auto;
 }
 
+/* Plain rows gained a nested button for the eye; keep their original height. */
+.nav-item:not(.nav-row) {
+  gap: 0;
+  padding: 0;
+}
+
 /* Categories row: label, then "+", then the chevron. */
 .nav-row {
   gap: 0;
@@ -296,6 +302,49 @@ button:disabled {
   text-align: left;
   cursor: pointer;
 }
+
+.category-item-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.nav-visibility {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-right: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-faint);
+}
+
+.nav-visibility:hover,
+.nav-visibility:focus-visible { color: var(--text); }
+
+.nav-hidden {
+  background-color: rgba(150, 158, 175, 0.12);
+  color: #7d879a;
+}
+
+.nav-hidden .nav-row-main span,
+.nav-hidden .category-item-main { text-decoration: line-through; }
+
+.nav-hidden .nav-row-main,
+.nav-hidden .category-item-main,
+.nav-hidden .nav-chevron { pointer-events: none; }
+
+.nav-visibility:focus-visible,
+.category-item-main:focus-visible,
+.nav-row-main:focus-visible { outline: 2px solid var(--nav-active-border); outline-offset: -2px; }
 
 .category-item span {
   overflow: hidden;
