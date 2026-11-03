@@ -318,8 +318,8 @@ button:disabled {
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
+  width: 20px;
+  height: 16px;
   margin-right: 4px;
   padding: 0;
   border: 0;
@@ -1125,6 +1125,8 @@ button:disabled {
 
 .hotkey-field:hover {
   border-color: var(--nav-active-border);
+  background: var(--nav-active-bg);
+  color: var(--text);
 }
 
 .hotkey-field.capturing {

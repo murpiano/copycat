@@ -24,11 +24,15 @@ while IFS= read -r -d $'\x1e' record; do
   type=${BASH_REMATCH[1]}
   bang=${BASH_REMATCH[3]}
   text=${BASH_REMATCH[4]}
-  item="- ${text^}"
-  if [ -n "$bang" ] || grep -q '^BREAKING CHANGE' <<<"$body"; then breaking+=("$item"); bump=3; continue; fi
+  items=()
+  while IFS= read -r note; do
+    [ -n "$note" ] && items+=("- $note")
+  done < <(sed -n 's/^Release-note: //p' <<<"$body")
+  [ "${#items[@]}" -gt 0 ] || items=("- ${text^}")
+  if [ -n "$bang" ] || grep -q '^BREAKING CHANGE' <<<"$body"; then breaking+=("${items[@]}"); bump=3; continue; fi
   case "$type" in
-    feat) added+=("$item"); (( bump < 2 )) && bump=2 ;;
-    fix|perf) fixed+=("$item"); (( bump < 1 )) && bump=1 ;;
+    feat) added+=("${items[@]}"); (( bump < 2 )) && bump=2 ;;
+    fix|perf) fixed+=("${items[@]}"); (( bump < 1 )) && bump=1 ;;
   esac
 done < <(git log --no-merges --reverse --format='%s%x1f%b%x1e' "$last..$sha")
 
@@ -45,7 +49,7 @@ trap 'rm -f "$notes"' EXIT
 {
   section() { local title=$1; shift; [ "$#" -eq 0 ] || { printf '### %s\n\n' "$title"; printf '%s\n' "$@"; printf '\n'; }; }
   section 'Breaking changes' "${breaking[@]}"
-  section 'New' "${added[@]}"
+  section 'Added' "${added[@]}"
   section 'Fixed' "${fixed[@]}"
   remote=$(git remote get-url origin | sed -E 's#^git@github\.com:#https://github.com/#; s#\.git$##')
   printf 'Full diff: %s/compare/%s...%s\n' "$remote" "$last" "$tag"
