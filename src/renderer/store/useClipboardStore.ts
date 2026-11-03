@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type {
   AppSettings,
+  ClearHistoryInput,
   ClipboardItem,
   CreateItemInput,
   HotkeyResult,
@@ -117,7 +118,7 @@ interface ClipboardState {
   setTags: (id: number, tags: string[]) => Promise<void>;
   updateItem: (id: number, input: UpdateItemInput) => Promise<void>;
   deleteItem: (id: number) => Promise<void>;
-  clearHistory: (input: { scope: 'all' | 'starred' | 'text' | 'image' | 'file' | 'category'; category?: string; since?: number; exclude: string[] }) => Promise<void>;
+  clearHistory: (input: ClearHistoryInput) => Promise<void>;
   subscribeToNewItems: () => () => void;
 }
 

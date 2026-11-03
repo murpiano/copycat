@@ -11,6 +11,7 @@ import type {
 import { MAX_CONTENT_LENGTH } from '../../shared/config';
 import type { TagsRepo } from './tags-repo';
 import { firstPath, kindFromPath } from '../../shared/file-kind';
+import { matchesClearHistory } from '../../shared/clear-history';
 
 export interface InsertItemInput {
   type: ItemType;
@@ -183,23 +184,12 @@ export function createItemsRepo(db: Database.Database, tagsRepo: TagsRepo): Item
     },
 
     clearHistory(input) {
-      const clauses = ['1 = 1'];
-      const params: unknown[] = [];
-      if (input.since !== undefined) { clauses.push('created_at >= ?'); params.push(input.since); }
-      if (input.scope === 'starred') clauses.push('starred = 1');
-      if (input.scope === 'text' || input.scope === 'image') { clauses.push('type = ?'); params.push(input.scope); }
-      if (input.scope === 'file') clauses.push("type IN ('file', 'image')");
-      if (input.scope === 'category') { clauses.push('EXISTS (SELECT 1 FROM item_tags it JOIN tags t ON t.id=it.tag_id WHERE it.item_id=items.id AND t.name=?)'); params.push(input.category ?? ''); }
-      for (const ex of input.exclude) {
-        if (ex === 'starred') clauses.push('starred = 0');
-        else if (ex === 'image') clauses.push("type != 'image'");
-        else if (ex === 'file') clauses.push("type != 'file'");
-        else if (ex === 'category') clauses.push('NOT EXISTS (SELECT 1 FROM item_tags it WHERE it.item_id=items.id)');
-        else { clauses.push('NOT EXISTS (SELECT 1 FROM item_tags it JOIN tags t ON t.id=it.tag_id WHERE it.item_id=items.id AND t.name=?)'); params.push(ex); }
-      }
-      const rows = db.prepare(`SELECT * FROM items WHERE ${clauses.join(' AND ')}`).all(...params) as ItemRow[];
-      db.prepare(`DELETE FROM items WHERE ${clauses.join(' AND ')}`).run(...params);
-      return rows.map(rowToItem);
+      const rows = db.prepare('SELECT * FROM items').all() as ItemRow[];
+      const selected = rows.map(rowToItem).filter((item) => matchesClearHistory(item, input));
+      db.transaction(() => {
+        for (const item of selected) deleteStmt.run(item.id);
+      })();
+      return selected;
     },
   };
 }

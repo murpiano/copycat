@@ -46,6 +46,34 @@ describe('formatAccelerator', () => {
 });
 
 describe('SettingsDialog', () => {
+  it('shows period first and changes exclusions for file and category subsections', async () => {
+    const onClearHistory = jest.fn().mockResolvedValue(undefined);
+    render(<SettingsDialog settings={null} onClose={() => {}} onHotkeyChange={async () => ({ ok: true })}
+      onCategoriesExpandedChange={() => {}} onNavReorderStart={() => {}}
+      categories={['Работа']} onClearHistory={onClearHistory} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Очистить историю' }));
+    const dialog = screen.getByRole('dialog', { name: 'Очистить историю' });
+    const buttons = Array.from(dialog.querySelectorAll('button')).map((button) => button.textContent);
+    expect(buttons.indexOf('За час')).toBeLessThan(buttons.indexOf('Все'));
+    expect(screen.getByText('Удалить из выбранного раздела/подраздела всё, кроме:')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /^Файлы$/ }));
+    expect(screen.getByRole('button', { name: 'Все файлы' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Документы')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Изображения' }));
+    expect(screen.queryByLabelText('Документы')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Избранное')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /^Категории$/ }));
+    expect(screen.getByRole('button', { name: 'Все категории' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Файлы — выбрать всё')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Работа' }));
+    expect(screen.queryByLabelText('Работа')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText('Файлы — выбрать всё'));
+    fireEvent.click(screen.getByRole('button', { name: /^Очистить$/ }));
+    await waitFor(() => expect(onClearHistory).toHaveBeenCalledWith(expect.objectContaining({
+      scope: 'category', category: 'Работа', exclude: expect.arrayContaining(['files', 'file:documents', 'file:images']),
+    })));
+  });
+
   it('shows the current hotkey and saves a newly captured one', async () => {
     const onHotkeyChange = jest.fn().mockResolvedValue({ ok: true });
     render(

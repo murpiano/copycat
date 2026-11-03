@@ -26,10 +26,11 @@ export interface GetItemsQuery {
   ordered?: boolean;
 }
 
-export type ClearHistoryScope = 'all' | 'starred' | 'text' | 'image' | 'file' | 'category';
+export type ClearHistoryScope = 'all' | 'starred' | 'text' | 'file' | 'category';
 export interface ClearHistoryInput {
   scope: ClearHistoryScope;
   category?: string;
+  fileGroup?: import('./file-kind').FileGroup;
   since?: number;
   exclude: string[];
 }
