@@ -186,7 +186,7 @@ export function SettingsDialog({
                 ? formatAccelerator(settings.hotkey)
                 : '—'}
           </button>
-          {error && <span className="field-hint">{error}</span>}
+          {(error || saved) && <span className="field-hint">{error ?? 'Сохранено'}</span>}
         </div>
 
         <div className="field">
