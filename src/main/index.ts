@@ -58,8 +58,6 @@ app.whenReady().then(() => {
     if (hotkeyCaptureActive) {
       hotkeyCaptureActive = false;
       if (!win.isDestroyed()) win.webContents.send(IPC.HOTKEY_CAPTURE_CANCELED);
-      hideWindow(win);
-      return;
     }
     toggleWindow(win);
   };
@@ -84,7 +82,7 @@ app.whenReady().then(() => {
     },
   });
 
-  tray = createTray(path.join(__dirname, '../../resources/small/small-rounded.png'), {
+  tray = createTray(path.join(__dirname, '../../resources/icon-tray.png'), {
     onOpen: () => showWindow(win),
     onPauseToggle: () => {
       paused = !paused;
