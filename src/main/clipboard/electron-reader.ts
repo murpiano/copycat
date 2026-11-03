@@ -1,5 +1,4 @@
 import { clipboard, nativeImage } from 'electron';
-import { readFileSync } from 'node:fs';
 import type { ClipboardReader } from './types';
 
 export class ElectronClipboardReader implements ClipboardReader {
@@ -34,14 +33,6 @@ export class ElectronClipboardReader implements ClipboardReader {
       const img = nativeImage.createFromPath(filePath);
       if (img.isEmpty()) return null;
       return img.toPNG();
-    } catch {
-      return null;
-    }
-  }
-
-  readFileAsSVG(filePath: string): Buffer | null {
-    try {
-      return readFileSync(filePath);
     } catch {
       return null;
     }
