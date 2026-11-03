@@ -40,6 +40,17 @@ function saveCategories(categories: string[]): void {
   }
 }
 
+function nearestVisible<T>(order: T[], current: T, visible: (entry: T) => boolean): T | null {
+  const index = Math.max(0, order.indexOf(current));
+  for (let distance = 0; distance < order.length; distance += 1) {
+    const next = order[index + distance];
+    if (next !== undefined && visible(next)) return next;
+    const previous = order[index - distance];
+    if (previous !== undefined && visible(previous)) return previous;
+  }
+  return null;
+}
+
 interface ClipboardState {
   items: ClipboardItem[];
   search: string;
@@ -92,6 +103,7 @@ interface ClipboardState {
   moveCategory: (dragName: string, overName: string) => void;
   commitNavOrder: () => Promise<void>;
   cancelNavOrder: () => void;
+  restoreVisibleSelection: () => void;
   hideWindow: () => Promise<void>;
   toggleReorderMode: () => void;
   cancelItemReorder: () => Promise<void>;
@@ -239,10 +251,15 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
   },
 
   async toggleNavVisibility(key) {
-    const hidden = get().hiddenNavEntries.includes(key)
+    const hiding = !get().hiddenNavEntries.includes(key);
+    const hidden = !hiding
       ? get().hiddenNavEntries.filter((entry) => entry !== key)
       : [...get().hiddenNavEntries, key];
-    await get().updateSettings({ hiddenNavEntries: hidden });
+    await get().updateSettings({
+      hiddenNavEntries: hidden,
+      ...(key === 'files' ? { hiddenFileSections: hiding ? [...DEFAULT_FILE_SECTION_ORDER] : [] } : {}),
+      ...(key === 'categories' ? { hiddenCategories: hiding ? [...get().categories] : [] } : {}),
+    });
   },
 
   async toggleFileSectionVisibility(key) {
@@ -279,6 +296,7 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
   async commitNavOrder() {
     await get().updateSettings({ navOrder: get().navOrder, fileSectionOrder: get().fileSectionOrder });
     set({ navReorderMode: false, navOrderDirty: false });
+    get().restoreVisibleSelection();
   },
 
   cancelNavOrder() {
@@ -290,6 +308,51 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
       navOrder: get().settings?.navOrder ?? [...DEFAULT_NAV_ORDER],
       fileSectionOrder: get().settings?.fileSectionOrder ?? [...DEFAULT_FILE_SECTION_ORDER],
     });
+    get().restoreVisibleSelection();
+  },
+
+  restoreVisibleSelection() {
+    const state = get();
+    const hiddenNav = state.hiddenNavEntries;
+    const hiddenCategories = state.settings?.hiddenCategories ?? [];
+    const hiddenFiles = state.settings?.hiddenFileSections ?? [];
+    if (state.activeCategory && !hiddenNav.includes('categories')) {
+      const category = nearestVisible(state.categories, state.activeCategory, (name) => !hiddenCategories.includes(name));
+      if (category) {
+        if (category !== state.activeCategory) {
+          set({ activeCategory: category });
+          void get().fetchItems();
+        }
+        return;
+      }
+    }
+    if (!state.activeCategory && state.nav === 'files' && !hiddenNav.includes('files')) {
+      const current: FileSection = state.activeFileGroup ?? 'all';
+      const section = nearestVisible(state.fileSectionOrder, current, (entry) => !hiddenFiles.includes(entry));
+      if (section) {
+        const group = section === 'all' ? null : section;
+        if (group !== state.activeFileGroup) {
+          set({ activeFileGroup: group });
+          void get().fetchItems();
+        }
+        return;
+      }
+    }
+    const current = state.activeCategory ? 'categories' : state.nav;
+    const entry = nearestVisible(state.navOrder, current, (key) =>
+      !hiddenNav.includes(key) && (key !== 'categories' || state.categories.some((name) => !hiddenCategories.includes(name))) &&
+      (key !== 'files' || state.fileSectionOrder.some((section) => !hiddenFiles.includes(section))));
+    if (!entry) return;
+    if (entry === 'categories') {
+      const category = state.categories.find((name) => !hiddenCategories.includes(name));
+      if (category) set({ activeCategory: category, activeFileGroup: null });
+    } else if (entry === 'files') {
+      const section = state.fileSectionOrder.find((key) => !hiddenFiles.includes(key)) ?? 'all';
+      set({ nav: 'files', activeCategory: null, activeFileGroup: section === 'all' ? null : section });
+    } else {
+      set({ nav: entry, activeCategory: null, activeFileGroup: null });
+    }
+    void get().fetchItems();
   },
 
   async hideWindow() {

@@ -85,6 +85,23 @@ describe('Sidebar', () => {
     expect(screen.getByText('Все файлы').closest('.category-item')).not.toHaveClass('active');
   });
 
+  it('opens files from the whole row and selects subgroups from row edges', () => {
+    const props = renderSidebar({ onFileGroupSelect: jest.fn() });
+    fireEvent.click(screen.getByText('Файлы', { selector: 'span' }).closest('.nav-row')!);
+    expect(screen.getByText('Все файлы')).toBeInTheDocument();
+    expect(props.onNavChange).toHaveBeenCalledWith('files');
+    fireEvent.click(screen.getByText('Документы').closest('.category-item')!);
+    expect(props.onFileGroupSelect).toHaveBeenCalledWith('documents');
+    fireEvent.click(screen.getByText('Файлы', { selector: 'span' }).closest('.nav-row')!);
+    expect(screen.queryByText('Документы')).not.toBeInTheDocument();
+  });
+
+  it('keeps selected rows unhighlighted while arranging', () => {
+    renderSidebar({ reorderMode: true, nav: 'files', activeCategory: null, filesExpanded: true });
+    expect(screen.getByText('Файлы', { selector: 'span' }).closest('.nav-row')).not.toHaveClass('active');
+    expect(screen.getByText('Все файлы').closest('.category-item')).not.toHaveClass('active');
+  });
+
   it('reorders file subgroups locally and allows hiding a category', () => {
     const props = renderSidebar({ reorderMode: true, filesExpanded: true, onFileSectionMove: jest.fn(), onCategoryVisibilityToggle: jest.fn() });
     const images = screen.getAllByText('Изображения').find((node) => node.closest('.category-item'))!.closest('.category-item')!;

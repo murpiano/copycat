@@ -211,6 +211,32 @@ describe('useClipboardStore', () => {
     expect(useClipboardStore.getState().navReorderMode).toBe(false);
   });
 
+  it('hides all file subgroups with their parent and restores them together', async () => {
+    const api = installFakeApi();
+    await act(async () => useClipboardStore.getState().toggleNavVisibility('files'));
+    expect(api.updateSettings).toHaveBeenCalledWith({
+      hiddenNavEntries: ['files'],
+      hiddenFileSections: ['all', 'documents', 'images', 'audio', 'files', 'folders'],
+    });
+  });
+
+  it('selects the nearest visible section when leaving settings', async () => {
+    installFakeApi();
+    useClipboardStore.setState({
+      nav: 'text',
+      activeCategory: null,
+      activeFileGroup: null,
+      navOrder: ['history', 'starred', 'text', 'files', 'categories'],
+      hiddenNavEntries: ['text'],
+      categories: ['работа'],
+      settings: { hotkey: 'Alt+Space', categoriesExpanded: false, navOrder: ['history', 'starred', 'text', 'files', 'categories'], hiddenNavEntries: ['text'], windowBounds: null },
+      navReorderMode: true,
+    });
+    await act(async () => useClipboardStore.getState().cancelNavOrder());
+    expect(useClipboardStore.getState().nav).toBe('files');
+    expect(useClipboardStore.getState().navReorderMode).toBe(false);
+  });
+
   it('flags the card order dirty only once it actually changes', async () => {
     const api = installFakeApi({
       getItems: jest.fn().mockResolvedValue([fakeItem({ id: 1 }), fakeItem({ id: 2 })]),
