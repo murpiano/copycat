@@ -59,6 +59,7 @@ interface ClipboardState {
   navReorderMode: boolean;
   /** Draft order held while dragging, written out only when the user confirms. */
   navOrder: SidebarEntry[];
+  hiddenNavEntries: SidebarEntry[];
   navOrderDirty: boolean;
   /** Drag-to-reorder mode; only reachable from starred and category views. */
   reorderMode: boolean;
@@ -83,6 +84,7 @@ interface ClipboardState {
   updateSettings: (input: UpdateSettingsInput) => Promise<void>;
   startNavReorder: () => void;
   moveNav: (dragKey: SidebarEntry, overKey: SidebarEntry) => void;
+  toggleNavVisibility: (key: SidebarEntry) => Promise<void>;
   moveCategory: (dragName: string, overName: string) => void;
   commitNavOrder: () => Promise<void>;
   cancelNavOrder: () => void;
@@ -117,6 +119,7 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
   settings: null,
   navReorderMode: false,
   navOrder: [...DEFAULT_NAV_ORDER],
+  hiddenNavEntries: [],
   navOrderDirty: false,
   reorderMode: false,
   itemOrderSnapshot: null,
@@ -201,12 +204,12 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
 
   async loadSettings() {
     const settings = await window.copycat.getSettings();
-    set({ settings, navOrder: settings.navOrder });
+    set({ settings, navOrder: settings.navOrder, hiddenNavEntries: settings.hiddenNavEntries ?? [] });
   },
 
   async updateSettings(input) {
     const settings = await window.copycat.updateSettings(input);
-    set({ settings, navOrder: settings.navOrder });
+    set({ settings, navOrder: settings.navOrder, hiddenNavEntries: settings.hiddenNavEntries ?? [] });
   },
 
   startNavReorder() {
@@ -222,6 +225,13 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
     if (from === -1 || to === -1) return;
     order.splice(to, 0, ...order.splice(from, 1));
     set({ navOrder: order, navOrderDirty: true });
+  },
+
+  async toggleNavVisibility(key) {
+    const hidden = get().hiddenNavEntries.includes(key)
+      ? get().hiddenNavEntries.filter((entry) => entry !== key)
+      : [...get().hiddenNavEntries, key];
+    await get().updateSettings({ hiddenNavEntries: hidden });
   },
 
   moveCategory(dragName, overName) {

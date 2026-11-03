@@ -57,6 +57,7 @@ interface SettingsDialogProps {
   onHotkeyChange: (accelerator: string) => Promise<{ ok: boolean; reason?: string }>;
   onHotkeyCapture?: (capturing: boolean) => Promise<void>;
   onCategoriesExpandedChange: (expanded: boolean) => void;
+  onFilesExpandedChange?: (expanded: boolean) => void;
   onNavReorderStart: () => void;
   categories?: string[];
   onClearHistory?: (input: { scope: ClearHistoryScope; category?: string; since?: number; exclude: string[] }) => Promise<void>;
@@ -68,6 +69,7 @@ export function SettingsDialog({
   onHotkeyChange,
   onHotkeyCapture = NOOP_HOTKEY_CAPTURE,
   onCategoriesExpandedChange,
+  onFilesExpandedChange = () => {},
   onNavReorderStart,
   categories = [],
   onClearHistory = async () => {},
@@ -171,11 +173,11 @@ export function SettingsDialog({
         </div>
 
         <div className="field">
-          <span className="field-label">Горячая клавиша открытия</span>
+          <span className="field-label">Горячая клавиша</span>
           <button
             type="button"
             className={capturing ? 'hotkey-field capturing' : 'hotkey-field'}
-            aria-label="Горячая клавиша открытия"
+            aria-label="Горячая клавиша"
             onClick={() => void startCapture()}
             onKeyDown={capturing ? (e) => void captureKey(e) : undefined}
           >
@@ -191,8 +193,9 @@ export function SettingsDialog({
         <div className="field">
           <span className="field-label">Разделы</span>
           <label className="field field-row"><input type="checkbox" checked={settings?.categoriesExpanded ?? false} onChange={(e) => onCategoriesExpandedChange(e.target.checked)} /><span>Развернуть раздел категорий</span></label>
+          <label className="field field-row"><input type="checkbox" checked={settings?.filesExpanded ?? false} onChange={(e) => onFilesExpandedChange(e.target.checked)} /><span>Развернуть раздел файлов</span></label>
           <button type="button" className="button ghost wide" onClick={onNavReorderStart}>
-            Изменить порядок разделов
+            Настроить разделы
           </button>
         </div>
 

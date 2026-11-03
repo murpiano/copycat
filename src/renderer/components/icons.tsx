@@ -132,6 +132,10 @@ export function SettingsIcon(props: IconProps) {
   );
 }
 
+export function EyeIcon({ closed = false, ...props }: IconProps & { closed?: boolean }) {
+  return <Svg {...props}>{closed ? <><path d="M3 3l18 18" /><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" /><path d="M9.9 5.2A11.8 11.8 0 0 1 12 5c5 0 8.5 4.2 9.5 7-.4 1.1-1.2 2.3-2.3 3.4M6.1 6.1C3.9 7.7 2.8 10 2.5 12c.5 1.6 1.8 3.7 4.1 5.3" /></> : <><path d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7z" /><circle cx="12" cy="12" r="2.5" /></>}</Svg>;
+}
+
 export function PencilIcon(props: IconProps) {
   return (
     <Svg {...props}>
