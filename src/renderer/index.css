@@ -752,6 +752,31 @@ button:disabled {
   z-index: 4;
 }
 
+.settings-button-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 4px 0 12px;
+}
+
+.settings-choice {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  font-size: 12px;
+}
+
+.settings-choice.active {
+  border-color: var(--nav-active-border);
+  background: var(--nav-active-bg);
+  color: var(--accent-text);
+}
+
+.settings-exclusions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px 14px;
+}
+
 .item-card-tags {
   display: flex;
   flex-wrap: wrap;

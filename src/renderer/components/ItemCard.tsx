@@ -1,7 +1,7 @@
 import type { DragEvent, MouseEvent } from 'react';
 import { useSelectionCursor } from '../useSelectionCursor';
 import type { ClipboardItem, ItemType } from '../../shared/types';
-import { CloseIcon, FileIcon, FolderIcon, ImageIcon, PencilIcon, StarIcon } from './icons';
+import { CloseIcon, FileIcon, FolderIcon, ImageIcon, PencilIcon, StarIcon, WordIcon, ExcelIcon, PowerPointIcon, PdfIcon, AudioIcon } from './icons';
 
 export const KIND_LABEL: Record<ItemType, string> = {
   text: 'Текст',
@@ -22,6 +22,16 @@ export function badgeIcon(type: ItemType, size = 14) {
   if (type === 'image') return <ImageIcon size={size} />;
   if (type === 'file') return <FolderIcon size={size} />;
   return <FileIcon size={size} />;
+}
+
+function fileIcon(content: string, size = 14) {
+  const name = content.toLowerCase();
+  if (/\.docx?$/.test(name)) return <WordIcon size={size} />;
+  if (/\.xlsx?$/.test(name)) return <ExcelIcon size={size} />;
+  if (/\.pptx?$/.test(name)) return <PowerPointIcon size={size} />;
+  if (/\.pdf$/.test(name)) return <PdfIcon size={size} />;
+  if (/\.(mp3|wav|flac|m4a|ogg|aac)$/.test(name)) return <AudioIcon size={size} />;
+  return <FolderIcon size={size} />;
 }
 
 interface ItemCardProps {
@@ -96,9 +106,9 @@ export function ItemCard({
             title="Копировать целиком"
             onClick={actOnly(() => onCopy(item.id))}
           >
-            {badgeIcon(item.type)}
+            {item.type === 'file' ? fileIcon(item.content) : badgeIcon(item.type)}
           </button>
-          <div className="item-card-kind" data-tooltip={item.title ?? KIND_LABEL[item.type]}>
+          <div className="item-card-kind" title={item.title ?? KIND_LABEL[item.type]} data-tooltip={item.title ?? KIND_LABEL[item.type]}>
             {item.title ?? KIND_LABEL[item.type]}
           </div>
           <button

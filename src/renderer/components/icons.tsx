@@ -65,6 +65,15 @@ export function FileIcon(props: IconProps) {
   );
 }
 
+function LabeledFileIcon({ label, ...props }: IconProps & { label: string }) {
+  return <Svg {...props}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><text x="7" y="17" fontSize="5.5" fill="currentColor" stroke="none" fontWeight="700">{label}</text></Svg>;
+}
+export function WordIcon(props: IconProps) { return <LabeledFileIcon {...props} label="W" />; }
+export function ExcelIcon(props: IconProps) { return <LabeledFileIcon {...props} label="X" />; }
+export function PowerPointIcon(props: IconProps) { return <LabeledFileIcon {...props} label="P" />; }
+export function PdfIcon(props: IconProps) { return <LabeledFileIcon {...props} label="PDF" />; }
+export function AudioIcon(props: IconProps) { return <LabeledFileIcon {...props} label="♪" />; }
+
 export function TagIcon(props: IconProps) {
   return (
     <Svg {...props}>

@@ -78,7 +78,7 @@ export function createItemsRepo(db: Database.Database, tagsRepo: TagsRepo): Item
       if (input.type === 'image' || input.type === 'file') {
         let titleSource = content;
         if (input.type === 'file') { try { titleSource = JSON.parse(content)[0] ?? content; } catch { /* keep content */ } }
-        const base = titleSource.split(/[\\/]/).pop()?.split('.')[0]?.trim();
+        const base = titleSource.split(/[\\/]/).pop()?.trim();
         if (base) { titleStmt.run(base, result.lastInsertRowid); item.title = base; }
       }
       return item;

@@ -77,7 +77,7 @@ export function SettingsDialog({
   const [saved, setSaved] = useState(false);
   const [clearOpen, setClearOpen] = useState(false);
   const [scope, setScope] = useState<ClearHistoryScope>('all');
-  const [period, setPeriod] = useState('all');
+  const [period, setPeriod] = useState('hour');
   const [category, setCategory] = useState(categories[0] ?? '');
   const [exclude, setExclude] = useState<string[]>([]);
   const choices = scope === 'all' ? ['starred', 'image', 'file', 'category', ...categories] : scope === 'starred' ? ['image', 'file', 'category', ...categories] : scope === 'image' ? ['starred', 'category', ...categories] : scope === 'file' ? ['starred', 'category', ...categories] : ['starred', 'image', 'file'];
@@ -138,6 +138,20 @@ export function SettingsDialog({
     }
   }
 
+  if (clearOpen) {
+    const periodButtons = [['hour', 'За час'], ['3hours', 'За 3 часа'], ['today', 'За сутки'], ['all', 'За всё время']];
+    const scopeButtons: Array<[ClearHistoryScope, string]> = [['all', 'Все'], ['starred', 'Избранное'], ['image', 'Изображения'], ['file', 'Файлы'], ['category', 'Категории']];
+    const since = period === 'hour' ? Date.now() - 3600000 : period === '3hours' ? Date.now() - 10800000 : period === 'today' ? new Date().setHours(0, 0, 0, 0) : undefined;
+    return <Overlay onClose={() => setClearOpen(false)}><div className="popup settings-dialog clear-history-dialog" role="dialog" aria-label="Очистить историю">
+      <div className="popup-head"><div className="popup-title">Очистить историю</div><button className="item-card-action" onClick={() => setClearOpen(false)}><CloseIcon size={15} /></button></div>
+      <div className="settings-button-grid">{scopeButtons.map(([value, label]) => <button key={value} className={scope === value ? 'button settings-choice active' : 'button settings-choice'} onClick={() => { setScope(value); setExclude([]); }}>{label}</button>)}</div>
+      {scope === 'category' && <div className="settings-button-grid">{categories.map(value => <button key={value} className={category === value ? 'button settings-choice active' : 'button settings-choice'} onClick={() => setCategory(value)}>{value}</button>)}</div>}
+      <div className="settings-button-grid">{periodButtons.map(([value, label]) => <button key={value} className={period === value ? 'button settings-choice active' : 'button settings-choice'} onClick={() => setPeriod(value)}>{label}</button>)}</div>
+      <div className="field"><span className="field-label">Кроме</span><div className="settings-exclusions">{choices.map(value => <label className="field-row" key={value}><input type="checkbox" checked={exclude.includes(value)} onChange={e => setExclude(current => e.target.checked ? [...current, value] : current.filter(item => item !== value))} /><span>{value === 'starred' ? 'Избранное' : value === 'image' ? 'Изображения' : value === 'file' ? 'Файлы' : value === 'category' ? 'Все категории' : value}</span></label>)}</div></div>
+      <div className="dialog-actions"><button className="button ghost" onClick={() => setClearOpen(false)}>Отмена</button><button className="button danger" onClick={() => void onClearHistory({ scope, category: scope === 'category' ? category : undefined, since, exclude }).then(() => setClearOpen(false))}>Очистить</button></div>
+    </div></Overlay>;
+  }
+
   return (
     <Overlay onClose={() => void requestClose()}>
       <div
@@ -172,32 +186,20 @@ export function SettingsDialog({
                 ? formatAccelerator(settings.hotkey)
                 : '—'}
           </button>
-          <span className="field-hint">
-            {error ?? (saved ? 'Сохранено' : 'Нажмите на поле и задайте новое сочетание')}
-          </span>
+          {error && <span className="field-hint">{error}</span>}
         </div>
-
-        <div className="field">
-          <button type="button" className="button ghost wide" onClick={() => setClearOpen(true)}>Очистить историю</button>
-        </div>
-
-        <label className="field field-row">
-          <input
-            type="checkbox"
-            checked={settings?.categoriesExpanded ?? false}
-            onChange={(e) => onCategoriesExpandedChange(e.target.checked)}
-          />
-          <span>Развернуть раздел «Категории»</span>
-        </label>
 
         <div className="field">
           <span className="field-label">Разделы</span>
+          <label className="field field-row"><input type="checkbox" checked={settings?.categoriesExpanded ?? false} onChange={(e) => onCategoriesExpandedChange(e.target.checked)} /><span>Развернуть раздел категорий</span></label>
           <button type="button" className="button ghost wide" onClick={onNavReorderStart}>
             Изменить порядок разделов
           </button>
-          <span className="field-hint">
-            Настройки свернутся, разделы и категории можно будет перетаскивать
-          </span>
+        </div>
+
+        <div className="field">
+          <span className="field-label">История</span>
+          <button type="button" className="button ghost wide" onClick={() => setClearOpen(true)}>Очистить историю</button>
         </div>
 
         <div className="dialog-actions">
@@ -206,14 +208,6 @@ export function SettingsDialog({
           </button>
         </div>
       </div>
-      {clearOpen && <div className="popup clear-history-dialog" role="dialog" aria-label="Очистить историю">
-        <div className="popup-head"><div className="popup-title">Очистить историю</div><button className="item-card-action" onClick={() => setClearOpen(false)}><CloseIcon size={15} /></button></div>
-        <label className="field"><span className="field-label">Раздел</span><select value={scope} onChange={e => { setScope(e.target.value as ClearHistoryScope); setExclude([]); }}><option value="all">Все</option><option value="starred">Избранное</option><option value="image">Изображения</option><option value="file">Файлы</option><option value="category">Категория</option></select></label>
-        {scope === 'category' && <label className="field"><span className="field-label">Категория</span><select value={category} onChange={e => setCategory(e.target.value)}>{categories.map(c => <option key={c}>{c}</option>)}</select></label>}
-        <label className="field"><span className="field-label">Период</span><select value={period} onChange={e => setPeriod(e.target.value)}><option value="all">Всё время</option><option value="hour">За час</option><option value="today">За сегодня</option></select></label>
-        <div className="field"><span className="field-label">Кроме</span>{choices.map(c => <label className="field-row" key={c}><input type="checkbox" checked={exclude.includes(c)} onChange={e => setExclude(v => e.target.checked ? [...v, c] : v.filter(x => x !== c))} /><span>{c === 'starred' ? 'Избранное' : c === 'image' ? 'Изображения' : c === 'file' ? 'Файлы' : c === 'category' ? 'Категории без уточнения' : c}</span></label>)}</div>
-        <div className="dialog-actions"><button className="button ghost" onClick={() => setClearOpen(false)}>Отмена</button><button className="button danger" onClick={() => { const now = Date.now(); const since = period === 'hour' ? now - 3600000 : period === 'today' ? new Date().setHours(0,0,0,0) : undefined; void onClearHistory({ scope, category: scope === 'category' ? category : undefined, since, exclude }).then(() => setClearOpen(false)); }}>Очистить</button></div>
-      </div>}
     </Overlay>
   );
 }
