@@ -5,7 +5,6 @@ import { Overlay } from './Overlay';
 
 /** Modifiers alone are not a shortcut; the field waits for a real key. */
 const MODIFIER_KEYS = new Set(['Control', 'Alt', 'Shift', 'Meta']);
-const NOOP_HOTKEY_CAPTURE = async (): Promise<void> => {};
 
 /**
  * Turns a key press into an Electron accelerator. `event.code` is used for
@@ -55,7 +54,6 @@ interface SettingsDialogProps {
   settings: AppSettings | null;
   onClose: () => void;
   onHotkeyChange: (accelerator: string) => Promise<{ ok: boolean; reason?: string }>;
-  onHotkeyCapture?: (capturing: boolean) => Promise<void>;
   onCategoriesExpandedChange: (expanded: boolean) => void;
   onNavReorderStart: () => void;
 }
@@ -64,7 +62,6 @@ export function SettingsDialog({
   settings,
   onClose,
   onHotkeyChange,
-  onHotkeyCapture = NOOP_HOTKEY_CAPTURE,
   onCategoriesExpandedChange,
   onNavReorderStart,
 }: SettingsDialogProps) {
@@ -72,44 +69,19 @@ export function SettingsDialog({
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
-  async function requestClose() {
-    await onHotkeyCapture(false);
-    setCapturing(false);
-    onClose();
-  }
-
-  async function startCapture() {
-    await onHotkeyCapture(true);
-    setCapturing(true);
-    setError(null);
-    setSaved(false);
-  }
-
-  async function cancelCapture() {
-    await onHotkeyCapture(false);
-    setCapturing(false);
-  }
-
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
       // While capturing, Escape cancels the capture rather than the dialog.
-      if (event.key === 'Escape' && !capturing) void requestClose();
+      if (event.key === 'Escape' && !capturing) onClose();
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [capturing, onHotkeyCapture, onClose]);
-
-  useEffect(
-    () => () => {
-      if (capturing) void onHotkeyCapture(false);
-    },
-    [capturing, onHotkeyCapture],
-  );
+  }, [onClose, capturing]);
 
   async function captureKey(event: ReactKeyboardEvent<HTMLButtonElement>) {
     event.preventDefault();
     if (event.key === 'Escape') {
-      void cancelCapture();
+      setCapturing(false);
       return;
     }
     const accelerator = toAccelerator(event);
@@ -120,7 +92,6 @@ export function SettingsDialog({
     setError(null);
     const result = await onHotkeyChange(accelerator);
     if (result.ok) {
-      await onHotkeyCapture(false);
       setCapturing(false);
       setSaved(true);
     } else {
@@ -129,7 +100,7 @@ export function SettingsDialog({
   }
 
   return (
-    <Overlay onClose={() => void requestClose()}>
+    <Overlay onClose={onClose}>
       <div
         className="popup settings-dialog"
         role="dialog"
@@ -141,7 +112,7 @@ export function SettingsDialog({
             className="item-card-action"
             aria-label="Закрыть"
             title="Закрыть"
-            onClick={() => void requestClose()}
+            onClick={onClose}
           >
             <CloseIcon size={15} />
           </button>
@@ -153,7 +124,11 @@ export function SettingsDialog({
             type="button"
             className={capturing ? 'hotkey-field capturing' : 'hotkey-field'}
             aria-label="Горячая клавиша открытия"
-            onClick={() => void startCapture()}
+            onClick={() => {
+              setCapturing(true);
+              setError(null);
+              setSaved(false);
+            }}
             onKeyDown={capturing ? (e) => void captureKey(e) : undefined}
           >
             {capturing
@@ -187,7 +162,7 @@ export function SettingsDialog({
         </div>
 
         <div className="dialog-actions">
-          <button type="button" className="button ghost" onClick={() => void requestClose()}>
+          <button type="button" className="button ghost" onClick={onClose}>
             Закрыть
           </button>
         </div>

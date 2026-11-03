@@ -1,7 +1,7 @@
 import type { ClipboardItem } from '../../shared/types';
 import type { ItemsRepo } from '../storage/items-repo';
 import type { ClipboardSnapshot } from './types';
-import { saveImagePreview, saveSvgPreview } from './image-store';
+import { saveImagePreview } from './image-store';
 
 export interface CapturePipelineDeps {
   itemsRepo: ItemsRepo;
@@ -15,8 +15,6 @@ export function createCapturePipeline(deps: CapturePipelineDeps) {
     let content: string;
     if (snapshot.type === 'image') {
       content = saveImagePreview(deps.previewsDir, snapshot.pngBuffer);
-    } else if (snapshot.type === 'svg') {
-      content = saveSvgPreview(deps.previewsDir, snapshot.svgBuffer);
     } else if (snapshot.type === 'file') {
       content = JSON.stringify(snapshot.paths);
     } else {
@@ -24,7 +22,7 @@ export function createCapturePipeline(deps: CapturePipelineDeps) {
     }
 
     const item = deps.itemsRepo.insertItem({
-      type: snapshot.type === 'svg' ? 'image' : snapshot.type,
+      type: snapshot.type,
       content,
       sourceApp: null,
     });

@@ -66,7 +66,6 @@ describe('SettingsDialog', () => {
     expect(field).toHaveTextContent('Ctrl + Shift + V');
 
     fireEvent.click(field);
-    await screen.findByText('Нажмите сочетание…');
     fireEvent.keyDown(field, { code: 'KeyB', key: 'b', ctrlKey: true, altKey: true });
 
     await waitFor(() => expect(onHotkeyChange).toHaveBeenCalledWith('CommandOrControl+Alt+B'));
@@ -89,10 +88,8 @@ describe('SettingsDialog', () => {
         onNavReorderStart={() => {}}
       />,
     );
-    const field = screen.getByLabelText('Горячая клавиша открытия');
-    fireEvent.click(field);
-    await screen.findByText('Нажмите сочетание…');
-    fireEvent.keyDown(field, {
+    fireEvent.click(screen.getByLabelText('Горячая клавиша открытия'));
+    fireEvent.keyDown(screen.getByLabelText('Горячая клавиша открытия'), {
       code: 'KeyB',
       key: 'b',
       ctrlKey: true,
