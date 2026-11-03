@@ -58,6 +58,8 @@ app.whenReady().then(() => {
     if (hotkeyCaptureActive) {
       hotkeyCaptureActive = false;
       if (!win.isDestroyed()) win.webContents.send(IPC.HOTKEY_CAPTURE_CANCELED);
+      hideWindow(win);
+      return;
     }
     toggleWindow(win);
   };

@@ -41,6 +41,9 @@ function installFakeApi(overrides: Partial<CopycatAPI> = {}): CopycatAPI {
       windowBounds: null,
     }),
     setHotkey: jest.fn().mockResolvedValue({ ok: true }),
+    setHotkeyCapture: jest.fn().mockResolvedValue(undefined),
+    onHotkeyCaptureCanceled: jest.fn().mockReturnValue(() => {}),
+    toFileUrl: jest.fn((filePath: string) => filePath),
     updateSettings: jest.fn().mockResolvedValue({
       hotkey: 'CommandOrControl+Shift+V',
       categoriesExpanded: false,
