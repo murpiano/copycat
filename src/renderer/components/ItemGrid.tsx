@@ -71,12 +71,12 @@ export function ItemGrid({
             <span>Отмена</span>
           </button>
         ) : (
-          <button className="grid-reorder-toggle" title="Создать блок" onClick={onCompose}>
+          <button className="grid-reorder-toggle" title="Создать" onClick={onCompose}>
             <PlusIcon size={15} />
-            <span>Блок</span>
+            <span>Создать</span>
           </button>
         )}
-        {showTop && <button className="grid-reorder-toggle grid-top" onClick={() => sectionRef.current?.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="В начало"><ArrowUpIcon size={15} /><span>В начало</span></button>}
+        {showTop && items.length > 0 && <button className="grid-reorder-toggle grid-top" onClick={() => sectionRef.current?.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="В начало"><ArrowUpIcon size={15} /><span>В начало</span></button>}
       </div>
 
       {items.length === 0 ? (

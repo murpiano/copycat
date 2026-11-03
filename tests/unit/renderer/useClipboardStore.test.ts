@@ -135,7 +135,9 @@ describe('useClipboardStore', () => {
     });
     const query = (api.getItems as jest.Mock).mock.calls.at(-1)![0];
     expect(query.tags).toBeUndefined();
-    expect(query.type).toBe('file');
+    // The files view must fetch both files and images; the group filter is
+    // applied after the query so Images is not discarded prematurely.
+    expect(query.type).toBeUndefined();
   });
 
   it('treats every view but the full history as hand-ordered', async () => {

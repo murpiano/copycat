@@ -27,7 +27,9 @@ function defaults(): AppSettings {
 function sanitizeNavOrder(value: unknown): SidebarEntry[] {
   const known = new Set<SidebarEntry>(DEFAULT_NAV_ORDER);
   const stored = Array.isArray(value)
-    ? value.filter((key): key is SidebarEntry => known.has(key))
+    ? value
+        .map((key) => (key === 'images' ? 'text' : key))
+        .filter((key): key is SidebarEntry => known.has(key as SidebarEntry))
     : [];
   const seen = new Set(stored);
   return [...new Set(stored), ...DEFAULT_NAV_ORDER.filter((key) => !seen.has(key))];
