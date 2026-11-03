@@ -400,12 +400,15 @@ button:disabled {
   flex: 0 0 auto;
   display: flex;
   padding: 14px 24px 0;
+  gap: 8px;
 }
 
 .grid-reorder-toggle {
   display: flex;
   align-items: center;
   gap: 7px;
+  width: 104px;
+  justify-content: center;
   padding: 6px 12px;
   border: 1px solid var(--surface-border);
   border-radius: 8px;
@@ -534,7 +537,7 @@ button:disabled {
 
 .item-card[data-type='image'] {
   background:
-    linear-gradient(90deg, rgba(165, 125, 246, 0.13) 0px, rgba(165, 125, 246, 0) 26px),
+    linear-gradient(90deg, rgba(106, 215, 153, 0.11) 0px, rgba(106, 215, 153, 0) 26px),
     var(--surface);
 }
 
@@ -549,7 +552,7 @@ button:disabled {
 }
 
 .item-card[data-type='image'] .item-card-bar {
-  background: linear-gradient(180deg, #a57df6 0%, #996bef 100%);
+  background: linear-gradient(180deg, #6ad799 0%, #68d195 100%);
 }
 
 .item-card[data-type='file'] .item-card-bar {
@@ -612,8 +615,8 @@ button:disabled {
 }
 
 .item-card[data-type='image'] .item-card-badge {
-  background: linear-gradient(135deg, #3f3576 0%, #342c62 100%);
-  color: #cfa8f0;
+  background: linear-gradient(135deg, #3a6a58 0%, #2d5449 100%);
+  color: #88e1b0;
 }
 
 .item-card[data-type='file'] .item-card-badge {
@@ -746,7 +749,7 @@ button:disabled {
 }
 
 .grid-top {
-  margin-left: 8px;
+  margin-left: auto;
 }
 
 .settings-button-grid {

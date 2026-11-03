@@ -1,17 +1,29 @@
-import type { ClipboardItem } from './types';
+import type { ClipboardItem, ItemKind } from './types';
 
 export type FileGroup = 'documents' | 'images' | 'audio' | 'files' | 'folders';
 
-function firstPath(content: string): string {
+export function firstPath(content: string): string {
   try { return JSON.parse(content)[0] ?? content; } catch { return content; }
 }
 
-export function fileGroupOf(item: Pick<ClipboardItem, 'type' | 'content'>): FileGroup | null {
+const DOCUMENT_EXTS = new Set(['doc', 'docx', 'dot', 'dotx', 'odt', 'xls', 'xlsx', 'xlsm', 'xlsb', 'ods', 'csv', 'ppt', 'pptx', 'pps', 'ppsx', 'odp', 'txt', 'md', 'rtf', 'log', 'ini', 'yaml', 'yml', 'json', 'xml', 'html', 'htm', 'pdf', 'epub', 'mobi']);
+const IMAGE_EXTS = new Set(['png', 'jpg', 'jpeg', 'jfif', 'gif', 'bmp', 'webp', 'svg', 'ico', 'tif', 'tiff', 'avif', 'heic']);
+const AUDIO_EXTS = new Set(['mp3', 'wav', 'flac', 'm4a', 'ogg', 'oga', 'aac', 'wma', 'opus', 'aiff', 'aif']);
+
+export function kindFromPath(filePath: string, isDirectory = false): ItemKind {
+  if (isDirectory) return 'folder';
+  const name = filePath.split(/[\\/]/).pop() ?? '';
+  const dot = name.lastIndexOf('.');
+  if (dot <= 0 || dot === name.length - 1) return 'file';
+  const extension = name.slice(dot + 1).toLowerCase();
+  if (DOCUMENT_EXTS.has(extension)) return 'document';
+  if (IMAGE_EXTS.has(extension)) return 'image';
+  if (AUDIO_EXTS.has(extension)) return 'audio';
+  return 'file';
+}
+
+export function fileGroupOf(item: Pick<ClipboardItem, 'type' | 'content' | 'kind'>): FileGroup | null {
   if (item.type === 'text') return null;
-  if (item.type === 'image') return 'images';
-  const path = firstPath(item.content).toLowerCase();
-  if (/\.(docx?|xlsx?|pptx?|pdf|rtf|odt|csv)$/.test(path)) return 'documents';
-  if (/\.(mp3|wav|flac|m4a|ogg|aac)$/.test(path)) return 'audio';
-  if (!/\.[^\\/]+$/.test(path)) return 'folders';
-  return 'files';
+  const kind = item.kind ?? (item.type === 'image' ? 'image' : kindFromPath(firstPath(item.content)));
+  return kind === 'document' ? 'documents' : kind === 'image' ? 'images' : kind === 'audio' ? 'audio' : kind === 'folder' ? 'folders' : 'files';
 }

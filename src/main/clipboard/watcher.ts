@@ -3,7 +3,7 @@ import { parseFileDropBuffer } from './file-drop';
 import type { ClipboardReader, ClipboardSnapshot } from './types';
 import { POLL_INTERVAL_MS } from '../../shared/config';
 
-const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.bmp', '.webp', '.ico', '.tiff', '.tif', '.avif', '.svg']);
+const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.jfif', '.gif', '.bmp', '.webp', '.ico', '.tiff', '.tif', '.avif', '.heic', '.svg']);
 
 function isImagePath(p: string): boolean {
   const dot = p.lastIndexOf('.');

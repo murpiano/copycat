@@ -1,8 +1,10 @@
 export type ItemType = 'text' | 'image' | 'file';
+export type ItemKind = 'text' | 'document' | 'image' | 'audio' | 'file' | 'folder';
 
 export interface ClipboardItem {
   id: number;
   type: ItemType;
+  kind?: ItemKind;
   /** User-set card name; null means the card shows the type's default label. */
   title: string | null;
   content: string;

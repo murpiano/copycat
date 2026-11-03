@@ -9,6 +9,7 @@ module.exports = {
         '**/tests/unit/clipboard/**/*.test.ts',
         '**/tests/unit/ipc/**/*.test.ts',
         '**/tests/unit/main/**/*.test.ts',
+        '**/tests/unit/shared/**/*.test.ts',
       ],
     },
     {

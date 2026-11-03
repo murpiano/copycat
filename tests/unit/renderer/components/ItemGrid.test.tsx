@@ -65,4 +65,12 @@ describe('ItemGrid', () => {
     fireEvent.click(screen.getByTitle('Отменить'));
     expect(onCancelReorder).toHaveBeenCalled();
   });
+
+  it('shows В начало after the card grid is scrolled', () => {
+    const { container } = render(<ItemGrid {...handlers} items={[makeItem(1)]} canReorder={false} />);
+    const grid = container.querySelector('.item-grid') as HTMLDivElement;
+    Object.defineProperty(grid, 'scrollTop', { value: 240, configurable: true });
+    fireEvent.scroll(grid);
+    expect(screen.getByRole('button', { name: 'В начало' })).toBeInTheDocument();
+  });
 });

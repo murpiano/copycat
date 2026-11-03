@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import type { ClipboardItem } from '../../shared/types';
 import { ItemCard } from './ItemCard';
-import { CheckIcon, CloseIcon, PencilIcon, PlusIcon } from './icons';
+import { ArrowUpIcon, CheckIcon, CloseIcon, PencilIcon, PlusIcon } from './icons';
 
 interface ItemGridProps {
   items: ClipboardItem[];
@@ -76,7 +76,7 @@ export function ItemGrid({
             <span>Блок</span>
           </button>
         )}
-        {showTop && <button className="grid-reorder-toggle grid-top" onClick={() => sectionRef.current?.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="В начало">↑ В начало</button>}
+        {showTop && <button className="grid-reorder-toggle grid-top" onClick={() => sectionRef.current?.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="В начало"><ArrowUpIcon size={15} /><span>В начало</span></button>}
       </div>
 
       {items.length === 0 ? (

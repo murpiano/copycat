@@ -6,6 +6,7 @@ const SCHEMA = `
 CREATE TABLE IF NOT EXISTS items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   type TEXT NOT NULL CHECK(type IN ('text','image','file')),
+  file_kind TEXT,
   title TEXT,
   content TEXT NOT NULL,
   source_app TEXT,
@@ -35,6 +36,7 @@ CREATE INDEX IF NOT EXISTS idx_items_starred ON items(starred);
 const ADDED_COLUMNS: { name: string; ddl: string }[] = [
   { name: 'title', ddl: 'ALTER TABLE items ADD COLUMN title TEXT' },
   { name: 'sort_order', ddl: 'ALTER TABLE items ADD COLUMN sort_order INTEGER' },
+  { name: 'file_kind', ddl: 'ALTER TABLE items ADD COLUMN file_kind TEXT' },
 ];
 
 function migrate(db: Database.Database): void {
