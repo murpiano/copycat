@@ -315,16 +315,23 @@ button:disabled {
 }
 
 .nav-visibility {
+  position: relative;
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  width: 20px;
+  width: 32px;
   height: 16px;
   margin-right: 4px;
   padding: 0;
   border: 0;
   background: transparent;
   color: var(--text-faint);
+}
+
+.nav-visibility::before {
+  content: '';
+  position: absolute;
+  inset: -6px 0;
 }
 
 .nav-visibility:hover,

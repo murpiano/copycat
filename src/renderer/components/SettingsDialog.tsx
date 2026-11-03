@@ -1,5 +1,6 @@
 import { useEffect, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
-import type { AppSettings, ClearHistoryScope } from '../../shared/types';
+import type { AppSettings, ClearHistoryInput, ClearHistoryScope } from '../../shared/types';
+import { DEFAULT_FILE_SECTION_ORDER, type FileGroup } from '../../shared/file-kind';
 import { CloseIcon } from './icons';
 import { Overlay } from './Overlay';
 
@@ -60,7 +61,7 @@ interface SettingsDialogProps {
   onFilesExpandedChange?: (expanded: boolean) => void;
   onNavReorderStart: () => void;
   categories?: string[];
-  onClearHistory?: (input: { scope: ClearHistoryScope; category?: string; since?: number; exclude: string[] }) => Promise<void>;
+  onClearHistory?: (input: ClearHistoryInput) => Promise<void>;
 }
 
 export function SettingsDialog({
@@ -79,10 +80,12 @@ export function SettingsDialog({
   const [saved, setSaved] = useState(false);
   const [clearOpen, setClearOpen] = useState(false);
   const [scope, setScope] = useState<ClearHistoryScope>('all');
+  const [fileGroup, setFileGroup] = useState<FileGroup | null>(null);
   const [period, setPeriod] = useState('hour');
-  const [category, setCategory] = useState(categories[0] ?? '');
+  const [category, setCategory] = useState('');
   const [exclude, setExclude] = useState<string[]>([]);
-  const choices = scope === 'all' ? ['starred', 'image', 'file', 'category', ...categories] : scope === 'starred' ? ['image', 'file', 'category', ...categories] : scope === 'image' ? ['starred', 'category', ...categories] : scope === 'file' ? ['starred', 'category', ...categories] : ['starred', 'image', 'file'];
+  const [clearing, setClearing] = useState(false);
+  const [clearError, setClearError] = useState<string | null>(null);
 
   async function requestClose() {
     await onHotkeyCapture(false);
@@ -143,13 +146,59 @@ export function SettingsDialog({
   if (clearOpen) {
     const periodButtons = [['hour', 'За час'], ['3hours', 'За 3 часа'], ['today', 'За сутки'], ['all', 'За всё время']];
     const scopeButtons: Array<[ClearHistoryScope, string]> = [['all', 'Все'], ['starred', 'Избранное'], ['text', 'Текст'], ['file', 'Файлы'], ['category', 'Категории']];
-    const since = period === 'hour' ? Date.now() - 3600000 : period === '3hours' ? Date.now() - 10800000 : period === 'today' ? new Date().setHours(0, 0, 0, 0) : undefined;
+    const fileLabels: Record<FileGroup, string> = { documents: 'Документы', images: 'Изображения', audio: 'Аудио', files: 'Файлы', folders: 'Папки' };
+    const fileGroups = DEFAULT_FILE_SECTION_ORDER.filter((value): value is FileGroup => value !== 'all');
+    const options: Array<[string, string]> = [];
+    if (scope !== 'starred') options.push(['starred', 'Избранное']);
+    if (scope === 'all' || scope === 'starred' || scope === 'category') options.push(['text', 'Текст']);
+    if (scope === 'all' || scope === 'starred' || scope === 'category') {
+      options.push(['files', 'Файлы — выбрать всё']);
+      for (const group of fileGroups) options.push([`file:${group}`, fileLabels[group]]);
+    }
+    if (scope === 'file' && !fileGroup) {
+      for (const group of fileGroups) options.push([`file:${group}`, fileLabels[group]]);
+    }
+    if (scope !== 'category' || !category) {
+      if (scope !== 'category') options.push(['categories', 'Категории — выбрать всё']);
+      options.push(...categories.map((name): [string, string] => [`category:${name}`, name]));
+    }
+    const since = period === 'hour' ? Date.now() - 3600000 : period === '3hours' ? Date.now() - 10800000 : period === 'today' ? Date.now() - 86400000 : undefined;
+    function toggleExclusion(key: string, checked: boolean) {
+      const children = key === 'files' ? fileGroups.map((group) => `file:${group}`) : key === 'categories' ? categories.map((name) => `category:${name}`) : [];
+      setExclude((current) => {
+        const next = new Set(current);
+        if (children.length) {
+          for (const value of [key, ...children]) checked ? next.add(value) : next.delete(value);
+        } else {
+          checked ? next.add(key) : next.delete(key);
+          if (!checked && key.startsWith('file:')) next.delete('files');
+          if (!checked && key.startsWith('category:')) next.delete('categories');
+        }
+        return [...next];
+      });
+    }
+    async function confirmClear() {
+      if (clearing) return;
+      setClearing(true);
+      setClearError(null);
+      try {
+        await onClearHistory({ scope, category: scope === 'category' ? category || undefined : undefined, fileGroup: scope === 'file' ? fileGroup ?? undefined : undefined, since, exclude });
+        setClearOpen(false);
+      } catch {
+        setClearError('Не удалось очистить историю. Попробуйте ещё раз.');
+      } finally {
+        setClearing(false);
+      }
+    }
     return <Overlay onClose={() => setClearOpen(false)}><div className="popup settings-dialog clear-history-dialog" role="dialog" aria-label="Очистить историю">
-      <div className="popup-head"><div className="popup-title">Очистить историю</div><button className="item-card-action" onClick={() => setClearOpen(false)}><CloseIcon size={15} /></button></div>
-      <div className="settings-button-grid">{scopeButtons.map(([value, label]) => <button key={value} className={scope === value && (value !== 'category' || !category) ? 'button settings-choice active' : 'button settings-choice'} onClick={() => { setScope(value); if (value !== 'category') setCategory(''); setExclude([]); }}>{label}</button>)}{categories.map(value => <button key={value} className={scope === 'category' && category === value ? 'button settings-choice active' : 'button settings-choice'} onClick={() => { setScope('category'); setCategory(value); setExclude([]); }}>{value}</button>)}</div>
+      <div className="popup-head"><div className="popup-title">Очистить историю</div><button className="item-card-action" aria-label="Закрыть" onClick={() => setClearOpen(false)}><CloseIcon size={15} /></button></div>
       <div className="settings-button-grid">{periodButtons.map(([value, label]) => <button key={value} className={period === value ? 'button settings-choice active' : 'button settings-choice'} onClick={() => setPeriod(value)}>{label}</button>)}</div>
-      <div className="field"><span className="field-label">Кроме</span><div className="settings-exclusions">{choices.map(value => <label className="field-row" key={value}><input type="checkbox" checked={exclude.includes(value)} onChange={e => setExclude(current => e.target.checked ? [...current, value] : current.filter(item => item !== value))} /><span>{value === 'starred' ? 'Избранное' : value === 'image' ? 'Изображения' : value === 'file' ? 'Файлы' : value === 'category' ? 'Все категории' : value}</span></label>)}</div></div>
-      <div className="dialog-actions"><button className="button ghost" onClick={() => setClearOpen(false)}>Отмена</button><button className="button danger" onClick={() => void onClearHistory({ scope, category: scope === 'category' ? category : undefined, since, exclude }).then(() => setClearOpen(false))}>Очистить</button></div>
+      <div className="settings-button-grid">{scopeButtons.map(([value, label]) => <button key={value} className={scope === value ? 'button settings-choice active' : 'button settings-choice'} onClick={() => { setScope(value); setCategory(''); setFileGroup(null); setExclude([]); }}>{label}</button>)}</div>
+      {scope === 'file' && <div className="settings-button-grid clear-subsections">{[['all', 'Все файлы'], ...fileGroups.map((group): [string, string] => [group, fileLabels[group]])].map(([value, label]) => <button key={value} className={(fileGroup ?? 'all') === value ? 'button settings-choice active' : 'button settings-choice'} onClick={() => { setFileGroup(value === 'all' ? null : value as FileGroup); setExclude([]); }}>{label}</button>)}</div>}
+      {scope === 'category' && <div className="settings-button-grid clear-subsections">{[['', 'Все категории'], ...categories.map((name): [string, string] => [name, name])].map(([value, label]) => <button key={value || '__all_categories'} className={category === value ? 'button settings-choice active' : 'button settings-choice'} onClick={() => { setCategory(value); setExclude([]); }}>{label}</button>)}</div>}
+      <div className="field"><span className="field-label">Удалить из выбранного раздела/подраздела всё, кроме:</span><div className="settings-exclusions">{options.map(([value, label]) => <label className="field-row" key={value}><input type="checkbox" checked={exclude.includes(value)} onChange={e => toggleExclusion(value, e.target.checked)} /><span>{label}</span></label>)}</div></div>
+      {clearError && <div role="alert" className="field-hint">{clearError}</div>}
+      <div className="dialog-actions"><button className="button ghost" disabled={clearing} onClick={() => setClearOpen(false)}>Отмена</button><button className="button danger" disabled={clearing} onClick={() => void confirmClear()}>Очистить</button></div>
     </div></Overlay>;
   }
 
