@@ -1,18 +1,22 @@
 import type Database from 'better-sqlite3';
+import fs from 'node:fs';
 import type {
   ClipboardItem,
   GetItemsQuery,
   ItemType,
   UpdateItemInput,
   ClearHistoryInput,
+  ItemKind,
 } from '../../shared/types';
 import { MAX_CONTENT_LENGTH } from '../../shared/config';
 import type { TagsRepo } from './tags-repo';
+import { firstPath, kindFromPath } from '../../shared/file-kind';
 
 export interface InsertItemInput {
   type: ItemType;
   content: string;
   sourceApp: string | null;
+  kind?: ItemKind;
 }
 
 export interface ItemsRepo {
@@ -30,6 +34,7 @@ export interface ItemsRepo {
 interface ItemRow {
   id: number;
   type: ItemType;
+  file_kind: ItemKind | null;
   title: string | null;
   content: string;
   source_app: string | null;
@@ -41,8 +46,8 @@ interface ItemRow {
 
 export function createItemsRepo(db: Database.Database, tagsRepo: TagsRepo): ItemsRepo {
   const insertStmt = db.prepare(
-    `INSERT INTO items (type, content, source_app, created_at, starred, pinned)
-     VALUES (?, ?, ?, ?, 0, 0)`,
+    `INSERT INTO items (type, file_kind, content, source_app, created_at, starred, pinned)
+     VALUES (?, ?, ?, ?, ?, 0, 0)`,
   );
   const byIdStmt = db.prepare(`SELECT * FROM items WHERE id = ?`);
   const toggleStarStmt = db.prepare(`UPDATE items SET starred = 1 - starred WHERE id = ?`);
@@ -52,9 +57,17 @@ export function createItemsRepo(db: Database.Database, tagsRepo: TagsRepo): Item
   const deleteStmt = db.prepare(`DELETE FROM items WHERE id = ?`);
 
   function rowToItem(row: ItemRow): ClipboardItem {
+    let kind = row.file_kind ?? (row.type === 'text' ? 'text' : row.type === 'image' ? 'image' : undefined);
+    if (!kind && row.type === 'file') {
+      const filePath = firstPath(row.content);
+      let isDirectory = false;
+      try { isDirectory = fs.statSync(filePath).isDirectory(); } catch { /* missing source remains a generic file */ }
+      kind = kindFromPath(filePath, isDirectory);
+    }
     return {
       id: row.id,
       type: row.type,
+      kind,
       title: row.title,
       content: row.content,
       sourceApp: row.source_app,
@@ -73,7 +86,8 @@ export function createItemsRepo(db: Database.Database, tagsRepo: TagsRepo): Item
           ? input.content.slice(0, MAX_CONTENT_LENGTH)
           : input.content;
       const createdAt = Date.now();
-      const result = insertStmt.run(input.type, content, input.sourceApp, createdAt);
+      const kind = input.kind ?? (input.type === 'text' ? 'text' : input.type === 'image' ? 'image' : 'file');
+      const result = insertStmt.run(input.type, kind, content, input.sourceApp, createdAt);
       const item = rowToItem(byIdStmt.get(result.lastInsertRowid) as ItemRow);
       if (input.type === 'image' || input.type === 'file') {
         let titleSource = content;

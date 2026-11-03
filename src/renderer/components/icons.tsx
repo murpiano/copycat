@@ -73,6 +73,10 @@ export function ExcelIcon(props: IconProps) { return <LabeledFileIcon {...props}
 export function PowerPointIcon(props: IconProps) { return <LabeledFileIcon {...props} label="P" />; }
 export function PdfIcon(props: IconProps) { return <LabeledFileIcon {...props} label="PDF" />; }
 export function AudioIcon(props: IconProps) { return <LabeledFileIcon {...props} label="♪" />; }
+export function TextDocumentIcon(props: IconProps) { return <LabeledFileIcon {...props} label="TXT" />; }
+export function BoxIcon(props: IconProps) {
+  return <Svg {...props}><path d="m4 7 8-4 8 4-8 4z" /><path d="M4 7v10l8 4 8-4V7M12 11v10" /></Svg>;
+}
 
 export function TagIcon(props: IconProps) {
   return (
@@ -97,6 +101,9 @@ export function PlusIcon(props: IconProps) {
       <path d="M12 5v14M5 12h14" />
     </Svg>
   );
+}
+export function ArrowUpIcon(props: IconProps) {
+  return <Svg {...props}><path d="m6 10 6-6 6 6M12 4v16" /></Svg>;
 }
 
 export function SearchIcon(props: IconProps) {

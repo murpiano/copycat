@@ -1,4 +1,4 @@
-name: ci
+name: CI
 
 # kysaro only reads commit messages, so without this nothing stops code that
 # does not compile from reaching master.

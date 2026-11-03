@@ -1,39 +1,33 @@
-name: release
+name: Release
 
-# Builds the Windows installer on a real Windows runner: better-sqlite3 is a
-# native module, so it has to be compiled for win32 where it will run.
 on:
-  push:
-    tags:
-      - 'v*'
-  workflow_dispatch:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [master]
 
-permissions:
-  contents: write
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
-  windows:
-    runs-on: windows-latest
+  release:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' && vars.RELEASES == 'on'
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
         with:
-          # 22, not 24: better-sqlite3 ships a prebuilt binary for this ABI,
-          # so neither npm ci nor the Electron rebuild needs a C++ toolchain.
-          node-version: 22
-          cache: npm
-
-      - run: npm ci
-
-      - run: npm run typecheck
-
-      - run: npm test
-
-      # electron-builder packages out/, so the bundles have to exist first.
-      - run: npm run build
-
-      - name: Build and publish the installer
-        run: npx electron-builder --win --publish always
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+      - name: Check token
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          if [ -z "$RELEASE_TOKEN" ]; then
+            echo "::error::Secret RELEASE_TOKEN is missing."
+            exit 1
+          fi
+      - name: Release
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: bash .github/scripts/release.sh "${{ github.event.workflow_run.head_sha }}"

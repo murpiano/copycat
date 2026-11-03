@@ -1,7 +1,8 @@
 import type { DragEvent, MouseEvent } from 'react';
 import { useSelectionCursor } from '../useSelectionCursor';
 import type { ClipboardItem, ItemType } from '../../shared/types';
-import { CloseIcon, FileIcon, FolderIcon, ImageIcon, PencilIcon, StarIcon, WordIcon, ExcelIcon, PowerPointIcon, PdfIcon, AudioIcon } from './icons';
+import { AudioIcon, BoxIcon, CloseIcon, ExcelIcon, FileIcon, FolderIcon, ImageIcon, PdfIcon, PencilIcon, PowerPointIcon, StarIcon, TextDocumentIcon, WordIcon } from './icons';
+import { firstPath } from '../../shared/file-kind';
 
 export const KIND_LABEL: Record<ItemType, string> = {
   text: 'Текст',
@@ -34,14 +35,16 @@ export function itemDisplayTitle(item: ClipboardItem): string {
   return extension && !item.title.toLowerCase().endsWith(extension.toLowerCase()) ? `${item.title}${extension}` : item.title;
 }
 
-function fileIcon(content: string, size = 14) {
-  const name = content.toLowerCase();
+function fileIcon(item: ClipboardItem, size = 14) {
+  const name = firstPath(item.content).toLowerCase();
   if (/\.docx?$/.test(name)) return <WordIcon size={size} />;
-  if (/\.xlsx?$/.test(name)) return <ExcelIcon size={size} />;
-  if (/\.pptx?$/.test(name)) return <PowerPointIcon size={size} />;
+  if (/\.(xlsx?|xlsm|xlsb|ods|csv)$/.test(name)) return <ExcelIcon size={size} />;
+  if (/\.(pptx?|ppsx?|odp)$/.test(name)) return <PowerPointIcon size={size} />;
   if (/\.pdf$/.test(name)) return <PdfIcon size={size} />;
-  if (/\.(mp3|wav|flac|m4a|ogg|aac)$/.test(name)) return <AudioIcon size={size} />;
-  return <FolderIcon size={size} />;
+  if (item.kind === 'document') return <TextDocumentIcon size={size} />;
+  if (item.kind === 'audio') return <AudioIcon size={size} />;
+  if (item.kind === 'folder') return <FolderIcon size={size} />;
+  return <BoxIcon size={size} />;
 }
 
 interface ItemCardProps {
@@ -117,7 +120,7 @@ export function ItemCard({
             title="Копировать целиком"
             onClick={actOnly(() => onCopy(item.id))}
           >
-            {item.type === 'file' ? fileIcon(item.content) : badgeIcon(item.type)}
+            {item.type === 'file' ? fileIcon(item) : badgeIcon(item.type)}
           </button>
           <div className="item-card-kind" title={title} data-tooltip={title}>
             {title}

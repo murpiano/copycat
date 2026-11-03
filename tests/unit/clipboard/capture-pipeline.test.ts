@@ -27,7 +27,7 @@ describe('capture pipeline', () => {
     const { pipeline, added, itemsRepo } = setup();
     pipeline({ type: 'text', content: 'hello', hash: hashContent('hello') });
     expect(added).toHaveLength(1);
-    expect(itemsRepo.getItems({})[0]).toMatchObject({ type: 'text', content: 'hello' });
+    expect(itemsRepo.getItems({})[0]).toMatchObject({ type: 'text', kind: 'text', content: 'hello' });
   });
 
   it('saves an image snapshot to disk and stores its path', () => {
@@ -36,6 +36,7 @@ describe('capture pipeline', () => {
     pipeline({ type: 'image', pngBuffer: png, hash: hashContent(png) });
     const item = itemsRepo.getItems({})[0];
     expect(item.type).toBe('image');
+    expect(item.kind).toBe('image');
     expect(item.content.startsWith(previewsDir)).toBe(true);
   });
 
@@ -44,6 +45,7 @@ describe('capture pipeline', () => {
     pipeline({ type: 'file', paths: ['C:\\a.txt'], hash: 'h' });
     const item = itemsRepo.getItems({})[0];
     expect(JSON.parse(item.content)).toEqual(['C:\\a.txt']);
+    expect(item.kind).toBe('document');
   });
 
   it('prunes to the retention limit after every insert', () => {

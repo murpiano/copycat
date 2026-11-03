@@ -4,6 +4,8 @@ import type { ClipboardSnapshot } from './types';
 import { saveImagePreview, saveSvgPreview } from './image-store';
 import fs from 'node:fs';
 import path from 'node:path';
+import { kindFromPath } from '../../shared/file-kind';
+import type { ItemKind } from '../../shared/types';
 
 export interface CapturePipelineDeps {
   itemsRepo: ItemsRepo;
@@ -25,21 +27,33 @@ export function cleanupUnusedPreviews(previewsDir: string, itemsRepo: ItemsRepo)
 export function createCapturePipeline(deps: CapturePipelineDeps) {
   return function handleSnapshot(snapshot: ClipboardSnapshot): void {
     let content: string;
+    let kind: ItemKind;
     if (snapshot.type === 'image-file') {
       content = snapshot.path;
+      kind = 'image';
     } else if (snapshot.type === 'image') {
       content = saveImagePreview(deps.previewsDir, snapshot.pngBuffer);
+      kind = 'image';
     } else if (snapshot.type === 'svg') {
       content = saveSvgPreview(deps.previewsDir, snapshot.svgBuffer);
+      kind = 'image';
     } else if (snapshot.type === 'file') {
       content = JSON.stringify(snapshot.paths);
+      const kinds = snapshot.paths.map((filePath) => {
+        let isDirectory = false;
+        try { isDirectory = fs.statSync(filePath).isDirectory(); } catch { /* unavailable paths are generic files */ }
+        return kindFromPath(filePath, isDirectory);
+      });
+      kind = kinds.every((value) => value === kinds[0]) ? kinds[0] : 'file';
     } else {
       content = snapshot.content;
+      kind = 'text';
     }
 
     const item = deps.itemsRepo.insertItem({
       type: snapshot.type === 'svg' || snapshot.type === 'image-file' ? 'image' : snapshot.type,
       content,
+      kind,
       sourceApp: null,
     });
     deps.itemsRepo.pruneToLimit(deps.retentionLimit);
