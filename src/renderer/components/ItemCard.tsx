@@ -24,6 +24,16 @@ export function badgeIcon(type: ItemType, size = 14) {
   return <FileIcon size={size} />;
 }
 
+export function itemDisplayTitle(item: ClipboardItem): string {
+  if (item.type === 'text') return item.title ?? KIND_LABEL.text;
+  let path = item.content;
+  if (item.type === 'file') { try { path = JSON.parse(item.content)[0] ?? item.content; } catch { /* plain path */ } }
+  const name = path.split(/[\\/]/).pop() ?? '';
+  if (!item.title) return name || KIND_LABEL[item.type];
+  const extension = name.match(/(\.[^.]+)$/)?.[1];
+  return extension && !item.title.toLowerCase().endsWith(extension.toLowerCase()) ? `${item.title}${extension}` : item.title;
+}
+
 function fileIcon(content: string, size = 14) {
   const name = content.toLowerCase();
   if (/\.docx?$/.test(name)) return <WordIcon size={size} />;
@@ -60,6 +70,7 @@ export function ItemCard({
   onDrop,
 }: ItemCardProps) {
   const { selecting, ref: contentRef } = useSelectionCursor<HTMLDivElement>();
+  const title = itemDisplayTitle(item);
 
   // The whole card opens the popup, so there is no dead area inside it. A
   // click that leaves text highlighted is the end of picking an excerpt and
@@ -108,8 +119,8 @@ export function ItemCard({
           >
             {item.type === 'file' ? fileIcon(item.content) : badgeIcon(item.type)}
           </button>
-          <div className="item-card-kind" title={item.title ?? KIND_LABEL[item.type]} data-tooltip={item.title ?? KIND_LABEL[item.type]}>
-            {item.title ?? KIND_LABEL[item.type]}
+          <div className="item-card-kind" title={title} data-tooltip={title}>
+            {title}
           </div>
           <button
             aria-label="star"

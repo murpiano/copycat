@@ -173,7 +173,8 @@ export function createItemsRepo(db: Database.Database, tagsRepo: TagsRepo): Item
       const params: unknown[] = [];
       if (input.since !== undefined) { clauses.push('created_at >= ?'); params.push(input.since); }
       if (input.scope === 'starred') clauses.push('starred = 1');
-      if (input.scope === 'image' || input.scope === 'file') { clauses.push('type = ?'); params.push(input.scope); }
+      if (input.scope === 'text' || input.scope === 'image') { clauses.push('type = ?'); params.push(input.scope); }
+      if (input.scope === 'file') clauses.push("type IN ('file', 'image')");
       if (input.scope === 'category') { clauses.push('EXISTS (SELECT 1 FROM item_tags it JOIN tags t ON t.id=it.tag_id WHERE it.item_id=items.id AND t.name=?)'); params.push(input.category ?? ''); }
       for (const ex of input.exclude) {
         if (ex === 'starred') clauses.push('starred = 0');

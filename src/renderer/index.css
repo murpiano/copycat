@@ -746,10 +746,7 @@ button:disabled {
 }
 
 .grid-top {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  z-index: 4;
+  margin-left: 8px;
 }
 
 .settings-button-grid {

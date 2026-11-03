@@ -11,11 +11,12 @@ import type {
   UpdateSettingsInput,
 } from '../../shared/types';
 import { DEFAULT_NAV_ORDER } from '../../shared/config';
+import { fileGroupOf, type FileGroup } from '../../shared/file-kind';
 
 export type { NavKey, SidebarEntry };
 
 const NAV_TYPE: Partial<Record<NavKey, ItemType>> = {
-  images: 'image',
+  text: 'text',
   files: 'file',
 };
 
@@ -45,6 +46,7 @@ interface ClipboardState {
   nav: NavKey;
   categories: string[];
   activeCategory: string | null;
+  activeFileGroup: FileGroup | null;
   /** Card shown full-size in the popup, or null when the popup is closed. */
   expandedId: number | null;
   /** Card open in the edit dialog, or null when the dialog is closed. */
@@ -69,6 +71,7 @@ interface ClipboardState {
   setNav: (nav: NavKey) => void;
   addCategory: (name: string) => void;
   selectCategory: (name: string | null) => void;
+  selectFileGroup: (group: FileGroup | null) => void;
   expandItem: (id: number | null) => void;
   editItem: (id: number | null) => void;
   composeItem: (on: boolean) => void;
@@ -96,7 +99,7 @@ interface ClipboardState {
   setTags: (id: number, tags: string[]) => Promise<void>;
   updateItem: (id: number, input: UpdateItemInput) => Promise<void>;
   deleteItem: (id: number) => Promise<void>;
-  clearHistory: (input: { scope: 'all' | 'starred' | 'image' | 'file' | 'category'; category?: string; since?: number; exclude: string[] }) => Promise<void>;
+  clearHistory: (input: { scope: 'all' | 'starred' | 'text' | 'image' | 'file' | 'category'; category?: string; since?: number; exclude: string[] }) => Promise<void>;
   subscribeToNewItems: () => () => void;
 }
 
@@ -106,6 +109,7 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
   nav: 'history',
   categories: loadCategories(),
   activeCategory: null,
+  activeFileGroup: null,
   expandedId: null,
   editingId: null,
   composing: false,
@@ -126,18 +130,21 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
   },
 
   async fetchItems() {
-    const { search, nav, activeCategory } = get();
+    const { search, nav, activeCategory, activeFileGroup } = get();
     // One view at a time: a category shows everything filed under it, images
     // and files included, instead of inheriting the nav tab's type filter.
     const scope =
       activeCategory !== null
         ? { tags: [activeCategory] }
         : { type: NAV_TYPE[nav], onlyStarred: nav === 'starred' || undefined };
-    const items = await window.copycat.getItems({
+    let items = await window.copycat.getItems({
       search: search || undefined,
       ...scope,
       ordered: get().isOrderedView() || undefined,
     });
+    if (nav === 'files' && activeCategory === null) {
+      items = items.filter((item) => item.type !== 'text' && (!activeFileGroup || fileGroupOf(item) === activeFileGroup));
+    }
     set({ items });
   },
 
@@ -147,7 +154,7 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
   },
 
   setNav(nav) {
-    set({ nav, activeCategory: null, reorderMode: false, search: '' });
+    set({ nav, activeCategory: null, activeFileGroup: null, reorderMode: false, search: '' });
     void get().fetchItems();
   },
 
@@ -160,7 +167,12 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
   },
 
   selectCategory(name) {
-    set({ activeCategory: name, reorderMode: false, search: '' });
+    set({ activeCategory: name, activeFileGroup: null, reorderMode: false, search: '' });
+    void get().fetchItems();
+  },
+
+  selectFileGroup(group) {
+    set({ nav: 'files', activeCategory: null, activeFileGroup: group, reorderMode: false, search: '' });
     void get().fetchItems();
   },
 

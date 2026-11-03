@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type DragEvent } from 'react';
 import appIcon from '../assets/icon.svg';
 import type { NavKey, SidebarEntry } from '../store/useClipboardStore';
+import type { FileGroup } from '../../shared/file-kind';
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -17,20 +18,24 @@ import {
 const NAV_ITEMS: Record<NavKey, { label: string; icon: JSX.Element }> = {
   history: { label: 'Все', icon: <FolderIcon /> },
   starred: { label: 'Избранное', icon: <StarIcon /> },
+  text: { label: 'Текст', icon: <FileIcon /> },
   images: { label: 'Изображения', icon: <ImageIcon /> },
   files: { label: 'Файлы', icon: <FileIcon /> },
 };
+const FILE_GROUPS: Array<[FileGroup, string]> = [['documents', 'Документы'], ['images', 'Изображения'], ['audio', 'Аудио'], ['files', 'Файлы'], ['folders', 'Папки']];
 
 interface SidebarProps {
   nav: NavKey;
   navOrder: SidebarEntry[];
   categories: string[];
   activeCategory: string | null;
+  activeFileGroup?: FileGroup | null;
   /** Opens the category selector on start, per the matching setting. */
   categoriesExpanded: boolean;
   reorderMode: boolean;
   onNavChange: (nav: NavKey) => void;
   onCategorySelect: (name: string) => void;
+  onFileGroupSelect?: (group: FileGroup | null) => void;
   onCategoryAdd: (name: string) => void;
   onSettingsOpen: () => void;
   onNavMove: (dragKey: SidebarEntry, overKey: SidebarEntry) => void;
@@ -44,10 +49,12 @@ export function Sidebar({
   navOrder,
   categories,
   activeCategory,
+  activeFileGroup = null,
   categoriesExpanded,
   reorderMode,
   onNavChange,
   onCategorySelect,
+  onFileGroupSelect = () => {},
   onCategoryAdd,
   onSettingsOpen,
   onNavMove,
@@ -56,6 +63,7 @@ export function Sidebar({
   onReorderCancel,
 }: SidebarProps) {
   const [categoriesOpen, setCategoriesOpen] = useState(categoriesExpanded);
+  const [filesOpen, setFilesOpen] = useState(false);
   const [draft, setDraft] = useState<string | null>(null);
   const dragged = useRef<{ kind: 'nav' | 'category'; id: string } | null>(null);
 
@@ -99,6 +107,13 @@ export function Sidebar({
   }
 
   function renderNavItem(key: NavKey) {
+    if (key === 'files') return <div key="files">
+      <div className={nav === key && !activeCategory ? 'nav-item nav-row active' : 'nav-item nav-row'} {...navDragProps(key)}>
+        <button className="nav-row-main" onClick={() => !reorderMode && onNavChange(key)}><FileIcon /><span>Файлы</span></button>
+        <button className={filesOpen ? 'nav-chevron open' : 'nav-chevron'} aria-label="Группы файлов" onClick={() => !reorderMode && setFilesOpen((value) => !value)}><ChevronDownIcon size={14} /></button>
+      </div>
+      {filesOpen && <div className="category-list"><button className={activeFileGroup === null ? 'category-item active' : 'category-item'} onClick={() => onFileGroupSelect(null)}>Все файлы</button>{FILE_GROUPS.map(([group, label]) => <button key={group} className={activeFileGroup === group ? 'category-item active' : 'category-item'} onClick={() => onFileGroupSelect(group)}>{label}</button>)}</div>}
+    </div>;
     return (
       <button
         key={key}

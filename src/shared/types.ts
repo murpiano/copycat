@@ -24,7 +24,7 @@ export interface GetItemsQuery {
   ordered?: boolean;
 }
 
-export type ClearHistoryScope = 'all' | 'starred' | 'image' | 'file' | 'category';
+export type ClearHistoryScope = 'all' | 'starred' | 'text' | 'image' | 'file' | 'category';
 export interface ClearHistoryInput {
   scope: ClearHistoryScope;
   category?: string;
@@ -44,7 +44,7 @@ export interface CreateItemInput {
   tags: string[];
 }
 
-export type NavKey = 'history' | 'starred' | 'images' | 'files';
+export type NavKey = 'history' | 'starred' | 'text' | 'files' | 'images';
 
 /** A sidebar row: the four nav tabs, plus the "Категории" entry itself,
  * which can be dragged anywhere among them like any other row. */

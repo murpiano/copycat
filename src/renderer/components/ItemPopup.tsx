@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import type { ClipboardItem } from '../../shared/types';
-import { KIND_LABEL, badgeIcon, formatAge } from './ItemCard';
+import { KIND_LABEL, badgeIcon, formatAge, itemDisplayTitle } from './ItemCard';
 import { CloseIcon, CopyIcon, PencilIcon } from './icons';
 import { useSelectionCursor } from '../useSelectionCursor';
 import { Overlay } from './Overlay';
@@ -33,7 +33,7 @@ export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
       >
         <div className="popup-head">
           <div className="item-card-badge static">{badgeIcon(item.type, 15)}</div>
-          <div className="popup-title">{item.title ?? KIND_LABEL[item.type]}</div>
+          <div className="popup-title" title={itemDisplayTitle(item)}>{itemDisplayTitle(item)}</div>
           <span className="item-card-time">{formatAge(item.createdAt)}</span>
           <button
             className="item-card-action"

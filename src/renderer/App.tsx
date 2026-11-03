@@ -17,6 +17,7 @@ export function App() {
     navOrder,
     categories,
     activeCategory,
+    activeFileGroup,
     expandedId,
     editingId,
     composing,
@@ -31,6 +32,7 @@ export function App() {
     setNav,
     addCategory,
     selectCategory,
+    selectFileGroup,
     expandItem,
     editItem,
     composeItem,
@@ -78,6 +80,18 @@ export function App() {
       }),
     [openSettings],
   );
+
+  useEffect(() => {
+    const resetTransientUi = () => {
+      if (!document.hidden) return;
+      openSettings(false);
+      expandItem(null);
+      editItem(null);
+      composeItem(false);
+    };
+    document.addEventListener('visibilitychange', resetTransientUi);
+    return () => document.removeEventListener('visibilitychange', resetTransientUi);
+  }, [openSettings, expandItem, editItem, composeItem]);
 
   // Escape unwinds one layer at a time and closes the window only once there
   // is nothing left to undo. Dialogs handle their own Escape, so this skips
@@ -138,10 +152,12 @@ export function App() {
         navOrder={navOrder}
         categories={categories}
         activeCategory={activeCategory}
+        activeFileGroup={activeFileGroup}
         categoriesExpanded={settings?.categoriesExpanded ?? false}
         reorderMode={navReorderMode}
         onNavChange={setNav}
         onCategorySelect={selectCategory}
+        onFileGroupSelect={selectFileGroup}
         onCategoryAdd={addCategory}
         onSettingsOpen={() => openSettings(true)}
         onNavMove={moveNav}
