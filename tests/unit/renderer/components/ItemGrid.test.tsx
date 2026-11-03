@@ -47,7 +47,7 @@ describe('ItemGrid', () => {
 
   it('always offers creating a block', () => {
     render(<ItemGrid {...handlers} items={[]} canReorder={false} />);
-    expect(screen.getByTitle('Создать блок')).toBeInTheDocument();
+    expect(screen.getByTitle('Создать')).toBeInTheDocument();
   });
 
   it('swaps the create-block button for Отмена while reordering', () => {
@@ -61,7 +61,7 @@ describe('ItemGrid', () => {
         reorderMode
       />,
     );
-    expect(screen.queryByTitle('Создать блок')).not.toBeInTheDocument();
+    expect(screen.queryByTitle('Создать')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTitle('Отменить'));
     expect(onCancelReorder).toHaveBeenCalled();
   });

@@ -50,6 +50,12 @@ describe('settings-store', () => {
     ]);
   });
 
+  it('migrates the legacy images entry to the default text entry', () => {
+    const file = tempFile();
+    fs.writeFileSync(file, JSON.stringify({ navOrder: ['history', 'starred', 'images', 'files', 'categories'] }));
+    expect(createSettingsStore(file).get().navOrder).toEqual([...DEFAULT_NAV_ORDER]);
+  });
+
   it('remembers the window position and rejects a malformed one', () => {
     const file = tempFile();
     const store = createSettingsStore(file);
