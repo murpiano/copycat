@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import type { IpcMain } from 'electron';
 import { clipboard } from 'electron';
 import { IPC } from '../../shared/ipc-channels';
@@ -33,6 +34,31 @@ import {
   type IpcDeps,
 } from './handlers';
 
+function writeFilePathsToClipboard(paths: string[]): void {
+  if (process.platform === 'win32') {
+    const result = spawnSync(
+      'powershell.exe',
+      [
+        '-NoLogo',
+        '-NoProfile',
+        '-NonInteractive',
+        '-STA',
+        '-Command',
+        '$paths = ConvertFrom-Json -InputObject $env:COPYCAT_CLIPBOARD_PATHS; Set-Clipboard -LiteralPath $paths',
+      ],
+      {
+        env: { ...process.env, COPYCAT_CLIPBOARD_PATHS: JSON.stringify(paths) },
+        windowsHide: true,
+      },
+    );
+    if (result.error) throw result.error;
+    if (result.status !== 0) throw new Error('PowerShell failed to copy file paths to clipboard');
+    return;
+  }
+
+  clipboard.writeBuffer('CF_HDROP', buildCFDropBuffer(paths));
+}
+
 export interface RegisterIpcDeps {
   itemsRepo: ItemsRepo;
   tagsRepo: TagsRepo;
@@ -56,11 +82,11 @@ function copyItemToClipboard(item: ClipboardItem, markSelfWrite: (hash: string) 
   } else if (item.type === 'file') {
     const paths: string[] = JSON.parse(item.content);
     markSelfWrite(hashContent(paths.join('|')));
-    clipboard.writeBuffer('CF_HDROP', buildCFDropBuffer(paths));
+    writeFilePathsToClipboard(paths);
   } else if (item.type === 'image') {
     const paths = [item.content];
     markSelfWrite(hashContent(paths.join('|')));
-    clipboard.writeBuffer('CF_HDROP', buildCFDropBuffer(paths));
+    writeFilePathsToClipboard(paths);
   }
 }
 
