@@ -1,6 +1,7 @@
 export type ClipboardSnapshot =
   | { type: 'text'; content: string; hash: string }
   | { type: 'file'; paths: string[]; hash: string }
+  | { type: 'image-file'; path: string; hash: string }
   | { type: 'image'; pngBuffer: Buffer; hash: string }
   | { type: 'svg'; svgBuffer: Buffer; hash: string };
 

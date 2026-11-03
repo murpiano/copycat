@@ -67,6 +67,7 @@ app.whenReady().then(() => {
   registerIpcHandlers(ipcMain, {
     itemsRepo,
     tagsRepo,
+    previewsDir: path.join(userDataDir, 'previews'),
     markSelfWrite: (hash) => watcher.markSelfWrite(hash),
     readSettings: () => settingsStore.get(),
     setHotkeyCapture: (capturing) => {

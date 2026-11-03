@@ -10,6 +10,7 @@ export const IPC = {
   UPDATE_ITEM: 'copycat:update-item',
   REORDER_ITEMS: 'copycat:reorder-items',
   DELETE_ITEM: 'copycat:delete-item',
+  CLEAR_HISTORY: 'copycat:clear-history',
   GET_SETTINGS: 'copycat:get-settings',
   SET_HOTKEY: 'copycat:set-hotkey',
   SET_HOTKEY_CAPTURE: 'copycat:set-hotkey-capture',

@@ -55,6 +55,7 @@ export function App() {
     setTags,
     updateItem,
     deleteItem,
+    clearHistory,
     hideWindow,
     subscribeToNewItems,
   } = useClipboardStore();
@@ -220,6 +221,8 @@ export function App() {
             void updateSettings({ categoriesExpanded })
           }
           onNavReorderStart={startNavReorder}
+          categories={categories}
+          onClearHistory={clearHistory}
         />
       )}
 

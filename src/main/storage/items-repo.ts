@@ -4,6 +4,7 @@ import type {
   GetItemsQuery,
   ItemType,
   UpdateItemInput,
+  ClearHistoryInput,
 } from '../../shared/types';
 import { MAX_CONTENT_LENGTH } from '../../shared/config';
 import type { TagsRepo } from './tags-repo';
@@ -23,6 +24,7 @@ export interface ItemsRepo {
   reorderItems(ids: number[]): void;
   deleteItem(id: number): void;
   pruneToLimit(limit: number): number;
+  clearHistory(input: ClearHistoryInput): ClipboardItem[];
 }
 
 interface ItemRow {
@@ -72,7 +74,14 @@ export function createItemsRepo(db: Database.Database, tagsRepo: TagsRepo): Item
           : input.content;
       const createdAt = Date.now();
       const result = insertStmt.run(input.type, content, input.sourceApp, createdAt);
-      return rowToItem(byIdStmt.get(result.lastInsertRowid) as ItemRow);
+      const item = rowToItem(byIdStmt.get(result.lastInsertRowid) as ItemRow);
+      if (input.type === 'image' || input.type === 'file') {
+        let titleSource = content;
+        if (input.type === 'file') { try { titleSource = JSON.parse(content)[0] ?? content; } catch { /* keep content */ } }
+        const base = titleSource.split(/[\\/]/).pop()?.split('.')[0]?.trim();
+        if (base) { titleStmt.run(base, result.lastInsertRowid); item.title = base; }
+      }
+      return item;
     },
 
     getItems(query) {
@@ -157,6 +166,25 @@ export function createItemsRepo(db: Database.Database, tagsRepo: TagsRepo): Item
         )
         .run(limit);
       return result.changes;
+    },
+
+    clearHistory(input) {
+      const clauses = ['1 = 1'];
+      const params: unknown[] = [];
+      if (input.since !== undefined) { clauses.push('created_at >= ?'); params.push(input.since); }
+      if (input.scope === 'starred') clauses.push('starred = 1');
+      if (input.scope === 'image' || input.scope === 'file') { clauses.push('type = ?'); params.push(input.scope); }
+      if (input.scope === 'category') { clauses.push('EXISTS (SELECT 1 FROM item_tags it JOIN tags t ON t.id=it.tag_id WHERE it.item_id=items.id AND t.name=?)'); params.push(input.category ?? ''); }
+      for (const ex of input.exclude) {
+        if (ex === 'starred') clauses.push('starred = 0');
+        else if (ex === 'image') clauses.push("type != 'image'");
+        else if (ex === 'file') clauses.push("type != 'file'");
+        else if (ex === 'category') clauses.push('NOT EXISTS (SELECT 1 FROM item_tags it WHERE it.item_id=items.id)');
+        else { clauses.push('NOT EXISTS (SELECT 1 FROM item_tags it JOIN tags t ON t.id=it.tag_id WHERE it.item_id=items.id AND t.name=?)'); params.push(ex); }
+      }
+      const rows = db.prepare(`SELECT * FROM items WHERE ${clauses.join(' AND ')}`).all(...params) as ItemRow[];
+      db.prepare(`DELETE FROM items WHERE ${clauses.join(' AND ')}`).run(...params);
+      return rows.map(rowToItem);
     },
   };
 }

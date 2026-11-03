@@ -6,6 +6,7 @@ import type {
   HotkeyResult,
   UpdateItemInput,
   UpdateSettingsInput,
+  ClearHistoryInput,
 } from '../../shared/types';
 import type { ItemsRepo } from '../storage/items-repo';
 import type { TagsRepo } from '../storage/tags-repo';
@@ -19,6 +20,7 @@ export interface IpcDeps {
   applyHotkey: (accelerator: string) => HotkeyResult;
   writeSettings: (input: UpdateSettingsInput) => AppSettings;
   hideWindow: () => void;
+  cleanupPreviews?: () => void;
 }
 
 export async function handleGetItems(
@@ -114,4 +116,10 @@ export async function handleReorderItems(deps: IpcDeps, ids: number[]): Promise<
 
 export async function handleDeleteItem(deps: IpcDeps, id: number): Promise<void> {
   deps.itemsRepo.deleteItem(id);
+  deps.cleanupPreviews?.();
+}
+
+export async function handleClearHistory(deps: IpcDeps, input: ClearHistoryInput): Promise<void> {
+  deps.itemsRepo.clearHistory(input);
+  deps.cleanupPreviews?.();
 }

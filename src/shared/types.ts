@@ -24,6 +24,14 @@ export interface GetItemsQuery {
   ordered?: boolean;
 }
 
+export type ClearHistoryScope = 'all' | 'starred' | 'image' | 'file' | 'category';
+export interface ClearHistoryInput {
+  scope: ClearHistoryScope;
+  category?: string;
+  since?: number;
+  exclude: string[];
+}
+
 export interface UpdateItemInput {
   title?: string | null;
   content?: string;
@@ -81,6 +89,7 @@ export interface CopycatAPI {
   updateItem(id: number, input: UpdateItemInput): Promise<void>;
   reorderItems(ids: number[]): Promise<void>;
   deleteItem(id: number): Promise<void>;
+  clearHistory?: (input: ClearHistoryInput) => Promise<void>;
   getSettings(): Promise<AppSettings>;
   setHotkey(accelerator: string): Promise<HotkeyResult>;
   setHotkeyCapture(capturing: boolean): Promise<void>;

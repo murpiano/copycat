@@ -10,10 +10,12 @@ import type {
   HotkeyResult,
   UpdateItemInput,
   UpdateSettingsInput,
+  ClearHistoryInput,
 } from '../../shared/types';
 import type { ItemsRepo } from '../storage/items-repo';
 import type { TagsRepo } from '../storage/tags-repo';
 import { hashContent } from '../clipboard/hash';
+import { cleanupUnusedPreviews } from '../clipboard/capture-pipeline';
 import { buildCFDropBuffer } from '../clipboard/file-drop';
 import {
   handleGetItems,
@@ -31,6 +33,7 @@ import {
   handleUpdateItem,
   handleReorderItems,
   handleDeleteItem,
+  handleClearHistory,
   type IpcDeps,
 } from './handlers';
 
@@ -73,6 +76,7 @@ export interface RegisterIpcDeps {
    * history entries on the watcher's next poll.
    */
   markSelfWrite: (hash: string) => void;
+  previewsDir: string;
 }
 
 function copyItemToClipboard(item: ClipboardItem, markSelfWrite: (hash: string) => void): void {
@@ -102,6 +106,7 @@ export function registerIpcHandlers(ipcMain: IpcMain, deps: RegisterIpcDeps): vo
     applyHotkey: deps.applyHotkey,
     writeSettings: deps.writeSettings,
     hideWindow: deps.hideWindow,
+    cleanupPreviews: () => cleanupUnusedPreviews(deps.previewsDir, deps.itemsRepo),
   };
 
   ipcMain.handle(IPC.GET_ITEMS, (_e, query: GetItemsQuery) => handleGetItems(ipcDeps, query));
@@ -134,4 +139,5 @@ export function registerIpcHandlers(ipcMain: IpcMain, deps: RegisterIpcDeps): vo
   );
   ipcMain.handle(IPC.REORDER_ITEMS, (_e, ids: number[]) => handleReorderItems(ipcDeps, ids));
   ipcMain.handle(IPC.DELETE_ITEM, (_e, id: number) => handleDeleteItem(ipcDeps, id));
+  ipcMain.handle(IPC.CLEAR_HISTORY, (_e, input: ClearHistoryInput) => handleClearHistory(ipcDeps, input));
 }

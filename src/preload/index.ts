@@ -7,6 +7,7 @@ import type {
   GetItemsQuery,
   UpdateItemInput,
   UpdateSettingsInput,
+  ClearHistoryInput,
 } from '../shared/types';
 
 function toFileUrl(filePath: string): string {
@@ -35,6 +36,7 @@ const api: CopycatAPI = {
     ipcRenderer.invoke(IPC.UPDATE_ITEM, id, input),
   reorderItems: (ids: number[]) => ipcRenderer.invoke(IPC.REORDER_ITEMS, ids),
   deleteItem: (id: number) => ipcRenderer.invoke(IPC.DELETE_ITEM, id),
+  clearHistory: (input: ClearHistoryInput) => ipcRenderer.invoke(IPC.CLEAR_HISTORY, input),
   getSettings: () => ipcRenderer.invoke(IPC.GET_SETTINGS),
   setHotkey: (accelerator: string) => ipcRenderer.invoke(IPC.SET_HOTKEY, accelerator),
   setHotkeyCapture: (capturing: boolean) =>

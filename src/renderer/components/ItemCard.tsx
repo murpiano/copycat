@@ -98,10 +98,9 @@ export function ItemCard({
           >
             {badgeIcon(item.type)}
           </button>
-          <div className="item-card-kind" title={item.title ?? KIND_LABEL[item.type]}>
+          <div className="item-card-kind" data-tooltip={item.title ?? KIND_LABEL[item.type]}>
             {item.title ?? KIND_LABEL[item.type]}
           </div>
-          <span className="item-card-time">{formatAge(item.createdAt)}</span>
           <button
             aria-label="star"
             className={item.starred ? 'item-card-action starred' : 'item-card-action'}

@@ -1,5 +1,5 @@
 import { useEffect, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
-import type { AppSettings } from '../../shared/types';
+import type { AppSettings, ClearHistoryScope } from '../../shared/types';
 import { CloseIcon } from './icons';
 import { Overlay } from './Overlay';
 
@@ -58,6 +58,8 @@ interface SettingsDialogProps {
   onHotkeyCapture?: (capturing: boolean) => Promise<void>;
   onCategoriesExpandedChange: (expanded: boolean) => void;
   onNavReorderStart: () => void;
+  categories?: string[];
+  onClearHistory?: (input: { scope: ClearHistoryScope; category?: string; since?: number; exclude: string[] }) => Promise<void>;
 }
 
 export function SettingsDialog({
@@ -67,10 +69,18 @@ export function SettingsDialog({
   onHotkeyCapture = NOOP_HOTKEY_CAPTURE,
   onCategoriesExpandedChange,
   onNavReorderStart,
+  categories = [],
+  onClearHistory = async () => {},
 }: SettingsDialogProps) {
   const [capturing, setCapturing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [clearOpen, setClearOpen] = useState(false);
+  const [scope, setScope] = useState<ClearHistoryScope>('all');
+  const [period, setPeriod] = useState('all');
+  const [category, setCategory] = useState(categories[0] ?? '');
+  const [exclude, setExclude] = useState<string[]>([]);
+  const choices = scope === 'all' ? ['starred', 'image', 'file', 'category', ...categories] : scope === 'starred' ? ['image', 'file', 'category', ...categories] : scope === 'image' ? ['starred', 'category', ...categories] : scope === 'file' ? ['starred', 'category', ...categories] : ['starred', 'image', 'file'];
 
   async function requestClose() {
     await onHotkeyCapture(false);
@@ -167,6 +177,10 @@ export function SettingsDialog({
           </span>
         </div>
 
+        <div className="field">
+          <button type="button" className="button ghost wide" onClick={() => setClearOpen(true)}>Очистить историю</button>
+        </div>
+
         <label className="field field-row">
           <input
             type="checkbox"
@@ -192,6 +206,14 @@ export function SettingsDialog({
           </button>
         </div>
       </div>
+      {clearOpen && <div className="popup clear-history-dialog" role="dialog" aria-label="Очистить историю">
+        <div className="popup-head"><div className="popup-title">Очистить историю</div><button className="item-card-action" onClick={() => setClearOpen(false)}><CloseIcon size={15} /></button></div>
+        <label className="field"><span className="field-label">Раздел</span><select value={scope} onChange={e => { setScope(e.target.value as ClearHistoryScope); setExclude([]); }}><option value="all">Все</option><option value="starred">Избранное</option><option value="image">Изображения</option><option value="file">Файлы</option><option value="category">Категория</option></select></label>
+        {scope === 'category' && <label className="field"><span className="field-label">Категория</span><select value={category} onChange={e => setCategory(e.target.value)}>{categories.map(c => <option key={c}>{c}</option>)}</select></label>}
+        <label className="field"><span className="field-label">Период</span><select value={period} onChange={e => setPeriod(e.target.value)}><option value="all">Всё время</option><option value="hour">За час</option><option value="today">За сегодня</option></select></label>
+        <div className="field"><span className="field-label">Кроме</span>{choices.map(c => <label className="field-row" key={c}><input type="checkbox" checked={exclude.includes(c)} onChange={e => setExclude(v => e.target.checked ? [...v, c] : v.filter(x => x !== c))} /><span>{c === 'starred' ? 'Избранное' : c === 'image' ? 'Изображения' : c === 'file' ? 'Файлы' : c === 'category' ? 'Категории без уточнения' : c}</span></label>)}</div>
+        <div className="dialog-actions"><button className="button ghost" onClick={() => setClearOpen(false)}>Отмена</button><button className="button danger" onClick={() => { const now = Date.now(); const since = period === 'hour' ? now - 3600000 : period === 'today' ? new Date().setHours(0,0,0,0) : undefined; void onClearHistory({ scope, category: scope === 'category' ? category : undefined, since, exclude }).then(() => setClearOpen(false)); }}>Очистить</button></div>
+      </div>}
     </Overlay>
   );
 }

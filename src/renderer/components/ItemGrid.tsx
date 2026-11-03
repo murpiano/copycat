@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { ClipboardItem } from '../../shared/types';
 import { ItemCard } from './ItemCard';
 import { CheckIcon, CloseIcon, PencilIcon, PlusIcon } from './icons';
@@ -36,6 +36,16 @@ export function ItemGrid({
   onOrderCommit,
 }: ItemGridProps) {
   const dragId = useRef<number | null>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const [showTop, setShowTop] = useState(false);
+
+  useEffect(() => {
+    const node = sectionRef.current;
+    if (!node) return;
+    const onScroll = () => setShowTop(node.scrollTop > 220);
+    node.addEventListener('scroll', onScroll, { passive: true });
+    return () => node.removeEventListener('scroll', onScroll);
+  }, []);
 
   function handleDragOver(overId: number) {
     if (dragId.current === null) return;
@@ -49,7 +59,7 @@ export function ItemGrid({
   }
 
   return (
-    <div className="grid-section">
+    <div className="grid-section" ref={sectionRef}>
       <div className="grid-toolbar">
         {canReorder && (
           <button
@@ -73,6 +83,7 @@ export function ItemGrid({
             <span>Блок</span>
           </button>
         )}
+        {showTop && <button className="grid-reorder-toggle grid-top" onClick={() => sectionRef.current?.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="В начало">↑ В начало</button>}
       </div>
 
       {items.length === 0 ? (

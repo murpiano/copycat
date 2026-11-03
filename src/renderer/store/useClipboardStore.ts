@@ -96,6 +96,7 @@ interface ClipboardState {
   setTags: (id: number, tags: string[]) => Promise<void>;
   updateItem: (id: number, input: UpdateItemInput) => Promise<void>;
   deleteItem: (id: number) => Promise<void>;
+  clearHistory: (input: { scope: 'all' | 'starred' | 'image' | 'file' | 'category'; category?: string; since?: number; exclude: string[] }) => Promise<void>;
   subscribeToNewItems: () => () => void;
 }
 
@@ -326,6 +327,11 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
     await window.copycat.deleteItem(id);
     if (get().expandedId === id) set({ expandedId: null });
     if (get().editingId === id) set({ editingId: null });
+    await get().fetchItems();
+  },
+
+  async clearHistory(input) {
+    await window.copycat.clearHistory?.(input);
     await get().fetchItems();
   },
 
