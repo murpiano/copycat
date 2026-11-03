@@ -12,6 +12,8 @@ export const IPC = {
   DELETE_ITEM: 'copycat:delete-item',
   GET_SETTINGS: 'copycat:get-settings',
   SET_HOTKEY: 'copycat:set-hotkey',
+  SET_HOTKEY_CAPTURE: 'copycat:set-hotkey-capture',
+  HOTKEY_CAPTURE_CANCELED: 'copycat:hotkey-capture-canceled',
   UPDATE_SETTINGS: 'copycat:update-settings',
   HIDE_WINDOW: 'copycat:hide-window',
   ITEM_ADDED: 'copycat:item-added',
