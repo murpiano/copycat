@@ -17,7 +17,7 @@ beforeEach(() => {
     getSettings: jest.fn().mockResolvedValue({
       hotkey: 'CommandOrControl+Shift+V',
       categoriesExpanded: false,
-      navOrder: ['history', 'starred', 'images', 'files'],
+      navOrder: ['history', 'starred', 'text', 'files'],
       windowBounds: null,
     }),
     updateSettings: jest.fn(),
@@ -33,7 +33,7 @@ describe('App', () => {
     expect(screen.getByPlaceholderText('Поиск по буферу обмена...')).toBeInTheDocument();
     expect(screen.getByText('Все')).toBeInTheDocument();
     expect(screen.getByText('Избранное')).toBeInTheDocument();
-    expect(screen.getByText('Изображения')).toBeInTheDocument();
+    expect(screen.getByText('Текст')).toBeInTheDocument();
     expect(screen.getByText('Файлы')).toBeInTheDocument();
     expect(screen.getByText('Категории')).toBeInTheDocument();
   });

@@ -17,6 +17,7 @@ export type { NavKey, SidebarEntry };
 
 const NAV_TYPE: Partial<Record<NavKey, ItemType>> = {
   text: 'text',
+  images: 'image',
   files: 'file',
 };
 

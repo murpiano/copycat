@@ -27,11 +27,11 @@ describe('settings-store', () => {
   it('persists the sidebar order and the expanded flag', () => {
     const file = tempFile();
     createSettingsStore(file).update({
-      navOrder: ['files', 'history', 'starred', 'images'],
+      navOrder: ['files', 'history', 'starred', 'text'],
       categoriesExpanded: true,
     });
     const stored = createSettingsStore(file).get();
-    expect(stored.navOrder).toEqual(['files', 'history', 'starred', 'images', 'categories']);
+    expect(stored.navOrder).toEqual(['files', 'history', 'starred', 'text', 'categories']);
     expect(stored.categoriesExpanded).toBe(true);
   });
 
@@ -45,7 +45,7 @@ describe('settings-store', () => {
       'files',
       'history',
       'starred',
-      'images',
+      'text',
       'categories',
     ]);
   });
