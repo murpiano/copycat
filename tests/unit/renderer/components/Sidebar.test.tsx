@@ -137,4 +137,17 @@ describe('Sidebar', () => {
       expect(screen.queryByText('Все файлы')).not.toBeInTheDocument();
     } finally { window.copycat = previous; }
   });
+
+  it('keeps both groups expanded after reopening while arranging', () => {
+    const previous = window.copycat;
+    let showWindow!: () => void;
+    window.copycat = { ...previous, onWindowShown: (callback) => { showWindow = callback; return () => {}; } };
+    try {
+      renderSidebar({ reorderMode: true, filesExpanded: false, categoriesExpanded: false });
+      act(() => showWindow());
+      expect(screen.getByText('работа')).toBeInTheDocument();
+      expect(screen.getByText('Все файлы')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Категории' })).toHaveAttribute('aria-expanded', 'true');
+    } finally { window.copycat = previous; }
+  });
 });

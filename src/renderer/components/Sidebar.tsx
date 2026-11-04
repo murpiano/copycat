@@ -88,8 +88,8 @@ export function Sidebar({
   onReorderCancel,
 }: SidebarProps) {
   const t = useT();
-  const [categoriesOpen, setCategoriesOpen] = useState(categoriesExpanded);
-  const [filesOpen, setFilesOpen] = useState(false);
+  const [categoriesOpen, setCategoriesOpen] = useState(reorderMode || categoriesExpanded);
+  const [filesOpen, setFilesOpen] = useState(reorderMode || filesExpanded);
   const [draft, setDraft] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState(false);
@@ -97,28 +97,17 @@ export function Sidebar({
   const dragged = useRef<{ kind: 'nav' | 'category' | 'file'; id: string } | null>(null);
 
   useEffect(() => {
-    setCategoriesOpen(categoriesExpanded);
-  }, [categoriesExpanded]);
-
-  useEffect(() => {
-    setFilesOpen(filesExpanded);
-  }, [filesExpanded]);
+    setCategoriesOpen(reorderMode || categoriesExpanded);
+    setFilesOpen(reorderMode || filesExpanded);
+  }, [categoriesExpanded, filesExpanded, reorderMode]);
 
   useEffect(() => {
     const restoreExpansion = () => {
-      setCategoriesOpen(categoriesExpanded);
-      setFilesOpen(filesExpanded);
+      setCategoriesOpen(reorderMode || categoriesExpanded);
+      setFilesOpen(reorderMode || filesExpanded);
     };
     return window.copycat?.onWindowShown?.(restoreExpansion);
-  }, [categoriesExpanded, filesExpanded]);
-
-  useEffect(() => {
-    // Categories can only be rearranged while they are on screen.
-    if (reorderMode) {
-      setCategoriesOpen(true);
-      setFilesOpen(true);
-    }
-  }, [reorderMode]);
+  }, [categoriesExpanded, filesExpanded, reorderMode]);
 
   function commitDraft() {
     if (draft !== null && draft.trim()) onCategoryAdd(draft);

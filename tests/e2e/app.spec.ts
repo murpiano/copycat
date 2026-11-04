@@ -62,7 +62,10 @@ test('preserves work across window hiding and saves interface preferences', asyn
     await expect(settings).toBeVisible();
     await settings.getByLabel('Expand categories', { exact: true }).check();
     await settings.getByLabel('Expand files', { exact: true }).check();
-    await settings.getByRole('button', { name: 'Close', exact: true }).first().click();
+    const closeSettings = settings.locator('.popup-head .item-card-action');
+    expect(await closeSettings.evaluate((node) => [node.getBoundingClientRect().width, node.getBoundingClientRect().height])).toEqual([36, 36]);
+    await closeSettings.click({ position: { x: 3, y: 3 } });
+    await expect(settings).toHaveCount(0);
     await hideAndShow();
     await expect(win.getByRole('button', { name: 'Categories', exact: true })).toHaveAttribute('aria-expanded', 'true');
     await expect(win.getByRole('button', { name: 'Профиль', exact: true })).toBeVisible();
@@ -86,6 +89,24 @@ test('preserves work across window hiding and saves interface preferences', asyn
     await card.locator('.item-card-content').click();
     await expect(win.getByRole('dialog').getByRole('button', { name: 'Open', exact: true })).toBeVisible();
     await win.screenshot({ path: test.info().outputPath('object-detail-en.png') });
+    await win.locator('.overlay').click({ position: { x: 5, y: 5 } });
+    await expect(win.getByRole('dialog')).toHaveCount(0);
+    await win.evaluate(async () => {
+      for (let index = 0; index < 30; index++) {
+        await window.copycat.createItem({ title: `toolbar-${index}`, content: 'toolbar regression', type: 'text', tags: [] });
+      }
+    });
+    await win.getByPlaceholder('Search clipboard history...').fill('toolbar');
+    await win.getByRole('button', { name: 'Text', exact: true }).click();
+    await expect(win.locator('.item-card')).toHaveCount(30);
+    await win.locator('.item-grid').evaluate((node) => { node.scrollTop = node.scrollHeight; node.dispatchEvent(new Event('scroll')); });
+    const backToTop = win.getByRole('button', { name: 'Back to top', exact: true });
+    await expect(backToTop).toBeVisible();
+    expect(await backToTop.evaluate((node) => getComputedStyle(node).whiteSpace)).toBe('nowrap');
+    const toolbarSizes = await win.locator('.grid-toolbar .grid-reorder-toggle').evaluateAll((nodes) => nodes.map((node) => ({ width: node.getBoundingClientRect().width, height: node.getBoundingClientRect().height })));
+    expect(toolbarSizes[0].width).toBe(toolbarSizes[1].width);
+    expect(new Set(toolbarSizes.map((size) => size.height)).size).toBe(1);
+    await win.screenshot({ path: test.info().outputPath('toolbar-en.png') });
 
     await app.close();
     app = await launch();
@@ -97,7 +118,13 @@ test('preserves work across window hiding and saves interface preferences', asyn
     expect(await win.evaluate(() => window.copycat.getSettings())).toMatchObject({ language: 'en', filesExpanded: true, categoriesExpanded: true });
 
     await win.getByRole('button', { name: 'Settings', exact: true }).click();
+    await win.getByLabel('Expand categories', { exact: true }).uncheck();
+    await win.getByLabel('Expand files', { exact: true }).uncheck();
     await win.getByRole('button', { name: 'Configure sections', exact: true }).click();
+    await hideAndShow();
+    await expect(win.locator('.sidebar')).toHaveClass(/reordering/);
+    await expect(win.getByRole('button', { name: 'Categories', exact: true })).toHaveAttribute('aria-expanded', 'true');
+    await expect(win.getByRole('button', { name: 'All files', exact: true })).toBeVisible();
     await win.getByRole('button', { name: 'Delete category Профиль', exact: true }).click();
     await win.getByRole('alertdialog').getByRole('button', { name: 'Delete', exact: true }).click();
     await expect(win.getByRole('button', { name: 'Профиль', exact: true })).toHaveCount(0);
