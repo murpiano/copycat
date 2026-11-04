@@ -97,6 +97,7 @@ export interface CopycatAPI {
   getItems(query: GetItemsQuery): Promise<ClipboardItem[]>;
   createItem(input: CreateItemInput): Promise<ClipboardItem>;
   pickObject(mode: 'file' | 'folder', group?: import('./file-kind').FileGroup): Promise<PickedObject | null>;
+  openItem(id: number): Promise<void>;
   copyItem(id: number): Promise<void>;
   pasteItem(id: number): Promise<void>;
   toggleStar(id: number): Promise<void>;

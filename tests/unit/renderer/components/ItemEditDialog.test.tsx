@@ -23,12 +23,24 @@ it('creates a starred object link with the selected filename', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Объект' }));
   fireEvent.click(screen.getByRole('button', { name: 'Выбрать объект' }));
   await waitFor(() => expect(screen.getByDisplayValue('report.pdf')).toBeInTheDocument());
+  expect(screen.getByRole('button', { name: 'Выбрать объект' })).toHaveAttribute('aria-pressed', 'true');
   expect(screen.getByLabelText('Путь к объекту')).toHaveValue('C:\\Docs\\report.pdf');
   fireEvent.click(screen.getByRole('button', { name: 'Создать' }));
   await waitFor(() => expect(onSave).toHaveBeenCalledWith(
     'report.pdf', 'C:\\Docs\\report.pdf', [], { type: 'file', starred: true, expectedGroup: undefined },
   ));
   expect(pickObject).toHaveBeenCalledWith('file', undefined);
+});
+
+it('closes without confirmation after changing only type and favorite', () => {
+  render(<ItemEditDialog item={null} categories={[]} onClose={onClose}
+    onSave={jest.fn()} onCategoryAdd={onCategoryAdd} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Объект' }));
+  expect(screen.getByRole('textbox', { name: 'Название' })).toBeDisabled();
+  fireEvent.click(screen.getByRole('button', { name: 'В избранное' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Закрыть' }));
+  expect(onClose).toHaveBeenCalled();
+  expect(screen.queryByText('Изменения не сохранены')).not.toBeInTheDocument();
 });
 
 it('locks image creation to image picker and retains the form after a mismatch', async () => {

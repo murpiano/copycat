@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type DragEvent } from 'react';
-import appIcon from '../assets/icon.svg';
+import appIcon from '../../../resources/small/small.png';
 import type { NavKey, SidebarEntry } from '../store/useClipboardStore';
 import { DEFAULT_FILE_SECTION_ORDER, type FileGroup, type FileSection } from '../../shared/file-kind';
 import {

@@ -26,6 +26,7 @@ function installFakeApi(overrides: Partial<CopycatAPI> = {}): CopycatAPI {
     getItems: jest.fn().mockResolvedValue([fakeItem()]),
     createItem: jest.fn().mockResolvedValue(fakeItem()),
     pickObject: jest.fn().mockResolvedValue(null),
+    openItem: jest.fn().mockResolvedValue(undefined),
     copyItem: jest.fn().mockResolvedValue(undefined),
     pasteItem: jest.fn().mockResolvedValue(undefined),
     toggleStar: jest.fn().mockResolvedValue(undefined),

@@ -53,6 +53,7 @@ Borders and nearby dark surfaces establish hierarchy. Overlays carry the stronge
 ## Shapes
 
 Navigation rows use the established 10px radius; fields and controls use about 9px. Icons are simple strokes, sized for compact desktop controls.
+The application logo comes from `resources/small/small.png`; the sidebar keeps its rounded `sidebar-logo` corners. Windows installer and shortcuts use the matching `small.ico`.
 
 ## Components
 

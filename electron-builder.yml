@@ -16,9 +16,11 @@ publish:
   releaseType: release
 win:
   target: nsis
-  icon: resources/large/large.png
+  icon: resources/small/small.ico
   artifactName: Copycat-Setup-${version}.${ext}
 nsis:
+  installerIcon: resources/small/small.ico
+  uninstallerIcon: resources/small/small.ico
   oneClick: false
   allowToChangeInstallationDirectory: true
   perMachine: false
