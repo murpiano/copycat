@@ -28,6 +28,46 @@ test('preserves work across window hiding and saves interface preferences', asyn
     await win.getByRole('textbox', { name: 'Название', exact: true }).fill('Текст');
     await win.getByRole('textbox', { name: 'Содержимое', exact: true }).fill('Содержимое пользователя');
     await win.getByRole('dialog', { name: 'Новый блок' }).getByRole('button', { name: 'Создать', exact: true }).click();
+    const originalContent = win.locator('.item-card-content').getByText('Содержимое пользователя', { exact: true });
+    await originalContent.waitFor();
+    await app.evaluate(({ Menu }) => {
+      const original = Menu.buildFromTemplate;
+      const state = globalThis as unknown as { excerptMenu?: Electron.Menu; restoreMenu?: () => void };
+      Menu.buildFromTemplate = (template) => {
+        const menu = original.call(Menu, template);
+        state.excerptMenu = menu;
+        return menu;
+      };
+      state.restoreMenu = () => { Menu.buildFromTemplate = original; };
+    });
+    const excerptPoint = await originalContent.evaluate((node) => {
+      const range = document.createRange();
+      range.setStart(node.firstChild!, 0);
+      range.setEnd(node.firstChild!, 10);
+      window.getSelection()!.removeAllRanges();
+      window.getSelection()!.addRange(range);
+      const rect = range.getBoundingClientRect();
+      return { x: rect.left + 4, y: rect.top + rect.height / 2 };
+    });
+    await win.mouse.click(excerptPoint.x, excerptPoint.y, { button: 'right' });
+    await expect.poll(() => app.evaluate(() => (globalThis as unknown as { excerptMenu?: Electron.Menu }).excerptMenu?.items[0].label)).toBe('Копировать');
+    expect(await app.evaluate(({ clipboard }) => {
+      const state = globalThis as unknown as { excerptMenu: Electron.Menu; restoreMenu: () => void };
+      state.excerptMenu.items[0].click();
+      state.excerptMenu.closePopup();
+      state.restoreMenu();
+      return clipboard.readText();
+    })).toBe('Содержимое');
+    const originalCard = win.locator('.item-card').filter({ has: originalContent });
+    await originalCard.getByRole('button', { name: 'В избранное', exact: true }).click();
+    await originalCard.getByRole('button', { name: 'Удалить', exact: true }).click();
+    await expect(win.getByRole('alertdialog')).toContainText('Блок добавлен в избранное.');
+    await win.screenshot({ path: test.info().outputPath('protected-delete-ru.png') });
+    await win.keyboard.press('Tab');
+    await expect(win.getByRole('alertdialog').getByRole('button', { name: 'Удалить', exact: true })).toBeFocused();
+    await win.keyboard.press('Tab');
+    await expect(win.getByRole('alertdialog').getByRole('button', { name: 'Отмена', exact: true })).toBeFocused();
+    await win.getByRole('alertdialog').getByRole('button', { name: 'Отмена', exact: true }).click();
     const search = win.getByPlaceholder('Поиск по буферу обмена...');
     await search.fill('пользователя');
     await win.getByRole('button', { name: 'Избранное', exact: true }).click();
@@ -69,8 +109,10 @@ test('preserves work across window hiding and saves interface preferences', asyn
     await hideAndShow();
     await expect(win.getByRole('button', { name: 'Categories', exact: true })).toHaveAttribute('aria-expanded', 'true');
     await expect(win.getByRole('button', { name: 'Профиль', exact: true })).toBeVisible();
+    expect(await win.locator('.category-list').first().evaluate((node) => getComputedStyle(node).paddingLeft)).toBe('42px');
+    expect(await win.locator('.nav-row-main > svg').evaluateAll((nodes) => nodes.every((node) => node.getBoundingClientRect().width === 18 && node.getBoundingClientRect().height === 18))).toBe(true);
     await expect(win.locator('.item-card-kind').getByText('Текст', { exact: true })).toBeVisible();
-    await expect(win.locator('.item-card-content')).toContainText('Содержимое пользователя');
+    await expect(win.locator('.item-card-content').filter({ hasText: 'Содержимое пользователя' })).toBeVisible();
 
     const sample = path.join(profile, 'sample.txt');
     fs.writeFileSync(sample, 'example');

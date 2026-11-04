@@ -22,7 +22,16 @@ function clearSelection(): void {
  */
 export function useSelectionDismiss(): void {
   useEffect(() => {
-    function onPointerDown(): void {
+    function onPointerDown(event: MouseEvent): void {
+      // Preserve the excerpt for its native Copy menu, but only when the
+      // right-click actually lands inside a highlighted text rectangle.
+      const selection = window.getSelection();
+      if (event.button === 2 && selection && !selection.isCollapsed) {
+        for (let index = 0; index < selection.rangeCount; index++) {
+          const rects = selection.getRangeAt(index).getClientRects();
+          if (Array.from(rects).some((rect) => event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom)) return;
+        }
+      }
       // Unconditional: a press inside the highlight starts a fresh selection
       // there anyway, so clearing first costs nothing and removes the special
       // case that used to leave the old highlight behind.

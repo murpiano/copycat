@@ -60,6 +60,7 @@ The application logo comes from `resources/small/small.png`; the sidebar keeps i
 
 Creation offers text or an object reference where the section permits it. File subgroup creation locks the target type. Object selection uses the system picker and stores a path, not a duplicate. Favorite and category choices are visible before saving. Destructive history cleanup keeps favorites and categories excluded by default.
 Clicking the backdrop dismisses a read-only block preview; editors keep their draft until an explicit close action. Settings close controls have a 36px target, and overlays exclude underlying native window drag regions.
+Nested sidebar rows are indented beyond parent labels; main navigation icons share an 18px frame. Deleting a favorite or categorized block requires confirmation naming its memberships. Right-clicking selected text preserves the excerpt for the native Copy menu; clicking elsewhere clears it.
 
 ## Do's and Don'ts
 

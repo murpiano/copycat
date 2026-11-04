@@ -19,6 +19,7 @@ win:
   icon: resources/small/small.ico
   artifactName: Copycat-Setup-${version}.${ext}
 nsis:
+  installerSidebar: resources/large/installer-sidebar.bmp
   installerIcon: resources/small/small.ico
   uninstallerIcon: resources/small/small.ico
   oneClick: false
