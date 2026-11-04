@@ -1,9 +1,32 @@
-import { useEffect, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import {
+  useEffect,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
+} from 'react';
 import type { AppSettings, ClearHistoryInput, ClearHistoryScope } from '../../shared/types';
 import { DEFAULT_FILE_SECTION_ORDER, type FileGroup } from '../../shared/file-kind';
 import { CloseIcon } from './icons';
 import { Overlay } from './Overlay';
 import { useT } from '../i18n';
+import murpianoIcon from '../assets/murpiano-icon-mark.png';
+
+const MURPIANO_URL = 'https://github.com/murpiano';
+
+function MurpianoSignature() {
+  function open(event: ReactMouseEvent) {
+    event.preventDefault();
+    void window.copycat.openExternal(MURPIANO_URL);
+  }
+  return (
+    <a href={MURPIANO_URL} className="murpiano-signature" onClick={open}>
+      Authored by murpiano
+      <span className="murpiano-signature__icon">
+        <img src={murpianoIcon} alt="" width={17} height={17} />
+      </span>
+    </a>
+  );
+}
 
 /** Modifiers alone are not a shortcut; the field waits for a real key. */
 const MODIFIER_KEYS = new Set(['Control', 'Alt', 'Shift', 'Meta']);
@@ -266,7 +289,8 @@ export function SettingsDialog({
           </div>
         </div>
 
-        <div className="dialog-actions">
+        <div className="dialog-actions dialog-actions--split">
+          <MurpianoSignature />
           <button type="button" className="button ghost" onClick={() => void requestClose()}>
             {t('Закрыть')}
           </button>

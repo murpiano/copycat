@@ -56,6 +56,7 @@ function installFakeApi(overrides: Partial<CopycatAPI> = {}): CopycatAPI {
     hideWindow: jest.fn().mockResolvedValue(undefined),
     onWindowShown: jest.fn().mockReturnValue(() => {}),
     onItemAdded: jest.fn().mockReturnValue(() => {}),
+    openExternal: jest.fn().mockResolvedValue(undefined),
     ...overrides,
   };
   (window as unknown as { copycat: CopycatAPI }).copycat = api;

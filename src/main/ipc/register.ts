@@ -178,4 +178,8 @@ export function registerIpcHandlers(ipcMain: IpcMain, deps: RegisterIpcDeps): vo
   ipcMain.handle(IPC.REORDER_ITEMS, (_e, ids: number[]) => handleReorderItems(ipcDeps, ids));
   ipcMain.handle(IPC.DELETE_ITEM, (_e, id: number) => handleDeleteItem(ipcDeps, id));
   ipcMain.handle(IPC.CLEAR_HISTORY, (_e, input: ClearHistoryInput) => handleClearHistory(ipcDeps, input));
+  ipcMain.handle(IPC.OPEN_EXTERNAL, (_e, url: string) => {
+    if (!/^https:\/\/github\.com\/murpiano(\/|$)/.test(url)) return;
+    return shell.openExternal(url);
+  });
 }

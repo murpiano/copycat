@@ -22,4 +22,5 @@ export const IPC = {
   HIDE_WINDOW: 'copycat:hide-window',
   WINDOW_SHOWN: 'copycat:window-shown',
   ITEM_ADDED: 'copycat:item-added',
+  OPEN_EXTERNAL: 'copycat:open-external',
 } as const;

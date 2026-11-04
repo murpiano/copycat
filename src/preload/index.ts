@@ -65,6 +65,7 @@ const api: CopycatAPI = {
     ipcRenderer.on(IPC.ITEM_ADDED, listener);
     return () => ipcRenderer.removeListener(IPC.ITEM_ADDED, listener);
   },
+  openExternal: (url: string) => ipcRenderer.invoke(IPC.OPEN_EXTERNAL, url),
 };
 
 contextBridge.exposeInMainWorld('copycat', api);

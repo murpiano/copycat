@@ -121,6 +121,7 @@ export interface CopycatAPI {
   hideWindow(): Promise<void>;
   onWindowShown(cb: () => void): () => void;
   onItemAdded(cb: (item: ClipboardItem) => void): () => void;
+  openExternal(url: string): Promise<void>;
 }
 
 declare global {
