@@ -12,6 +12,7 @@ function tempFile(): string {
 describe('settings-store', () => {
   it('starts from the defaults when there is no file yet', () => {
     expect(createSettingsStore(tempFile()).get()).toEqual({
+      language: 'ru',
       hotkey: DEFAULT_HOTKEY,
       categoriesExpanded: false,
       filesExpanded: false,
@@ -22,6 +23,12 @@ describe('settings-store', () => {
       hiddenCategories: [],
       windowBounds: null,
     });
+  });
+
+  it('persists English without dropping existing settings', () => {
+    const file = tempFile();
+    createSettingsStore(file).update({ language: 'en', filesExpanded: true });
+    expect(createSettingsStore(file).get()).toMatchObject({ language: 'en', filesExpanded: true });
   });
 
   it('persists local file order and hidden subgroups', () => {

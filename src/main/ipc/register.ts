@@ -116,14 +116,15 @@ export function registerIpcHandlers(ipcMain: IpcMain, deps: RegisterIpcDeps): vo
     handleCreateItem(ipcDeps, input),
   );
   ipcMain.handle(IPC.PICK_OBJECT, async (_e, mode: 'file' | 'folder', group?: FileGroup) => {
+    const english = deps.readSettings().language === 'en';
     const options: Electron.OpenDialogOptions = {
       properties: mode === 'folder' ? ['openDirectory'] : ['openFile'],
       filters: mode === 'file' && group === 'images'
-        ? [{ name: 'Изображения', extensions: [...IMAGE_EXTS] }]
+        ? [{ name: english ? 'Images' : 'Изображения', extensions: [...IMAGE_EXTS] }]
         : mode === 'file' && group === 'audio'
-          ? [{ name: 'Аудио', extensions: [...AUDIO_EXTS] }]
+          ? [{ name: english ? 'Audio' : 'Аудио', extensions: [...AUDIO_EXTS] }]
           : mode === 'file' && group === 'documents'
-            ? [{ name: 'Документы', extensions: [...DOCUMENT_EXTS] }]
+            ? [{ name: english ? 'Documents' : 'Документы', extensions: [...DOCUMENT_EXTS] }]
             : undefined,
     };
     const owner = BrowserWindow.getFocusedWindow();
@@ -164,6 +165,10 @@ export function registerIpcHandlers(ipcMain: IpcMain, deps: RegisterIpcDeps): vo
   ipcMain.handle(IPC.REMOVE_TAG, (_e, id: number, tag: string) =>
     handleRemoveTag(ipcDeps, id, tag),
   );
+  ipcMain.handle(IPC.DELETE_CATEGORY, (_e, name: string) => {
+    if (typeof name !== 'string' || !name.trim()) throw new Error('Invalid category');
+    deps.tagsRepo.deleteCategory(name);
+  });
   ipcMain.handle(IPC.SET_TAGS, (_e, id: number, tags: string[]) =>
     handleSetTags(ipcDeps, id, tags),
   );

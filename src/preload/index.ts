@@ -35,6 +35,7 @@ const api: CopycatAPI = {
   toggleStar: (id: number) => ipcRenderer.invoke(IPC.TOGGLE_STAR, id),
   addTag: (id: number, tag: string) => ipcRenderer.invoke(IPC.ADD_TAG, id, tag),
   removeTag: (id: number, tag: string) => ipcRenderer.invoke(IPC.REMOVE_TAG, id, tag),
+  deleteCategory: (name: string) => ipcRenderer.invoke(IPC.DELETE_CATEGORY, name),
   setTags: (id: number, tags: string[]) => ipcRenderer.invoke(IPC.SET_TAGS, id, tags),
   updateItem: (id: number, input: UpdateItemInput) =>
     ipcRenderer.invoke(IPC.UPDATE_ITEM, id, input),
@@ -54,6 +55,11 @@ const api: CopycatAPI = {
   updateSettings: (input: UpdateSettingsInput) =>
     ipcRenderer.invoke(IPC.UPDATE_SETTINGS, input),
   hideWindow: () => ipcRenderer.invoke(IPC.HIDE_WINDOW),
+  onWindowShown: (cb: () => void) => {
+    const listener = () => cb();
+    ipcRenderer.on(IPC.WINDOW_SHOWN, listener);
+    return () => ipcRenderer.removeListener(IPC.WINDOW_SHOWN, listener);
+  },
   onItemAdded: (cb: (item: ClipboardItem) => void) => {
     const listener = (_e: unknown, item: ClipboardItem) => cb(item);
     ipcRenderer.on(IPC.ITEM_ADDED, listener);

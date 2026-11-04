@@ -8,6 +8,7 @@ export const IPC = {
   TOGGLE_STAR: 'copycat:toggle-star',
   ADD_TAG: 'copycat:add-tag',
   REMOVE_TAG: 'copycat:remove-tag',
+  DELETE_CATEGORY: 'copycat:delete-category',
   SET_TAGS: 'copycat:set-tags',
   UPDATE_ITEM: 'copycat:update-item',
   REORDER_ITEMS: 'copycat:reorder-items',
@@ -19,5 +20,6 @@ export const IPC = {
   HOTKEY_CAPTURE_CANCELED: 'copycat:hotkey-capture-canceled',
   UPDATE_SETTINGS: 'copycat:update-settings',
   HIDE_WINDOW: 'copycat:hide-window',
+  WINDOW_SHOWN: 'copycat:window-shown',
   ITEM_ADDED: 'copycat:item-added',
 } as const;

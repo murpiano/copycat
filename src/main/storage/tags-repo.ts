@@ -6,6 +6,7 @@ export interface TagCount {
 }
 
 export interface TagsRepo {
+  deleteCategory(name: string): void;
   addTagToItem(itemId: number, tagName: string): void;
   removeTagFromItem(itemId: number, tagName: string): void;
   getTagsForItem(itemId: number): string[];
@@ -18,6 +19,9 @@ function normalizeTagName(name: string): string {
 
 export function createTagsRepo(db: Database.Database): TagsRepo {
   return {
+    deleteCategory(name) {
+      db.prepare('DELETE FROM tags WHERE name = ?').run(normalizeTagName(name));
+    },
     addTagToItem(itemId, tagName) {
       const name = normalizeTagName(tagName);
       if (!name) return;

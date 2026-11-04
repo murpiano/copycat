@@ -22,6 +22,7 @@ const NAV_TYPE: Partial<Record<NavKey, ItemType>> = {
 };
 
 const CATEGORIES_STORAGE_KEY = 'copycat.categories';
+let fetchGeneration = 0;
 
 function loadCategories(): string[] {
   try {
@@ -84,6 +85,7 @@ interface ClipboardState {
   setSearch: (value: string) => void;
   setNav: (nav: NavKey) => void;
   addCategory: (name: string) => void;
+  deleteCategory: (name: string) => Promise<void>;
   selectCategory: (name: string | null) => void;
   selectFileGroup: (group: FileGroup | null) => void;
   expandItem: (id: number | null) => void;
@@ -151,6 +153,7 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
   },
 
   async fetchItems() {
+    const generation = ++fetchGeneration;
     const { search, nav, activeCategory, activeFileGroup } = get();
     // One view at a time: a category shows everything filed under it, images
     // and files included, instead of inheriting the nav tab's type filter.
@@ -166,7 +169,7 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
     if (nav === 'files' && activeCategory === null) {
       items = items.filter((item) => item.type !== 'text' && (!activeFileGroup || fileGroupOf(item) === activeFileGroup));
     }
-    set({ items });
+    if (generation === fetchGeneration) set({ items });
   },
 
   setSearch(value) {
@@ -175,7 +178,7 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
   },
 
   setNav(nav) {
-    set({ nav, activeCategory: null, activeFileGroup: null, reorderMode: false, search: '' });
+    set({ nav, activeCategory: null, activeFileGroup: null, reorderMode: false });
     void get().fetchItems();
   },
 
@@ -187,13 +190,24 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
     set({ categories });
   },
 
+  async deleteCategory(name) {
+    if (!get().categories.includes(name)) return;
+    await window.copycat.deleteCategory(name);
+    const categories = get().categories.filter((entry) => entry !== name);
+    saveCategories(categories);
+    set({ categories, activeCategory: get().activeCategory === name ? null : get().activeCategory });
+    const hidden = get().settings?.hiddenCategories ?? [];
+    if (hidden.includes(name)) await get().updateSettings({ hiddenCategories: hidden.filter((entry) => entry !== name) });
+    await get().fetchItems();
+  },
+
   selectCategory(name) {
-    set({ activeCategory: name, activeFileGroup: null, reorderMode: false, search: '' });
+    set({ activeCategory: name, activeFileGroup: null, reorderMode: false });
     void get().fetchItems();
   },
 
   selectFileGroup(group) {
-    set({ nav: 'files', activeCategory: null, activeFileGroup: group, reorderMode: false, search: '' });
+    set({ nav: 'files', activeCategory: null, activeFileGroup: group, reorderMode: false });
     void get().fetchItems();
   },
 

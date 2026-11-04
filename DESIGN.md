@@ -32,11 +32,12 @@ components:
 
 ## Overview
 
-Copycat is a fast Windows clipboard workbench: a narrow navigation rail and a dense card area, not a full document manager. The dark blue surfaces and restrained semantic accents are established in `src/renderer/index.css`; this file records those decisions rather than generating CSS. Russian is the current application language. Release notes are English.
+Copycat is a fast Windows clipboard workbench: a narrow navigation rail and a dense card area, not a full document manager. The dark blue surfaces and restrained semantic accents are established in `src/renderer/index.css`; this file records those decisions rather than generating CSS. Russian is the default interface language; English can be selected in settings. User content and category names are never translated. Release notes are English.
 
 ## Colors
 
 The `:root` custom properties in `src/renderer/index.css` are canonical. Blue marks copied text and safe actions; green marks file and image objects; gold marks favorites; red marks destructive actions. Muted text remains legible against the dark surfaces.
+Object-opening buttons share the `--open-bg`, `--open-hover`, and `--open-text` tokens in card and detail views.
 
 ## Typography
 
@@ -44,7 +45,7 @@ The runtime body uses the system UI stack. Controls and card labels remain compa
 
 ## Layout
 
-The sidebar is a continuous hit surface: neighboring rows have no dead cursor gaps. Card scrolling belongs to the main pane. The first-run window is 1000×619; saved user bounds override it. Dialogs fit inside the viewport and keep actions reachable.
+The sidebar is a continuous hit surface: neighboring rows have no dead cursor gaps. Card scrolling belongs to the main pane. The first-run window is 1000×619; saved user bounds override it. Dialogs fit inside the viewport and keep actions reachable. A hidden window retains its active search, view, and draft; the sidebar's two expansion states reset to saved preferences when the window returns.
 
 ## Elevation & Depth
 

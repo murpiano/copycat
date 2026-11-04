@@ -68,7 +68,10 @@ export interface WindowBounds {
   height: number;
 }
 
+export type Language = 'ru' | 'en';
+
 export interface AppSettings {
+  language?: Language;
   /** Electron accelerator that opens the window, e.g. "CommandOrControl+Shift+V". */
   hotkey: string;
   /** Opens the sidebar's category selector on start instead of collapsed. */
@@ -103,6 +106,7 @@ export interface CopycatAPI {
   toggleStar(id: number): Promise<void>;
   addTag(id: number, tag: string): Promise<void>;
   removeTag(id: number, tag: string): Promise<void>;
+  deleteCategory(name: string): Promise<void>;
   setTags(id: number, tags: string[]): Promise<void>;
   updateItem(id: number, input: UpdateItemInput): Promise<void>;
   reorderItems(ids: number[]): Promise<void>;
@@ -115,6 +119,7 @@ export interface CopycatAPI {
   toFileUrl(filePath: string): string;
   updateSettings(input: UpdateSettingsInput): Promise<AppSettings>;
   hideWindow(): Promise<void>;
+  onWindowShown(cb: () => void): () => void;
   onItemAdded(cb: (item: ClipboardItem) => void): () => void;
 }
 

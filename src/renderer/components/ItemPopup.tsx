@@ -4,6 +4,7 @@ import { badgeIcon, copyLabel, fileIcon, formatAge, itemDisplayTitle } from './I
 import { CloseIcon, CopyIcon, PencilIcon } from './icons';
 import { useSelectionCursor } from '../useSelectionCursor';
 import { Overlay } from './Overlay';
+import { useLanguage, useT } from '../i18n';
 
 interface ItemPopupProps {
   item: ClipboardItem;
@@ -13,6 +14,8 @@ interface ItemPopupProps {
 }
 
 export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
+  const language = useLanguage();
+  const t = useT();
   const { selecting, ref: contentRef } = useSelectionCursor<HTMLDivElement>();
   const [openError, setOpenError] = useState(false);
 
@@ -25,37 +28,37 @@ export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
   }, [onClose]);
 
   return (
-    <Overlay onClose={onClose}>
+    <Overlay onClose={onClose} dismissOnBackdrop={false}>
       <div
         className="popup"
         data-type={item.type}
         role="dialog"
-        aria-label="Содержимое"
+        aria-label={t('Содержимое')}
       >
         <div className="popup-head">
           <div className="item-card-badge static">{item.type === 'file' ? fileIcon(item, 15) : badgeIcon(item.type, 15)}</div>
-          <div className="popup-title" title={itemDisplayTitle(item)}>{itemDisplayTitle(item)}</div>
-          <span className="item-card-time">{formatAge(item.createdAt)}</span>
+          <div className="popup-title" title={itemDisplayTitle(item, language)}>{itemDisplayTitle(item, language)}</div>
+          <span className="item-card-time">{formatAge(item.createdAt, language)}</span>
           <button
             className="item-card-action"
-            aria-label={copyLabel(item)}
-            title={copyLabel(item)}
+            aria-label={t(copyLabel(item))}
+            title={t(copyLabel(item))}
             onClick={() => onCopy(item.id)}
           >
             <CopyIcon size={15} />
           </button>
           <button
             className="item-card-action"
-            aria-label="Редактировать"
-            title="Редактировать"
+            aria-label={t('Редактировать')}
+            title={t('Редактировать')}
             onClick={() => onEdit(item.id)}
           >
             <PencilIcon size={15} />
           </button>
           <button
             className="item-card-action"
-            aria-label="Закрыть"
-            title="Закрыть"
+            aria-label={t('Закрыть')}
+            title={t('Закрыть')}
             onClick={onClose}
           >
             <CloseIcon size={15} />
@@ -64,7 +67,7 @@ export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
 
         {item.type === 'image' ? (
           <div className="popup-image">
-            <img src={window.copycat.toFileUrl(item.content)} alt="clipboard preview" />
+            <img src={window.copycat.toFileUrl(item.content)} alt={t('Предпросмотр изображения')} />
           </div>
         ) : (
           <div
@@ -84,8 +87,8 @@ export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
             ))}
           </div>
         )}
-        {item.type !== 'text' && <button type="button" className="button" onClick={() => { void window.copycat.openItem(item.id).then(() => setOpenError(false)).catch(() => setOpenError(true)); }}>Открыть</button>}
-        {openError && <span className="field-hint" role="alert">Исходный объект не найден.</span>}
+        {item.type !== 'text' && <button type="button" className="button open-object" onClick={() => { void window.copycat.openItem(item.id).then(() => setOpenError(false)).catch(() => setOpenError(true)); }}>{t('Открыть')}</button>}
+        {openError && <span className="field-hint" role="alert">{t('Исходный объект не найден.')}</span>}
       </div>
     </Overlay>
   );

@@ -7,6 +7,9 @@ interface ConfirmDialogProps {
   cancelLabel: string;
   onConfirm: () => void;
   onCancel: () => void;
+  danger?: boolean;
+  busy?: boolean;
+  error?: string | null;
 }
 
 /**
@@ -21,19 +24,23 @@ export function ConfirmDialog({
   cancelLabel,
   onConfirm,
   onCancel,
+  danger = false,
+  busy = false,
+  error,
 }: ConfirmDialogProps) {
   return (
     <Overlay onClose={() => {}}>
-      <div className="popup confirm-dialog" role="alertdialog" aria-label={title}>
+      <div className="popup confirm-dialog" role="alertdialog" aria-label={title} aria-busy={busy}>
         <div className="popup-head">
           <div className="popup-title">{title}</div>
         </div>
         <p className="confirm-message">{message}</p>
+        {error && <p className="field-hint" role="alert">{error}</p>}
         <div className="dialog-actions">
-          <button type="button" className="button ghost" onClick={onCancel}>
+          <button type="button" className="button ghost" onClick={onCancel} disabled={busy} autoFocus>
             {cancelLabel}
           </button>
-          <button type="button" className="button primary" onClick={onConfirm}>
+          <button type="button" className={danger ? 'button danger' : 'button primary'} onClick={onConfirm} disabled={busy}>
             {confirmLabel}
           </button>
         </div>

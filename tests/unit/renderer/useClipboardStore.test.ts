@@ -26,6 +26,7 @@ function installFakeApi(overrides: Partial<CopycatAPI> = {}): CopycatAPI {
     getItems: jest.fn().mockResolvedValue([fakeItem()]),
     createItem: jest.fn().mockResolvedValue(fakeItem()),
     pickObject: jest.fn().mockResolvedValue(null),
+    deleteCategory: jest.fn().mockResolvedValue(undefined),
     openItem: jest.fn().mockResolvedValue(undefined),
     copyItem: jest.fn().mockResolvedValue(undefined),
     pasteItem: jest.fn().mockResolvedValue(undefined),
@@ -53,6 +54,7 @@ function installFakeApi(overrides: Partial<CopycatAPI> = {}): CopycatAPI {
       windowBounds: null,
     }),
     hideWindow: jest.fn().mockResolvedValue(undefined),
+    onWindowShown: jest.fn().mockReturnValue(() => {}),
     onItemAdded: jest.fn().mockReturnValue(() => {}),
     ...overrides,
   };
@@ -61,6 +63,21 @@ function installFakeApi(overrides: Partial<CopycatAPI> = {}): CopycatAPI {
 }
 
 describe('useClipboardStore', () => {
+  it('does not overwrite a newer section with a slower previous search', async () => {
+    let finishPrevious!: (items: ClipboardItem[]) => void;
+    const getItems = jest.fn()
+      .mockImplementationOnce(() => new Promise<ClipboardItem[]>((resolve) => { finishPrevious = resolve; }))
+      .mockResolvedValueOnce([fakeItem({ id: 2, content: 'latest' })]);
+    installFakeApi({ getItems });
+    let previous!: Promise<void>;
+    await act(async () => {
+      previous = useClipboardStore.getState().fetchItems();
+      await useClipboardStore.getState().fetchItems();
+      finishPrevious([fakeItem({ id: 1, content: 'stale' })]);
+      await previous;
+    });
+    expect(useClipboardStore.getState().items.map((item) => item.id)).toEqual([2]);
+  });
   it('fetchItems loads items via the copycat API using current filters', async () => {
     const api = installFakeApi();
     await act(async () => {
@@ -140,6 +157,17 @@ describe('useClipboardStore', () => {
     // The files view must fetch both files and images; the group filter is
     // applied after the query so Images is not discarded prematurely.
     expect(query.type).toBeUndefined();
+  });
+
+  it('keeps the search query while switching sections', async () => {
+    const api = installFakeApi();
+    await act(async () => {
+      useClipboardStore.getState().setSearch('report');
+      useClipboardStore.getState().selectFileGroup('documents');
+      await Promise.resolve();
+    });
+    expect(useClipboardStore.getState().search).toBe('report');
+    expect((api.getItems as jest.Mock).mock.calls.at(-1)![0].search).toBe('report');
   });
 
   it('treats every view but the full history as hand-ordered', async () => {

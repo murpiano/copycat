@@ -3,6 +3,7 @@ import { useSelectionCursor } from '../useSelectionCursor';
 import type { ClipboardItem, ItemType } from '../../shared/types';
 import { AudioIcon, BoxIcon, CloseIcon, ExcelIcon, FileIcon, FolderIcon, ImageIcon, PdfIcon, PencilIcon, PowerPointIcon, StarIcon, TextDocumentIcon, WordIcon } from './icons';
 import { firstPath, kindFromPath } from '../../shared/file-kind';
+import { translateUi, useLanguage, useT, type Language } from '../i18n';
 
 export const KIND_LABEL: Record<ItemType, string> = {
   text: 'Текст',
@@ -10,13 +11,13 @@ export const KIND_LABEL: Record<ItemType, string> = {
   file: 'Файл',
 };
 
-export function formatAge(createdAt: number): string {
+export function formatAge(createdAt: number, language: Language = 'ru'): string {
   const minutes = Math.max(0, Math.round((Date.now() - createdAt) / 60_000));
-  if (minutes < 1) return 'только что';
-  if (minutes < 60) return `${minutes} мин назад`;
+  if (minutes < 1) return language === 'en' ? 'just now' : 'только что';
+  if (minutes < 60) return language === 'en' ? `${minutes} min ago` : `${minutes} мин назад`;
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return `${hours} ч назад`;
-  return `${Math.round(hours / 24)} д назад`;
+  if (hours < 24) return language === 'en' ? `${hours} h ago` : `${hours} ч назад`;
+  return language === 'en' ? `${Math.round(hours / 24)} d ago` : `${Math.round(hours / 24)} д назад`;
 }
 
 export function badgeIcon(type: ItemType, size = 14) {
@@ -25,12 +26,12 @@ export function badgeIcon(type: ItemType, size = 14) {
   return <FileIcon size={size} />;
 }
 
-export function itemDisplayTitle(item: ClipboardItem): string {
-  if (item.type === 'text') return item.title ?? KIND_LABEL.text;
+export function itemDisplayTitle(item: ClipboardItem, language: Language = 'ru'): string {
+  if (item.type === 'text') return item.title ?? translateUi(KIND_LABEL.text, language);
   let path = item.content;
   if (item.type === 'file') { try { path = JSON.parse(item.content)[0] ?? item.content; } catch { /* plain path */ } }
   const name = path.split(/[\\/]/).pop() ?? '';
-  if (!item.title) return name || KIND_LABEL[item.type];
+  if (!item.title) return name || translateUi(KIND_LABEL[item.type], language);
   const extension = name.match(/(\.[^.]+)$/)?.[1];
   return extension && !item.title.toLowerCase().endsWith(extension.toLowerCase()) ? `${item.title}${extension}` : item.title;
 }
@@ -78,9 +79,11 @@ export function ItemCard({
   onDragOver,
   onDrop,
 }: ItemCardProps) {
+  const language = useLanguage();
+  const t = useT();
   const { selecting, ref: contentRef } = useSelectionCursor<HTMLDivElement>();
   const [openError, setOpenError] = useState(false);
-  const title = itemDisplayTitle(item);
+  const title = itemDisplayTitle(item, language);
 
   // The whole card opens the popup, so there is no dead area inside it. A
   // click that leaves text highlighted is the end of picking an excerpt and
@@ -123,8 +126,8 @@ export function ItemCard({
         <div className="item-card-head">
           <button
             className="item-card-badge"
-            aria-label={copyLabel(item)}
-            title={copyLabel(item)}
+            aria-label={t(copyLabel(item))}
+            title={t(copyLabel(item))}
             onClick={actOnly(() => onCopy(item.id))}
           >
             {item.type === 'file' ? fileIcon(item) : badgeIcon(item.type)}
@@ -133,25 +136,25 @@ export function ItemCard({
             {title}
           </div>
           <button
-            aria-label="star"
+            aria-label={t(item.starred ? 'Убрать из избранного' : 'В избранное')}
             className={item.starred ? 'item-card-action starred' : 'item-card-action'}
-            title="В избранное"
+            title={t('В избранное')}
             onClick={actOnly(() => onToggleStar(item.id))}
           >
             <StarIcon size={15} filled={item.starred} />
           </button>
           <button
-            aria-label="edit"
+            aria-label={t('Редактировать')}
             className="item-card-action"
-            title="Редактировать"
+            title={t('Редактировать')}
             onClick={actOnly(() => onEdit(item.id))}
           >
             <PencilIcon size={14} />
           </button>
           <button
-            aria-label="delete"
+            aria-label={t('Удалить')}
             className="item-card-action delete"
-            title="Удалить"
+            title={t('Удалить')}
             onClick={actOnly(() => onDelete(item.id))}
           >
             <CloseIcon size={14} />
@@ -160,7 +163,7 @@ export function ItemCard({
 
         {item.type === 'image' ? (
           <div className="item-card-preview">
-            <img src={window.copycat.toFileUrl(item.content)} alt="clipboard preview" />
+            <img src={window.copycat.toFileUrl(item.content)} alt={t('Предпросмотр изображения')} />
           </div>
         ) : (
           <div
@@ -171,15 +174,17 @@ export function ItemCard({
           </div>
         )}
 
-        <div className="item-card-tags">
-          {item.tags.map((tag) => (
-            <span key={tag} className="tag-chip">
-              {tag}
-            </span>
-          ))}
+        <div className="item-card-footer">
+          {item.type !== 'text' && !reorderMode && <button type="button" className="item-open" onClick={actOnly(() => { void window.copycat.openItem(item.id).then(() => setOpenError(false)).catch(() => setOpenError(true)); })}>{t('Открыть')}</button>}
+          <div className="item-card-tags" title={item.tags.join(', ')}>
+            {item.tags.map((tag) => (
+              <span key={tag} className="tag-chip">
+                {tag}
+              </span>
+            ))}
+          </div>
         </div>
-        {item.type !== 'text' && !reorderMode && <button type="button" className="item-open" onClick={actOnly(() => { void window.copycat.openItem(item.id).then(() => setOpenError(false)).catch(() => setOpenError(true)); })}>Открыть</button>}
-        {openError && <span className="item-open-error" role="alert">Исходный объект не найден.</span>}
+        {openError && <span className="item-open-error" role="alert">{t('Исходный объект не найден.')}</span>}
       </div>
     </div>
   );
