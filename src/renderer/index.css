@@ -1,5 +1,7 @@
 :root {
   color-scheme: dark;
+  scrollbar-color: #243047 transparent;
+  scrollbar-width: thin;
 
   --bg-core: #101a2b;
   --bg-mid: #0d1525;
@@ -168,7 +170,7 @@ button:disabled {
   padding: 18px 14px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0;
 }
 
 .nav-item {
@@ -284,9 +286,9 @@ button:disabled {
 .category-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0;
   padding-left: 30px;
-  margin-top: 2px;
+  margin-top: 0;
 }
 
 .category-item {
@@ -983,6 +985,12 @@ button:disabled {
   width: min(560px, 100%);
 }
 
+.edit-dialog-title { display: flex; align-items: center; gap: 8px; }
+.creation-types { display: flex; gap: 4px; margin-left: auto; }
+.creation-type-fixed { cursor: default; }
+.object-picker { display: flex; flex-wrap: wrap; gap: 8px; }
+.object-path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 .field {
   display: flex;
   flex-direction: column;
@@ -1027,7 +1035,7 @@ button:disabled {
 .field-textarea {
   min-height: 140px;
   max-height: 320px;
-  resize: vertical;
+  resize: none;
   line-height: 1.55;
 }
 

@@ -225,7 +225,7 @@ export function App() {
           item={editing}
           categories={categories}
           onClose={() => editItem(null)}
-          onSave={(title, content, tags) => void saveEdits(editing.id, title, content, tags)}
+          onSave={(title, content, tags) => saveEdits(editing.id, title, content, tags)}
           onCategoryAdd={addCategory}
         />
       )}
@@ -236,8 +236,10 @@ export function App() {
           categories={categories}
           // A card made while a category is open belongs to it by default.
           initialTags={activeCategory ? [activeCategory.toLowerCase()] : []}
+          initialStarred={!activeCategory && nav === 'starred'}
+          creationGroup={activeCategory ? null : nav === 'files' ? activeFileGroup ?? 'all' : nav === 'text' ? 'text' : null}
           onClose={() => composeItem(false)}
-          onSave={(title, content, tags) => void createItem({ title, content, tags })}
+          onSave={(title, content, tags, creation) => createItem({ title, content, tags, ...creation })}
           onCategoryAdd={addCategory}
         />
       )}

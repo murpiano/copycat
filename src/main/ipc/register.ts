@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import type { IpcMain } from 'electron';
-import { clipboard } from 'electron';
+import { BrowserWindow, clipboard, dialog } from 'electron';
 import { IPC } from '../../shared/ipc-channels';
 import type {
   AppSettings,
@@ -15,6 +15,8 @@ import type {
 import type { ItemsRepo } from '../storage/items-repo';
 import type { TagsRepo } from '../storage/tags-repo';
 import { hashContent } from '../clipboard/hash';
+import { setNativeDialogOpen } from '../window';
+import { AUDIO_EXTS, DOCUMENT_EXTS, IMAGE_EXTS, kindFromPath, type FileGroup } from '../../shared/file-kind';
 import { cleanupUnusedPreviews } from '../clipboard/capture-pipeline';
 import { buildCFDropBuffer } from '../clipboard/file-drop';
 import {
@@ -113,6 +115,28 @@ export function registerIpcHandlers(ipcMain: IpcMain, deps: RegisterIpcDeps): vo
   ipcMain.handle(IPC.CREATE_ITEM, (_e, input: CreateItemInput) =>
     handleCreateItem(ipcDeps, input),
   );
+  ipcMain.handle(IPC.PICK_OBJECT, async (_e, mode: 'file' | 'folder', group?: FileGroup) => {
+    const options: Electron.OpenDialogOptions = {
+      properties: mode === 'folder' ? ['openDirectory'] : ['openFile'],
+      filters: mode === 'file' && group === 'images'
+        ? [{ name: 'Изображения', extensions: [...IMAGE_EXTS] }]
+        : mode === 'file' && group === 'audio'
+          ? [{ name: 'Аудио', extensions: [...AUDIO_EXTS] }]
+          : mode === 'file' && group === 'documents'
+            ? [{ name: 'Документы', extensions: [...DOCUMENT_EXTS] }]
+            : undefined,
+    };
+    const owner = BrowserWindow.getFocusedWindow();
+    setNativeDialogOpen(true);
+    try {
+      const result = owner ? await dialog.showOpenDialog(owner, options) : await dialog.showOpenDialog(options);
+      if (result.canceled || !result.filePaths[0]) return null;
+      const selectedPath = result.filePaths[0];
+      return { path: selectedPath, kind: kindFromPath(selectedPath, mode === 'folder') };
+    } finally {
+      setNativeDialogOpen(false);
+    }
+  });
   ipcMain.handle(IPC.GET_SETTINGS, () => handleGetSettings(ipcDeps));
   ipcMain.handle(IPC.SET_HOTKEY, (_e, accelerator: string) =>
     handleSetHotkey(ipcDeps, accelerator),

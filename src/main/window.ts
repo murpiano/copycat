@@ -12,6 +12,11 @@ export const DEV_WINDOW = process.env.COPYCAT_DEV_WINDOW === '1';
 // Set from the app's 'before-quit' handler so the close guard below lets a
 // real quit through instead of trapping the window in a hide loop forever.
 let isQuitting = false;
+let nativeDialogOpen = false;
+
+export function setNativeDialogOpen(value: boolean): void {
+  nativeDialogOpen = value;
+}
 
 export function setQuitting(value: boolean): void {
   isQuitting = value;
@@ -42,8 +47,8 @@ export function createMainWindow({ bounds, onBoundsChange }: MainWindowOptions):
   const restored = bounds && isOnScreen(bounds) ? bounds : null;
   const win = new BrowserWindow({
     ...(restored ? { x: restored.x, y: restored.y } : {}),
-    width: restored?.width ?? 900,
-    height: restored?.height ?? 600,
+    width: restored?.width ?? 1000,
+    height: restored?.height ?? 619,
     minWidth: 600,
     minHeight: 400,
     // The overlay is frameless by design, but a frameless window under WSLg has
@@ -68,7 +73,7 @@ export function createMainWindow({ bounds, onBoundsChange }: MainWindowOptions):
   win.on('moved', remember);
   win.on('resized', remember);
 
-  if (!DEV_WINDOW) win.on('blur', () => win.hide());
+  if (!DEV_WINDOW) win.on('blur', () => { if (!nativeDialogOpen) win.hide(); });
   win.on('close', (event) => {
     if (isQuitting) return;
     event.preventDefault();

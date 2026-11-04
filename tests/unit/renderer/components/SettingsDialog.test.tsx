@@ -46,6 +46,22 @@ describe('formatAccelerator', () => {
 });
 
 describe('SettingsDialog', () => {
+  it('protects favorites and all categories by default after section switches', () => {
+    render(<SettingsDialog settings={null} onClose={() => {}} onHotkeyChange={async () => ({ ok: true })}
+      onCategoriesExpandedChange={() => {}} onNavReorderStart={() => {}} categories={['Работа', 'Личное']} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Очистить историю' }));
+    expect(screen.getByLabelText('Избранное')).toBeChecked();
+    expect(screen.getByLabelText('Категории — выбрать всё')).toBeChecked();
+    expect(screen.getByLabelText('Работа')).toBeChecked();
+    expect(screen.getByLabelText('Личное')).toBeChecked();
+    fireEvent.click(screen.getByRole('button', { name: /^Файлы$/ }));
+    expect(screen.getByLabelText('Избранное')).toBeChecked();
+    expect(screen.getByLabelText('Категории — выбрать всё')).toBeChecked();
+    fireEvent.click(screen.getByRole('button', { name: /^Избранное$/ }));
+    expect(screen.queryByLabelText('Избранное')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Категории — выбрать всё')).toBeChecked();
+  });
+
   it('shows period first and changes exclusions for file and category subsections', async () => {
     const onClearHistory = jest.fn().mockResolvedValue(undefined);
     render(<SettingsDialog settings={null} onClose={() => {}} onHotkeyChange={async () => ({ ok: true })}
@@ -66,7 +82,7 @@ describe('SettingsDialog', () => {
     expect(screen.getByRole('button', { name: 'Все категории' })).toBeInTheDocument();
     expect(screen.getByLabelText('Файлы — выбрать всё')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Работа' }));
-    expect(screen.queryByLabelText('Работа')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Работа')).toBeChecked();
     fireEvent.click(screen.getByLabelText('Файлы — выбрать всё'));
     fireEvent.click(screen.getByRole('button', { name: /^Очистить$/ }));
     await waitFor(() => expect(onClearHistory).toHaveBeenCalledWith(expect.objectContaining({

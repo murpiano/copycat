@@ -1,4 +1,7 @@
 import { createDb } from '../../../src/main/storage/db';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { createTagsRepo } from '../../../src/main/storage/tags-repo';
 import { createItemsRepo } from '../../../src/main/storage/items-repo';
 import {
@@ -55,6 +58,31 @@ function setup() {
 }
 
 describe('ipc handlers', () => {
+  it('creates a starred file reference without duplicating file contents', async () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'copycat-create-'));
+    try {
+      const filePath = path.join(directory, 'report.pdf');
+      fs.writeFileSync(filePath, 'original');
+      const { deps } = setup();
+      const created = await handleCreateItem(deps, {
+        title: 'report.pdf', content: filePath, type: 'file', expectedGroup: 'documents',
+        starred: true, tags: ['work'],
+      });
+      expect(created.type).toBe('file');
+      expect(created.kind).toBe('document');
+      expect(created.content).toBe(JSON.stringify([filePath]));
+      expect(created.title).toBe('report.pdf');
+      expect(created.starred).toBe(true);
+      expect(created.tags).toEqual(['work']);
+      expect(fs.readFileSync(filePath, 'utf8')).toBe('original');
+      await expect(handleCreateItem(deps, {
+        title: null, content: filePath, type: 'file', expectedGroup: 'audio', tags: [],
+      })).rejects.toThrow('does not match');
+    } finally {
+      fs.rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
   it('get-items returns items with tags attached', async () => {
     const { deps, itemsRepo } = setup();
     const item = itemsRepo.insertItem({ type: 'text', content: 'x', sourceApp: null });
