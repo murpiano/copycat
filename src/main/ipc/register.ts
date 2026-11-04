@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import type { IpcMain } from 'electron';
-import { BrowserWindow, clipboard, dialog } from 'electron';
+import { BrowserWindow, clipboard, dialog, shell } from 'electron';
 import { IPC } from '../../shared/ipc-channels';
 import type {
   AppSettings,
@@ -16,7 +16,7 @@ import type { ItemsRepo } from '../storage/items-repo';
 import type { TagsRepo } from '../storage/tags-repo';
 import { hashContent } from '../clipboard/hash';
 import { setNativeDialogOpen } from '../window';
-import { AUDIO_EXTS, DOCUMENT_EXTS, IMAGE_EXTS, kindFromPath, type FileGroup } from '../../shared/file-kind';
+import { AUDIO_EXTS, DOCUMENT_EXTS, IMAGE_EXTS, firstPath, kindFromPath, type FileGroup } from '../../shared/file-kind';
 import { cleanupUnusedPreviews } from '../clipboard/capture-pipeline';
 import { buildCFDropBuffer } from '../clipboard/file-drop';
 import {
@@ -136,6 +136,15 @@ export function registerIpcHandlers(ipcMain: IpcMain, deps: RegisterIpcDeps): vo
     } finally {
       setNativeDialogOpen(false);
     }
+  });
+  ipcMain.handle(IPC.OPEN_ITEM, async (_e, id: number) => {
+    if (!Number.isSafeInteger(id)) throw new Error('Invalid item id');
+    const item = deps.itemsRepo.getById(id);
+    if (!item || item.type === 'text') throw new Error('Item is not an object');
+    const path = firstPath(item.content);
+    if (!path) throw new Error('Object path is empty');
+    const error = await shell.openPath(path);
+    if (error) throw new Error(error);
   });
   ipcMain.handle(IPC.GET_SETTINGS, () => handleGetSettings(ipcDeps));
   ipcMain.handle(IPC.SET_HOTKEY, (_e, accelerator: string) =>

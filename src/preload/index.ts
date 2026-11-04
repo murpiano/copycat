@@ -29,6 +29,7 @@ const api: CopycatAPI = {
   createItem: (input: CreateItemInput) => ipcRenderer.invoke(IPC.CREATE_ITEM, input),
   pickObject: (mode: 'file' | 'folder', group?: import('../shared/file-kind').FileGroup): Promise<PickedObject | null> =>
     ipcRenderer.invoke(IPC.PICK_OBJECT, mode, group),
+  openItem: (id: number) => ipcRenderer.invoke(IPC.OPEN_ITEM, id),
   copyItem: (id: number) => ipcRenderer.invoke(IPC.COPY_ITEM, id),
   pasteItem: (id: number) => ipcRenderer.invoke(IPC.PASTE_ITEM, id),
   toggleStar: (id: number) => ipcRenderer.invoke(IPC.TOGGLE_STAR, id),

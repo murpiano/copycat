@@ -71,13 +71,13 @@ button:disabled {
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #243047;
-  border-radius: 4px;
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-track {
@@ -511,6 +511,8 @@ button:disabled {
   align-content: start;
 }
 
+.item-grid:has(.item-card.jiggle) { cursor: grab; }
+
 .empty-state {
   flex: 1 1 auto;
   display: flex;
@@ -575,6 +577,22 @@ button:disabled {
 .item-card.jiggle:active {
   cursor: grabbing;
 }
+
+.item-card.jiggle,
+.item-card.jiggle * {
+  cursor: grab !important;
+  user-select: none !important;
+}
+
+.item-card.jiggle:active,
+.item-card.jiggle:active * {
+  cursor: grabbing !important;
+}
+
+.item-card-body { position: relative; }
+.item-open { position: absolute; left: 10px; bottom: 8px; opacity: 0; pointer-events: none; border: 1px solid var(--nav-active-border); border-radius: 7px; background: var(--nav-active-bg); color: var(--text); font-size: 11px; padding: 3px 7px; }
+.item-card:hover .item-open, .item-open:focus-visible { opacity: 1; pointer-events: auto; }
+.item-open-error { position: absolute; left: 10px; bottom: 34px; color: var(--accent-danger); background: var(--surface); font-size: 11px; }
 
 @media (prefers-reduced-motion: reduce) {
   .item-card.jiggle {

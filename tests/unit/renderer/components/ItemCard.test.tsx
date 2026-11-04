@@ -31,12 +31,22 @@ const noopHandlers = {
 };
 
 describe('ItemCard', () => {
+  it('opens a saved file without expanding its card', async () => {
+    const onExpand = jest.fn();
+    const openItem = jest.fn().mockResolvedValue(undefined);
+    (window as unknown as { copycat: { openItem: typeof openItem } }).copycat = { openItem };
+    render(<ItemCard {...noopHandlers} item={{ ...item, type: 'file', kind: 'document', content: '["C:\\\\Docs\\\\report.pdf"]' }} onExpand={onExpand} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Открыть' }));
+    expect(openItem).toHaveBeenCalledWith(1);
+    expect(onExpand).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Скопировать документ' })).toBeInTheDocument();
+  });
   it('renders content, tags, and copies the whole item from the badge', () => {
     const onCopy = jest.fn();
     render(<ItemCard {...noopHandlers} item={item} onCopy={onCopy} />);
     expect(screen.getByText('hello world')).toBeInTheDocument();
     expect(screen.getByText('work')).toBeInTheDocument();
-    fireEvent.click(screen.getByLabelText('Копировать целиком'));
+    fireEvent.click(screen.getByLabelText('Скопировать содержимое'));
     expect(onCopy).toHaveBeenCalledWith(1);
   });
 
@@ -79,7 +89,7 @@ describe('ItemCard', () => {
     const onExpand = jest.fn();
     const onCopy = jest.fn();
     render(<ItemCard {...noopHandlers} item={item} onExpand={onExpand} onCopy={onCopy} />);
-    fireEvent.click(screen.getByLabelText('Копировать целиком'));
+    fireEvent.click(screen.getByLabelText('Скопировать содержимое'));
     expect(onCopy).toHaveBeenCalledWith(1);
     expect(onExpand).not.toHaveBeenCalled();
   });

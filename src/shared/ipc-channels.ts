@@ -2,6 +2,7 @@ export const IPC = {
   GET_ITEMS: 'copycat:get-items',
   CREATE_ITEM: 'copycat:create-item',
   PICK_OBJECT: 'copycat:pick-object',
+  OPEN_ITEM: 'copycat:open-item',
   COPY_ITEM: 'copycat:copy-item',
   PASTE_ITEM: 'copycat:paste-item',
   TOGGLE_STAR: 'copycat:toggle-star',

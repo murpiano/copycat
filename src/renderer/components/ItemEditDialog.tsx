@@ -42,11 +42,9 @@ export function ItemEditDialog({
   const [draft, setDraft] = useState('');
   const [asking, setAsking] = useState(false);
 
-  const dirty =
-    title !== (item?.title ?? '') || mode !== (creationGroup && creationGroup !== 'text' ? 'object' : 'text') ||
-    content !== (item?.content ?? '') ||
-    picked !== null || starred !== initialStarred ||
-    tags.join('\u0000') !== (item ? item.tags : initialTags).join('\u0000');
+  const dirty = item
+    ? title !== (item.title ?? '') || content !== item.content || tags.join('\u0000') !== item.tags.join('\u0000')
+    : Boolean(title.trim() || content.trim() || picked || draft.trim());
 
   async function save() {
     if (busy) return;
@@ -179,6 +177,7 @@ export function ItemEditDialog({
             className="field-input"
             autoFocus={item !== null}
             value={title}
+            disabled={!item && mode === 'object' && !picked}
             placeholder={item ? KIND_LABEL[item.type] : mode === 'object' ? 'Название объекта' : KIND_LABEL.text}
             onChange={(e) => setTitle(e.target.value)}
           />
@@ -192,7 +191,7 @@ export function ItemEditDialog({
             value={content}
             onChange={(e) => setContent(e.target.value)}
           />
-        </label> : <div className="field field-grow"><span className="field-label">Содержимое</span><div className="object-picker"><button type="button" className="button" onClick={() => void chooseObject(creationGroup === 'folders' ? 'folder' : 'file')}>Выбрать {creationGroup === 'folders' ? 'папку' : creationGroup === 'audio' ? 'аудио' : creationGroup === 'images' ? 'изображение' : creationGroup === 'documents' ? 'документ' : 'объект'}</button>{(creationGroup === null || creationGroup === 'all') && <button type="button" className="button" onClick={() => void chooseObject('folder')}>Выбрать папку</button>}</div>{picked && <input className="field-input object-path" aria-label="Путь к объекту" readOnly value={picked.path} title={picked.path} />}</div>}
+        </label> : <div className="field field-grow"><span className="field-label">Содержимое</span><div className="object-picker"><button type="button" className={picked && (creationGroup === 'folders' ? picked.kind === 'folder' : picked.kind !== 'folder') ? 'button settings-choice active' : 'button'} aria-pressed={Boolean(picked && (creationGroup === 'folders' ? picked.kind === 'folder' : picked.kind !== 'folder'))} onClick={() => void chooseObject(creationGroup === 'folders' ? 'folder' : 'file')}>Выбрать {creationGroup === 'folders' ? 'папку' : creationGroup === 'audio' ? 'аудио' : creationGroup === 'images' ? 'изображение' : creationGroup === 'documents' ? 'документ' : 'объект'}</button>{(creationGroup === null || creationGroup === 'all') && <button type="button" className={picked?.kind === 'folder' ? 'button settings-choice active' : 'button'} aria-pressed={picked?.kind === 'folder'} onClick={() => void chooseObject('folder')}>Выбрать папку</button>}</div>{picked && <input className="field-input object-path" aria-label="Путь к объекту" readOnly value={picked.path} title={picked.path} />}</div>}
 
         <div className="field">
           <span className="field-label">Категории</span>

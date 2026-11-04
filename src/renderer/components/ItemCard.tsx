@@ -1,8 +1,8 @@
-import type { DragEvent, MouseEvent } from 'react';
+import { useState, type DragEvent, type MouseEvent } from 'react';
 import { useSelectionCursor } from '../useSelectionCursor';
 import type { ClipboardItem, ItemType } from '../../shared/types';
 import { AudioIcon, BoxIcon, CloseIcon, ExcelIcon, FileIcon, FolderIcon, ImageIcon, PdfIcon, PencilIcon, PowerPointIcon, StarIcon, TextDocumentIcon, WordIcon } from './icons';
-import { firstPath } from '../../shared/file-kind';
+import { firstPath, kindFromPath } from '../../shared/file-kind';
 
 export const KIND_LABEL: Record<ItemType, string> = {
   text: 'Текст',
@@ -47,6 +47,12 @@ export function fileIcon(item: Pick<ClipboardItem, 'content' | 'kind'>, size = 1
   return <BoxIcon size={size} />;
 }
 
+export function copyLabel(item: ClipboardItem): string {
+  if (item.type === 'text') return 'Скопировать содержимое';
+  const kind = item.kind ?? (item.type === 'image' ? 'image' : kindFromPath(firstPath(item.content)));
+  return `Скопировать ${({ document: 'документ', image: 'изображение', audio: 'аудио', file: 'файл', folder: 'папку', text: 'содержимое' } as const)[kind]}`;
+}
+
 interface ItemCardProps {
   item: ClipboardItem;
   reorderMode: boolean;
@@ -73,6 +79,7 @@ export function ItemCard({
   onDrop,
 }: ItemCardProps) {
   const { selecting, ref: contentRef } = useSelectionCursor<HTMLDivElement>();
+  const [openError, setOpenError] = useState(false);
   const title = itemDisplayTitle(item);
 
   // The whole card opens the popup, so there is no dead area inside it. A
@@ -116,8 +123,8 @@ export function ItemCard({
         <div className="item-card-head">
           <button
             className="item-card-badge"
-            aria-label="Копировать целиком"
-            title="Копировать целиком"
+            aria-label={copyLabel(item)}
+            title={copyLabel(item)}
             onClick={actOnly(() => onCopy(item.id))}
           >
             {item.type === 'file' ? fileIcon(item) : badgeIcon(item.type)}
@@ -171,6 +178,8 @@ export function ItemCard({
             </span>
           ))}
         </div>
+        {item.type !== 'text' && !reorderMode && <button type="button" className="item-open" onClick={actOnly(() => { void window.copycat.openItem(item.id).then(() => setOpenError(false)).catch(() => setOpenError(true)); })}>Открыть</button>}
+        {openError && <span className="item-open-error" role="alert">Исходный объект не найден.</span>}
       </div>
     </div>
   );
