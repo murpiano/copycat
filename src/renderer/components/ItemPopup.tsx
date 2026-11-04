@@ -28,7 +28,7 @@ export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
   }, [onClose]);
 
   return (
-    <Overlay onClose={onClose} dismissOnBackdrop={false}>
+    <Overlay onClose={onClose}>
       <div
         className="popup"
         data-type={item.type}
