@@ -1,4 +1,5 @@
 import { Overlay } from './Overlay';
+import { useEffect, useId, useRef } from 'react';
 
 interface ConfirmDialogProps {
   title: string;
@@ -28,13 +29,35 @@ export function ConfirmDialog({
   busy = false,
   error,
 }: ConfirmDialogProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previousFocus = useRef(document.activeElement as HTMLElement | null);
+  const messageId = useId();
+  useEffect(() => {
+    function trapFocus(event: KeyboardEvent) {
+      if (event.key !== 'Tab') return;
+      const buttons = Array.from(dialogRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? []);
+      if (!buttons.length) { event.preventDefault(); return; }
+      const first = buttons[0];
+      const last = buttons[buttons.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !dialogRef.current?.contains(document.activeElement))) {
+        event.preventDefault(); last.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || !dialogRef.current?.contains(document.activeElement))) {
+        event.preventDefault(); first.focus();
+      }
+    }
+    window.addEventListener('keydown', trapFocus, true);
+    return () => {
+      window.removeEventListener('keydown', trapFocus, true);
+      if (previousFocus.current?.isConnected) previousFocus.current.focus();
+    };
+  }, []);
   return (
     <Overlay onClose={() => {}}>
-      <div className="popup confirm-dialog" role="alertdialog" aria-label={title} aria-busy={busy}>
+      <div ref={dialogRef} className="popup confirm-dialog" role="alertdialog" aria-modal="true" aria-label={title} aria-describedby={messageId} aria-busy={busy}>
         <div className="popup-head">
           <div className="popup-title">{title}</div>
         </div>
-        <p className="confirm-message">{message}</p>
+        <p id={messageId} className="confirm-message">{message}</p>
         {error && <p className="field-hint" role="alert">{error}</p>}
         <div className="dialog-actions">
           <button type="button" className="button ghost" onClick={onCancel} disabled={busy} autoFocus>

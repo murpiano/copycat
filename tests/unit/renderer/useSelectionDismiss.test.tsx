@@ -28,6 +28,17 @@ function fakeSelection(overrides: Partial<Selection> = {}) {
 afterEach(() => jest.restoreAllMocks());
 
 describe('useSelectionDismiss', () => {
+  it('keeps the excerpt for a right-click inside its highlighted rectangle', () => {
+    const removeAllRanges = fakeSelection({
+      rangeCount: 1,
+      getRangeAt: () => ({ getClientRects: () => [{ left: 10, right: 100, top: 10, bottom: 30 }] }) as unknown as Range,
+    });
+    const { getByTestId } = render(<Harness />);
+    fireEvent.mouseDown(getByTestId('text'), { button: 2, clientX: 20, clientY: 20 });
+    expect(removeAllRanges).not.toHaveBeenCalled();
+    fireEvent.mouseDown(getByTestId('text'), { button: 2, clientX: 110, clientY: 20 });
+    expect(removeAllRanges).toHaveBeenCalledTimes(1);
+  });
   it('drops the highlight when a press lands outside it', () => {
     const removeAllRanges = fakeSelection();
     const { getByTestId } = render(<Harness />);

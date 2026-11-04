@@ -1,4 +1,4 @@
-import { Menu, type BrowserWindow } from 'electron';
+import { clipboard, Menu, type BrowserWindow } from 'electron';
 
 /**
  * Right-click "Копировать" for any text selection inside the renderer.
@@ -11,7 +11,7 @@ export function registerContextMenu(win: BrowserWindow, language: () => 'ru' | '
     Menu.buildFromTemplate([
       {
         label: language() === 'en' ? 'Copy' : 'Копировать',
-        click: () => win.webContents.copy(),
+        click: () => clipboard.writeText(params.selectionText),
       },
     ]).popup({ window: win });
   });

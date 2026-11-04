@@ -9,6 +9,8 @@ import { SettingsDialog } from './components/SettingsDialog';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { useSelectionDismiss } from './useSelectionDismiss';
 import { useLanguage, useT } from './i18n';
+import { itemDisplayTitle } from './components/ItemCard';
+import type { ClipboardItem } from '../shared/types';
 
 export function App() {
   const t = useT();
@@ -76,6 +78,44 @@ export function App() {
 
   const [askNavOrder, setAskNavOrder] = useState(false);
   const [askItemOrder, setAskItemOrder] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<ClipboardItem | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState(false);
+
+  function requestDelete(id: number) {
+    const item = items.find((entry) => entry.id === id);
+    if (!item) return;
+    if (item.starred || item.tags.length > 0) {
+      setDeleteError(false);
+      setDeleteTarget(item);
+    } else {
+      void deleteItem(id);
+    }
+  }
+
+  async function confirmDelete() {
+    if (!deleteTarget || deleting) return;
+    setDeleting(true);
+    try {
+      await deleteItem(deleteTarget.id);
+      setDeleteTarget(null);
+    } catch {
+      setDeleteError(true);
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!deleteTarget) return;
+    const cancel = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.stopImmediatePropagation();
+      if (!deleting) setDeleteTarget(null);
+    };
+    window.addEventListener('keydown', cancel, true);
+    return () => window.removeEventListener('keydown', cancel, true);
+  }, [deleteTarget, deleting]);
 
   useSelectionDismiss();
 
@@ -195,7 +235,7 @@ export function App() {
           onCompose={() => composeItem(true)}
           onCopy={copyItem}
           onToggleStar={toggleStar}
-          onDelete={deleteItem}
+          onDelete={requestDelete}
           onExpand={expandItem}
           onEdit={editItem}
           onMove={moveItem}
@@ -253,6 +293,25 @@ export function App() {
           onNavReorderStart={startNavReorder}
           categories={categories}
           onClearHistory={clearHistory}
+        />
+      )}
+
+      {deleteTarget && (
+        <ConfirmDialog
+          title={t('Удалить блок?')}
+          message={[
+            `«${itemDisplayTitle(deleteTarget, language)}».`,
+            deleteTarget.starred ? t('Блок добавлен в избранное.') : '',
+            deleteTarget.tags.length ? `${t('Блок включён в категории:')} ${deleteTarget.tags.join(', ')}.` : '',
+            t('Блок будет удалён из истории и всех разделов.'),
+          ].filter(Boolean).join(' ')}
+          confirmLabel={t('Удалить')}
+          cancelLabel={t('Отмена')}
+          danger
+          busy={deleting}
+          error={deleteError ? t('Не удалось удалить блок. Попробуйте ещё раз.') : null}
+          onConfirm={() => void confirmDelete()}
+          onCancel={() => setDeleteTarget(null)}
         />
       )}
 
