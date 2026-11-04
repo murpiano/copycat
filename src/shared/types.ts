@@ -45,6 +45,14 @@ export interface CreateItemInput {
   title: string | null;
   content: string;
   tags: string[];
+  type?: ItemType;
+  starred?: boolean;
+  expectedGroup?: import('./file-kind').FileGroup;
+}
+
+export interface PickedObject {
+  path: string;
+  kind: ItemKind;
 }
 
 export type NavKey = 'history' | 'starred' | 'text' | 'files' | 'images';
@@ -88,6 +96,7 @@ export interface HotkeyResult {
 export interface CopycatAPI {
   getItems(query: GetItemsQuery): Promise<ClipboardItem[]>;
   createItem(input: CreateItemInput): Promise<ClipboardItem>;
+  pickObject(mode: 'file' | 'folder', group?: import('./file-kind').FileGroup): Promise<PickedObject | null>;
   copyItem(id: number): Promise<void>;
   pasteItem(id: number): Promise<void>;
   toggleStar(id: number): Promise<void>;

@@ -8,6 +8,8 @@ import type {
   UpdateSettingsInput,
   ClearHistoryInput,
 } from '../../shared/types';
+import fs from 'node:fs';
+import { fileGroupOf, kindFromPath } from '../../shared/file-kind';
 import type { ItemsRepo } from '../storage/items-repo';
 import type { TagsRepo } from '../storage/tags-repo';
 
@@ -34,13 +36,27 @@ export async function handleCreateItem(
   deps: IpcDeps,
   input: CreateItemInput,
 ): Promise<ClipboardItem> {
+  const type = input.type ?? 'text';
+  let kind: ReturnType<typeof kindFromPath> = 'text';
+  let content = input.content;
+  if (type !== 'text') {
+    const stat = fs.statSync(content);
+    kind = kindFromPath(content, stat.isDirectory());
+    if (type === 'image' && kind !== 'image') throw new Error('Selected object is not an image');
+    if (input.expectedGroup && fileGroupOf({ type, kind, content }) !== input.expectedGroup) {
+      throw new Error('Selected object does not match the current section');
+    }
+    if (type === 'file') content = JSON.stringify([content]);
+  }
   const item = deps.itemsRepo.insertItem({
-    type: 'text',
-    content: input.content,
+    type,
+    content,
     sourceApp: null,
+    kind,
   });
   if (input.title) deps.itemsRepo.updateItem(item.id, { title: input.title });
   for (const tag of input.tags) deps.tagsRepo.addTagToItem(item.id, tag);
+  if (input.starred) deps.itemsRepo.toggleStar(item.id);
   return deps.itemsRepo.getById(item.id) ?? item;
 }
 

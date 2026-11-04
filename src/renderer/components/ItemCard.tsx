@@ -35,7 +35,7 @@ export function itemDisplayTitle(item: ClipboardItem): string {
   return extension && !item.title.toLowerCase().endsWith(extension.toLowerCase()) ? `${item.title}${extension}` : item.title;
 }
 
-function fileIcon(item: ClipboardItem, size = 14) {
+export function fileIcon(item: Pick<ClipboardItem, 'content' | 'kind'>, size = 14) {
   const name = firstPath(item.content).toLowerCase();
   if (/\.docx?$/.test(name)) return <WordIcon size={size} />;
   if (/\.(xlsx?|xlsm|xlsb|ods|csv)$/.test(name)) return <ExcelIcon size={size} />;

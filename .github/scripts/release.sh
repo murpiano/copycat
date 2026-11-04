@@ -26,8 +26,17 @@ while IFS= read -r -d $'\x1e' record; do
   text=${BASH_REMATCH[4]}
   items=()
   while IFS= read -r note; do
+    if [[ "$note" =~ [А-Яа-яЁё] ]]; then
+      echo 'Release-note lines must be in English.' >&2
+      exit 1
+    fi
     [ -n "$note" ] && items+=("- $note")
   done < <(sed -n 's/^Release-note: //p' <<<"$body")
+  if [[ "$type" =~ ^(feat|fix|perf)$ ]] &&
+    [[ "$text" =~ [А-Яа-яЁё] ]] && [ "${#items[@]}" -eq 0 ]; then
+    echo 'Releasable commit subjects need English release notes.' >&2
+    exit 1
+  fi
   [ "${#items[@]}" -gt 0 ] || items=("- ${text^}")
   if [ -n "$bang" ] || grep -q '^BREAKING CHANGE' <<<"$body"; then breaking+=("${items[@]}"); bump=3; continue; fi
   case "$type" in

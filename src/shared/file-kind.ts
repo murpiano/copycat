@@ -8,9 +8,9 @@ export function firstPath(content: string): string {
   try { return JSON.parse(content)[0] ?? content; } catch { return content; }
 }
 
-const DOCUMENT_EXTS = new Set(['doc', 'docx', 'dot', 'dotx', 'odt', 'xls', 'xlsx', 'xlsm', 'xlsb', 'ods', 'csv', 'ppt', 'pptx', 'pps', 'ppsx', 'odp', 'txt', 'md', 'rtf', 'log', 'ini', 'yaml', 'yml', 'json', 'xml', 'html', 'htm', 'pdf', 'epub', 'mobi']);
-const IMAGE_EXTS = new Set(['png', 'jpg', 'jpeg', 'jfif', 'gif', 'bmp', 'webp', 'svg', 'ico', 'tif', 'tiff', 'avif', 'heic']);
-const AUDIO_EXTS = new Set(['mp3', 'wav', 'flac', 'm4a', 'ogg', 'oga', 'aac', 'wma', 'opus', 'aiff', 'aif']);
+export const DOCUMENT_EXTS = new Set(['doc', 'docx', 'dot', 'dotx', 'odt', 'xls', 'xlsx', 'xlsm', 'xlsb', 'ods', 'csv', 'ppt', 'pptx', 'pps', 'ppsx', 'odp', 'txt', 'md', 'rtf', 'log', 'ini', 'yaml', 'yml', 'json', 'xml', 'html', 'htm', 'pdf', 'epub', 'mobi']);
+export const IMAGE_EXTS = new Set(['png', 'jpg', 'jpeg', 'jfif', 'gif', 'bmp', 'webp', 'svg', 'ico', 'tif', 'tiff', 'avif', 'heic']);
+export const AUDIO_EXTS = new Set(['mp3', 'wav', 'flac', 'm4a', 'ogg', 'oga', 'aac', 'wma', 'opus', 'aiff', 'aif']);
 
 export function kindFromPath(filePath: string, isDirectory = false): ItemKind {
   if (isDirectory) return 'folder';
