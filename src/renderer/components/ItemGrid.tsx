@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import type { ClipboardItem } from '../../shared/types';
 import { ItemCard } from './ItemCard';
 import { ArrowUpIcon, CheckIcon, CloseIcon, PencilIcon, PlusIcon } from './icons';
+import { useT } from '../i18n';
 
 interface ItemGridProps {
   items: ClipboardItem[];
@@ -35,6 +36,7 @@ export function ItemGrid({
   onMove,
   onOrderCommit,
 }: ItemGridProps) {
+  const t = useT();
   const dragId = useRef<number | null>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const [showTop, setShowTop] = useState(false);
@@ -58,29 +60,29 @@ export function ItemGrid({
           <button
             className={reorderMode ? 'grid-reorder-toggle active' : 'grid-reorder-toggle'}
             aria-pressed={reorderMode}
-            title={reorderMode ? 'Готово' : 'Изменить порядок'}
+            title={t(reorderMode ? 'Готово' : 'Изменить порядок')}
             onClick={onToggleReorder}
           >
             {reorderMode ? <CheckIcon size={15} /> : <PencilIcon size={15} />}
-            <span>{reorderMode ? 'Готово' : 'Порядок'}</span>
+            <span>{t(reorderMode ? 'Готово' : 'Порядок')}</span>
           </button>
         )}
         {reorderMode ? (
-          <button className="grid-reorder-toggle" title="Отменить" onClick={onCancelReorder}>
+          <button className="grid-reorder-toggle" title={t('Отменить')} onClick={onCancelReorder}>
             <CloseIcon size={15} />
-            <span>Отмена</span>
+            <span>{t('Отмена')}</span>
           </button>
         ) : (
-          <button className="grid-reorder-toggle" title="Создать" onClick={onCompose}>
+          <button className="grid-reorder-toggle" title={t('Создать')} onClick={onCompose}>
             <PlusIcon size={15} />
-            <span>Создать</span>
+            <span>{t('Создать')}</span>
           </button>
         )}
-        {showTop && items.length > 0 && <button className="grid-reorder-toggle grid-top" onClick={() => sectionRef.current?.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="В начало"><ArrowUpIcon size={15} /><span>В начало</span></button>}
+        {showTop && items.length > 0 && <button className="grid-reorder-toggle grid-top" onClick={() => sectionRef.current?.scrollTo({ top: 0, behavior: 'smooth' })} aria-label={t('В начало')}><ArrowUpIcon size={15} /><span>{t('В начало')}</span></button>}
       </div>
 
       {items.length === 0 ? (
-        <div className="empty-state">Ничего не найдено</div>
+        <div className="empty-state">{t('Ничего не найдено')}</div>
       ) : (
         <div className="item-grid" ref={sectionRef} onScroll={(event) => setShowTop(event.currentTarget.scrollTop > 220)}>
           {items.map((item) => (

@@ -8,9 +8,9 @@ import {
   setQuitting,
   DEV_WINDOW,
 } from './window';
-import { createTray } from './tray';
+import { createTray, updateTrayMenu } from './tray';
 import { registerContextMenu } from './context-menu';
-import { startAutoUpdates } from './updater';
+import { refreshUpdateTooltip, startAutoUpdates } from './updater';
 import { registerHotkey, rebindHotkey } from './hotkey';
 import { createSettingsStore } from './settings-store';
 import { createDb } from './storage/db';
@@ -41,7 +41,7 @@ app.whenReady().then(() => {
     onBoundsChange: (windowBounds) => settingsStore.update({ windowBounds }),
   });
   if (DEV_WINDOW) showWindow(win);
-  registerContextMenu(win);
+  registerContextMenu(win, () => settingsStore.get().language === 'en' ? 'en' : 'ru');
 
   const pipeline = createCapturePipeline({
     itemsRepo,
@@ -64,6 +64,16 @@ app.whenReady().then(() => {
     toggleWindow(win);
   };
 
+  const trayCallbacks = {
+    onOpen: () => showWindow(win),
+    onPauseToggle: () => {
+      paused = !paused;
+      if (paused) watcher.stop();
+      else watcher.start();
+    },
+    onQuit: () => app.quit(),
+  };
+
   registerIpcHandlers(ipcMain, {
     itemsRepo,
     tagsRepo,
@@ -73,7 +83,15 @@ app.whenReady().then(() => {
     setHotkeyCapture: (capturing) => {
       hotkeyCaptureActive = capturing;
     },
-    writeSettings: (input) => settingsStore.update(input),
+    writeSettings: (input) => {
+      const next = settingsStore.update(input);
+      if (tray && input.language !== undefined) {
+        const language = next.language === 'en' ? 'en' : 'ru';
+        updateTrayMenu(tray, trayCallbacks, language, paused);
+        refreshUpdateTooltip(tray, language);
+      }
+      return next;
+    },
     hideWindow: () => hideWindow(win),
     applyHotkey: (accelerator) => {
       const result = rebindHotkey(settingsStore.get().hotkey, accelerator, toggle);
@@ -85,19 +103,11 @@ app.whenReady().then(() => {
     },
   });
 
-  tray = createTray(path.join(__dirname, '../../resources/small/small.png'), {
-    onOpen: () => showWindow(win),
-    onPauseToggle: () => {
-      paused = !paused;
-      if (paused) watcher.stop();
-      else watcher.start();
-    },
-    onQuit: () => app.quit(),
-  });
+  tray = createTray(path.join(__dirname, process.platform === 'win32' ? '../../resources/small/small.ico' : '../../resources/small/small.png'), trayCallbacks, settingsStore.get().language === 'en' ? 'en' : 'ru');
 
   registerHotkey(settingsStore.get().hotkey, toggle);
 
-  startAutoUpdates(() => tray);
+  startAutoUpdates(() => tray, () => settingsStore.get().language === 'en' ? 'en' : 'ru');
 });
 
 app.on('before-quit', () => {

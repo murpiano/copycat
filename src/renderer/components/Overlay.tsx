@@ -3,6 +3,7 @@ import { useRef, type MouseEvent, type ReactNode } from 'react';
 interface OverlayProps {
   onClose: () => void;
   children: ReactNode;
+  dismissOnBackdrop?: boolean;
 }
 
 /**
@@ -13,7 +14,7 @@ interface OverlayProps {
  * the backdrop, or past the window edge — would count as a click on the
  * backdrop and shut the dialog mid-selection.
  */
-export function Overlay({ onClose, children }: OverlayProps) {
+export function Overlay({ onClose, children, dismissOnBackdrop = true }: OverlayProps) {
   const pressedBackdrop = useRef(false);
 
   function handleMouseDown(event: MouseEvent<HTMLDivElement>) {
@@ -21,6 +22,7 @@ export function Overlay({ onClose, children }: OverlayProps) {
   }
 
   function handleClick(event: MouseEvent<HTMLDivElement>) {
+    if (!dismissOnBackdrop) return;
     if (event.target !== event.currentTarget) return;
     if (!pressedBackdrop.current) return;
     onClose();

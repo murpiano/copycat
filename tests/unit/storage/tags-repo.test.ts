@@ -37,4 +37,13 @@ describe('tags-repo', () => {
     repo.removeTagFromItem(1, 'work');
     expect(repo.getTagsForItem(1)).toEqual([]);
   });
+
+  it('deletes a category label without deleting its blocks', () => {
+    const { db, repo } = setup();
+    db.prepare("INSERT INTO items (type, content, source_app, created_at, starred, pinned) VALUES ('text','keep me',NULL,1,0,0)").run();
+    repo.addTagToItem(1, 'Work');
+    repo.deleteCategory('Work');
+    expect(repo.getTagsForItem(1)).toEqual([]);
+    expect(db.prepare('SELECT content FROM items WHERE id = 1').get()).toEqual({ content: 'keep me' });
+  });
 });

@@ -17,6 +17,14 @@ function renderOverlay() {
 }
 
 describe('Overlay', () => {
+  it('can keep a draft open after a backdrop click', () => {
+    const onClose = jest.fn();
+    const { container } = render(<Overlay onClose={onClose} dismissOnBackdrop={false}><div>draft</div></Overlay>);
+    const backdrop = container.querySelector('.overlay')!;
+    fireEvent.mouseDown(backdrop);
+    fireEvent.click(backdrop);
+    expect(onClose).not.toHaveBeenCalled();
+  });
   it('closes when the backdrop itself is clicked', () => {
     const { onClose, backdrop } = renderOverlay();
     fireEvent.mouseDown(backdrop);

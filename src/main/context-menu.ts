@@ -5,12 +5,12 @@ import { Menu, type BrowserWindow } from 'electron';
  * Chromium's default context menu is disabled app-wide, so this is the only
  * way to copy a hand-picked excerpt (partial copy) via the mouse.
  */
-export function registerContextMenu(win: BrowserWindow): void {
+export function registerContextMenu(win: BrowserWindow, language: () => 'ru' | 'en' = () => 'ru'): void {
   win.webContents.on('context-menu', (_event, params) => {
     if (!params.selectionText) return;
     Menu.buildFromTemplate([
       {
-        label: 'Копировать',
+        label: language() === 'en' ? 'Copy' : 'Копировать',
         click: () => win.webContents.copy(),
       },
     ]).popup({ window: win });

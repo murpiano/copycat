@@ -8,8 +8,13 @@ import { ItemEditDialog } from './components/ItemEditDialog';
 import { SettingsDialog } from './components/SettingsDialog';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { useSelectionDismiss } from './useSelectionDismiss';
+import { useLanguage, useT } from './i18n';
 
 export function App() {
+  const t = useT();
+  const language = useLanguage();
+
+  useEffect(() => { document.documentElement.lang = language; }, [language]);
   const {
     items,
     search,
@@ -33,6 +38,7 @@ export function App() {
     setSearch,
     setNav,
     addCategory,
+    deleteCategory,
     selectCategory,
     selectFileGroup,
     expandItem,
@@ -86,18 +92,6 @@ export function App() {
       }),
     [openSettings],
   );
-
-  useEffect(() => {
-    const resetTransientUi = () => {
-      if (!document.hidden) return;
-      openSettings(false);
-      expandItem(null);
-      editItem(null);
-      composeItem(false);
-    };
-    document.addEventListener('visibilitychange', resetTransientUi);
-    return () => document.removeEventListener('visibilitychange', resetTransientUi);
-  }, [openSettings, expandItem, editItem, composeItem]);
 
   // Escape unwinds one layer at a time and closes the window only once there
   // is nothing left to undo. Dialogs handle their own Escape, so this skips
@@ -170,6 +164,7 @@ export function App() {
         onCategorySelect={selectCategory}
         onFileGroupSelect={selectFileGroup}
         onCategoryAdd={addCategory}
+        onCategoryDelete={deleteCategory}
         onSettingsOpen={() => openSettings(true)}
         onNavMove={moveNav}
         onNavVisibilityToggle={(key) => void toggleNavVisibility(key)}
@@ -254,6 +249,7 @@ export function App() {
             void updateSettings({ categoriesExpanded })
           }
           onFilesExpandedChange={(filesExpanded) => void updateSettings({ filesExpanded })}
+          onLanguageChange={(language) => void updateSettings({ language })}
           onNavReorderStart={startNavReorder}
           categories={categories}
           onClearHistory={clearHistory}
@@ -262,10 +258,10 @@ export function App() {
 
       {askNavOrder && (
         <ConfirmDialog
-          title="Порядок разделов изменён"
-          message="Сохранить новый порядок разделов или вернуть прежний?"
-          confirmLabel="Сохранить"
-          cancelLabel="Отменить изменения"
+          title={t('Порядок разделов изменён')}
+          message={t('Сохранить новый порядок разделов или вернуть прежний?')}
+          confirmLabel={t('Сохранить')}
+          cancelLabel={t('Отменить изменения')}
           onConfirm={() => {
             setAskNavOrder(false);
             void commitNavOrder();
@@ -279,10 +275,10 @@ export function App() {
 
       {askItemOrder && (
         <ConfirmDialog
-          title="Порядок блоков изменён"
-          message="Сохранить новый порядок блоков или вернуть прежний?"
-          confirmLabel="Сохранить"
-          cancelLabel="Отменить изменения"
+          title={t('Порядок блоков изменён')}
+          message={t('Сохранить новый порядок блоков или вернуть прежний?')}
+          confirmLabel={t('Сохранить')}
+          cancelLabel={t('Отменить изменения')}
           onConfirm={() => {
             setAskItemOrder(false);
             toggleReorderMode();

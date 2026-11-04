@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { render, screen, fireEvent } from '@testing-library/react';
+import { act, render, screen, fireEvent } from '@testing-library/react';
 import { Sidebar } from '../../../../src/renderer/components/Sidebar';
 import type { SidebarEntry } from '../../../../src/shared/types';
 
@@ -89,7 +89,7 @@ describe('Sidebar', () => {
     const props = renderSidebar({ onFileGroupSelect: jest.fn() });
     fireEvent.click(screen.getByText('Файлы', { selector: 'span' }).closest('.nav-row')!);
     expect(screen.getByText('Все файлы')).toBeInTheDocument();
-    expect(props.onNavChange).toHaveBeenCalledWith('files');
+    expect(props.onNavChange).not.toHaveBeenCalled();
     fireEvent.click(screen.getByText('Документы').closest('.category-item')!);
     expect(props.onFileGroupSelect).toHaveBeenCalledWith('documents');
     fireEvent.click(screen.getByText('Файлы', { selector: 'span' }).closest('.nav-row')!);
@@ -111,5 +111,30 @@ describe('Sidebar', () => {
     expect(props.onFileSectionMove).toHaveBeenCalledWith('images', 'audio');
     fireEvent.click(screen.getByLabelText('Скрыть работа'));
     expect(props.onCategoryVisibilityToggle).toHaveBeenCalledWith('работа');
+  });
+
+  it('asks before deleting a category in reorder mode', () => {
+    const onCategoryDelete = jest.fn().mockResolvedValue(undefined);
+    renderSidebar({ reorderMode: true, onCategoryDelete });
+    fireEvent.click(screen.getByRole('button', { name: 'Удалить категорию работа' }));
+    expect(onCategoryDelete).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Удалить' }));
+    expect(onCategoryDelete).toHaveBeenCalledWith('работа');
+  });
+
+  it('restores expansion preferences when the window is shown again', () => {
+    const previous = window.copycat;
+    let showWindow!: () => void;
+    window.copycat = { ...previous, onWindowShown: (callback) => { showWindow = callback; return () => {}; } };
+    try {
+      renderSidebar({ filesExpanded: false, categoriesExpanded: false });
+      fireEvent.click(screen.getByText('Категории'));
+      fireEvent.click(screen.getByText('Файлы', { selector: 'span' }));
+      expect(screen.getByText('работа')).toBeInTheDocument();
+      expect(screen.getByText('Все файлы')).toBeInTheDocument();
+      act(() => showWindow());
+      expect(screen.queryByText('работа')).not.toBeInTheDocument();
+      expect(screen.queryByText('Все файлы')).not.toBeInTheDocument();
+    } finally { window.copycat = previous; }
   });
 });

@@ -1,8 +1,9 @@
 import { BrowserWindow, screen } from 'electron';
 import path from 'node:path';
 import type { WindowBounds } from '../shared/types';
+import { IPC } from '../shared/ipc-channels';
 
-const ICON_PATH = path.join(__dirname, '../../resources/small/small.png');
+const ICON_PATH = path.join(__dirname, process.platform === 'win32' ? '../../resources/small/small.ico' : '../../resources/small/small.png');
 
 // Escape hatch for compositors that never focus a new window (WSLg): the
 // blur-hide below would fire immediately and the overlay could never be seen.
@@ -72,6 +73,9 @@ export function createMainWindow({ bounds, onBoundsChange }: MainWindowOptions):
   };
   win.on('moved', remember);
   win.on('resized', remember);
+  win.on('show', () => {
+    if (!win.webContents.isDestroyed()) win.webContents.send(IPC.WINDOW_SHOWN);
+  });
 
   if (!DEV_WINDOW) win.on('blur', () => { if (!nativeDialogOpen) win.hide(); });
   win.on('close', (event) => {

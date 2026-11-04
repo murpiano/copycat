@@ -5,6 +5,12 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { SearchBar } from '../../../../src/renderer/components/SearchBar';
 
 describe('SearchBar', () => {
+  it('replaces the magnifier with an accessible clear button', () => {
+    const onChange = jest.fn();
+    render(<SearchBar value="report" onChange={onChange} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Очистить поиск' }));
+    expect(onChange).toHaveBeenCalledWith('');
+  });
   it('calls onChange with the typed value', () => {
     const onChange = jest.fn();
     render(<SearchBar value="" onChange={onChange} />);
@@ -14,7 +20,7 @@ describe('SearchBar', () => {
     expect(onChange).toHaveBeenCalledWith('docker');
   });
 
-  it('takes focus on mount and again when the window is raised', () => {
+  it('focuses initially and preserves another active field when raised', () => {
     render(<SearchBar value="" onChange={() => {}} />);
     const input = screen.getByPlaceholderText('Поиск по буферу обмена...');
     expect(input).toHaveFocus();
@@ -26,6 +32,7 @@ describe('SearchBar', () => {
     expect(input).not.toHaveFocus();
 
     fireEvent.focus(window);
-    expect(input).toHaveFocus();
+    expect(elsewhere).toHaveFocus();
+    elsewhere.remove();
   });
 });

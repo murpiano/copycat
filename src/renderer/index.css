@@ -1,7 +1,9 @@
 :root {
   color-scheme: dark;
-  scrollbar-color: #243047 transparent;
-  scrollbar-width: thin;
+  /* Electron/Chromium uses the 5px WebKit rules below. Standard scrollbar
+     overrides here would supersede that geometry and make it wide again. */
+  scrollbar-color: auto;
+  scrollbar-width: auto;
 
   --bg-core: #101a2b;
   --bg-mid: #0d1525;
@@ -26,6 +28,9 @@
   --accent-file: #6ad799;
   --accent-star: #e8b339;
   --accent-danger: #e05d5d;
+  --open-bg: #174574;
+  --open-hover: #2062a4;
+  --open-text: #ffffff;
 }
 
 * {
@@ -136,6 +141,7 @@ button:disabled {
 .sidebar-logo {
   width: 22px;
   height: 22px;
+  object-fit: contain;
   border-radius: 5px;
 }
 
@@ -417,6 +423,27 @@ button:disabled {
   pointer-events: none;
 }
 
+.search-clear {
+  position: absolute;
+  z-index: 1;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-dim);
+}
+.search-clear svg { left: auto; top: auto; position: static; transform: none; }
+.search-clear:hover { color: var(--text); background: var(--nav-active-bg); }
+.search-clear:active { transform: translateY(-50%) scale(.94); }
+.search-clear:focus-visible { outline: 2px solid var(--accent-text); }
+
 .search-bar {
   width: 100%;
   padding: 13px 18px 13px 44px;
@@ -590,8 +617,18 @@ button:disabled {
 }
 
 .item-card-body { position: relative; }
-.item-open { position: absolute; left: 10px; bottom: 8px; opacity: 0; pointer-events: none; border: 1px solid var(--nav-active-border); border-radius: 7px; background: var(--nav-active-bg); color: var(--text); font-size: 11px; padding: 3px 7px; }
+.item-card-footer { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; min-height: 28px; }
+.item-card[data-type='text'] .item-card-footer { min-height: 0; }
+.item-card-footer .item-card-tags { min-width: 0; max-height: 28px; overflow: hidden; }
+.item-open { flex: 0 0 auto; opacity: 0; pointer-events: none; border: 1px solid var(--accent-text); border-radius: 7px; background: var(--open-bg); color: var(--open-text); font-size: 11px; min-width: 78px; height: 28px; padding: 0 9px; display: flex; align-items: center; justify-content: center; text-align: center; transition: background 120ms ease, transform 90ms ease, filter 120ms ease; }
 .item-card:hover .item-open, .item-open:focus-visible { opacity: 1; pointer-events: auto; }
+.item-open:hover { background: var(--open-hover); filter: brightness(1.1); }
+.item-open:active { transform: scale(.94); }
+.item-open:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.button.open-object { background: var(--open-bg); border: 1px solid var(--accent-text); color: var(--open-text); display: inline-flex; align-items: center; justify-content: center; text-align: center; min-width: 88px; min-height: 30px; }
+.button.open-object:hover { background: var(--open-hover); filter: brightness(1.1); }
+.button.open-object:active { transform: scale(.94); }
+.button.open-object:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .item-open-error { position: absolute; left: 10px; bottom: 34px; color: var(--accent-danger); background: var(--surface); font-size: 11px; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -774,6 +811,7 @@ button:disabled {
 
 .item-card-content {
   flex: 1 1 auto;
+  min-height: 0;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -1122,6 +1160,10 @@ button:disabled {
 .button.primary:hover {
   filter: brightness(1.1);
 }
+
+.button.danger { background: var(--accent-danger); color: #160707; font-weight: 600; }
+.button.danger:hover:not(:disabled) { filter: brightness(1.12); }
+.category-delete:hover { color: var(--accent-danger); }
 
 .nav-item:active,
 .category-item:active,

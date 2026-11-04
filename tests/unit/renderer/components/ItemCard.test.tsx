@@ -113,11 +113,11 @@ describe('ItemCard', () => {
         onEdit={onEdit}
       />,
     );
-    fireEvent.click(screen.getByLabelText('star'));
+    fireEvent.click(screen.getByLabelText('В избранное'));
     expect(onToggleStar).toHaveBeenCalledWith(1);
-    fireEvent.click(screen.getByLabelText('edit'));
+    fireEvent.click(screen.getByLabelText('Редактировать'));
     expect(onEdit).toHaveBeenCalledWith(1);
-    fireEvent.click(screen.getByLabelText('delete'));
+    fireEvent.click(screen.getByLabelText('Удалить'));
     expect(onDelete).toHaveBeenCalledWith(1);
   });
 });

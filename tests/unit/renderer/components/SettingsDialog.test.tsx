@@ -7,6 +7,7 @@ import {
   toAccelerator,
   formatAccelerator,
 } from '../../../../src/renderer/components/SettingsDialog';
+import { useClipboardStore } from '../../../../src/renderer/store/useClipboardStore';
 
 function press(overrides: Partial<Parameters<typeof toAccelerator>[0]> = {}) {
   return toAccelerator({
@@ -46,6 +47,19 @@ describe('formatAccelerator', () => {
 });
 
 describe('SettingsDialog', () => {
+  it('offers RU and ENG and translates the settings UI', () => {
+    const onLanguageChange = jest.fn();
+    const previous = useClipboardStore.getState().settings;
+    useClipboardStore.setState({ settings: { hotkey: 'Alt+Space', categoriesExpanded: false, filesExpanded: false, navOrder: ['history', 'starred', 'text', 'files', 'categories'], windowBounds: null, language: 'en' } });
+    try {
+      render(<SettingsDialog settings={useClipboardStore.getState().settings} onClose={() => {}} onHotkeyChange={async () => ({ ok: true })}
+        onCategoriesExpandedChange={() => {}} onNavReorderStart={() => {}} onLanguageChange={onLanguageChange} />);
+      expect(screen.getByRole('dialog', { name: 'Settings' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'ENG' })).toHaveAttribute('aria-pressed', 'true');
+      fireEvent.click(screen.getByRole('button', { name: 'RU' }));
+      expect(onLanguageChange).toHaveBeenCalledWith('ru');
+    } finally { useClipboardStore.setState({ settings: previous }); }
+  });
   it('protects favorites and all categories by default after section switches', () => {
     render(<SettingsDialog settings={null} onClose={() => {}} onHotkeyChange={async () => ({ ok: true })}
       onCategoriesExpandedChange={() => {}} onNavReorderStart={() => {}} categories={['Работа', 'Личное']} />);

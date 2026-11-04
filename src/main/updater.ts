@@ -1,7 +1,17 @@
 import { autoUpdater } from 'electron-updater';
 import type { Tray } from 'electron';
+import type { Language } from '../shared/types';
 
 const CHECK_INTERVAL_MS = 60 * 60 * 1000;
+let downloadedVersion: string | null = null;
+
+export function refreshUpdateTooltip(tray: Tray | null, language: Language): void {
+  tray?.setToolTip(downloadedVersion
+    ? language === 'en'
+      ? `Copycat — version ${downloadedVersion} will install on exit`
+      : `Copycat — версия ${downloadedVersion} установится при выходе`
+    : 'Copycat');
+}
 
 /**
  * Pulls new versions from the GitHub release feed configured in
@@ -9,7 +19,7 @@ const CHECK_INTERVAL_MS = 60 * 60 * 1000;
  * announced with a dialog that would steal focus: it installs on the next
  * quit, and the tray tooltip is the only hint that something is pending.
  */
-export function startAutoUpdates(getTray: () => Tray | null): void {
+export function startAutoUpdates(getTray: () => Tray | null, getLanguage: () => Language = () => 'ru'): void {
   // Packaged builds only; a dev run has no update feed to talk to.
   if (!autoUpdater.isUpdaterActive()) return;
 
@@ -17,7 +27,8 @@ export function startAutoUpdates(getTray: () => Tray | null): void {
   autoUpdater.autoInstallOnAppQuit = true;
 
   autoUpdater.on('update-downloaded', ({ version }) => {
-    getTray()?.setToolTip(`Copycat — версия ${version} установится при выходе`);
+    downloadedVersion = version;
+    refreshUpdateTooltip(getTray(), getLanguage());
   });
 
   autoUpdater.on('error', (error) => {
