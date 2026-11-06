@@ -29,6 +29,7 @@ function MurpianoSignature() {
   }
 
   return (
+    <span className="mp-signature-zone">
     <a
       ref={rootRef}
       className="mp-signature"
@@ -183,6 +184,7 @@ function MurpianoSignature() {
         </g>
       </svg>
     </a>
+    </span>
   );
 }
 
