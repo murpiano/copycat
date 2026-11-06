@@ -41,6 +41,14 @@ describe('settings-store', () => {
     expect(saved.hiddenCategories).toEqual(['работа']);
   });
 
+  it('slots a newly introduced file section next to its canonical neighbour instead of appending it', () => {
+    const file = tempFile();
+    fs.writeFileSync(file, JSON.stringify({ fileSectionOrder: ['all', 'documents', 'images', 'audio', 'files', 'folders'] }));
+    expect(createSettingsStore(file).get().fileSectionOrder).toEqual([
+      'all', 'documents', 'images', 'audio', 'video', 'files', 'folders',
+    ]);
+  });
+
   it('persists a new hotkey across stores', () => {
     const file = tempFile();
     createSettingsStore(file).setHotkey('Alt+Space');

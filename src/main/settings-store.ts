@@ -52,10 +52,31 @@ function sanitizeHiddenEntries(value: unknown): SidebarEntry[] {
     : [];
 }
 
+/** Keeps the user's arrangement, but slots any newly introduced section
+ * (e.g. 'video') next to its neighbours from the canonical order instead
+ * of always tacking it onto the end. */
 function sanitizeFileSections(value: unknown): FileSection[] {
   const valid = new Set<string>(DEFAULT_FILE_SECTION_ORDER);
-  const entries = Array.isArray(value) ? value.filter((entry): entry is FileSection => valid.has(entry)) : [];
-  return [...new Set(entries), ...DEFAULT_FILE_SECTION_ORDER.filter((entry) => !entries.includes(entry))];
+  const stored = Array.isArray(value) ? value.filter((entry): entry is FileSection => valid.has(entry)) : [];
+  const result = [...new Set(stored)];
+  for (const entry of DEFAULT_FILE_SECTION_ORDER) {
+    if (result.includes(entry)) continue;
+    const defaultIndex = DEFAULT_FILE_SECTION_ORDER.indexOf(entry);
+    let insertAt = -1;
+    for (let i = defaultIndex - 1; i >= 0; i--) {
+      const idx = result.indexOf(DEFAULT_FILE_SECTION_ORDER[i]);
+      if (idx !== -1) { insertAt = idx + 1; break; }
+    }
+    if (insertAt === -1) {
+      insertAt = result.length;
+      for (let i = defaultIndex + 1; i < DEFAULT_FILE_SECTION_ORDER.length; i++) {
+        const idx = result.indexOf(DEFAULT_FILE_SECTION_ORDER[i]);
+        if (idx !== -1) { insertAt = idx; break; }
+      }
+    }
+    result.splice(insertAt, 0, entry);
+  }
+  return result;
 }
 
 function sanitizeHiddenFileSections(value: unknown): FileSection[] {
