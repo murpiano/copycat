@@ -73,6 +73,7 @@ export function ExcelIcon(props: IconProps) { return <LabeledFileIcon {...props}
 export function PowerPointIcon(props: IconProps) { return <LabeledFileIcon {...props} label="P" />; }
 export function PdfIcon(props: IconProps) { return <LabeledFileIcon {...props} label="PDF" />; }
 export function AudioIcon(props: IconProps) { return <Svg {...props}><path d="M10 18V5l10-2v13" /><path d="M10 8l10-2" /><ellipse cx="7" cy="18" rx="3" ry="2" /><ellipse cx="17" cy="16" rx="3" ry="2" /></Svg>; }
+export function VideoIcon(props: IconProps) { return <Svg {...props}><rect x="3" y="5" width="13" height="14" rx="2" /><path d="M16 10l5-3v10l-5-3z" /></Svg>; }
 export function TextDocumentIcon(props: IconProps) { return <LabeledFileIcon {...props} label="TXT" />; }
 export function BoxIcon(props: IconProps) {
   return <Svg {...props}><path d="m4 7 8-4 8 4-8 4z" /><path d="M4 7v10l8 4 8-4V7M12 11v10" /></Svg>;

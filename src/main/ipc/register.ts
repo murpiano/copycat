@@ -16,7 +16,7 @@ import type { ItemsRepo } from '../storage/items-repo';
 import type { TagsRepo } from '../storage/tags-repo';
 import { hashContent } from '../clipboard/hash';
 import { setNativeDialogOpen } from '../window';
-import { AUDIO_EXTS, DOCUMENT_EXTS, IMAGE_EXTS, firstPath, kindFromPath, type FileGroup } from '../../shared/file-kind';
+import { AUDIO_EXTS, DOCUMENT_EXTS, IMAGE_EXTS, VIDEO_EXTS, firstPath, kindFromPath, type FileGroup } from '../../shared/file-kind';
 import { cleanupUnusedPreviews } from '../clipboard/capture-pipeline';
 import { buildCFDropBuffer } from '../clipboard/file-drop';
 import {
@@ -123,9 +123,11 @@ export function registerIpcHandlers(ipcMain: IpcMain, deps: RegisterIpcDeps): vo
         ? [{ name: english ? 'Images' : 'Изображения', extensions: [...IMAGE_EXTS] }]
         : mode === 'file' && group === 'audio'
           ? [{ name: english ? 'Audio' : 'Аудио', extensions: [...AUDIO_EXTS] }]
-          : mode === 'file' && group === 'documents'
-            ? [{ name: english ? 'Documents' : 'Документы', extensions: [...DOCUMENT_EXTS] }]
-            : undefined,
+          : mode === 'file' && group === 'video'
+            ? [{ name: english ? 'Video' : 'Видео', extensions: [...VIDEO_EXTS] }]
+            : mode === 'file' && group === 'documents'
+              ? [{ name: english ? 'Documents' : 'Документы', extensions: [...DOCUMENT_EXTS] }]
+              : undefined,
     };
     const owner = BrowserWindow.getFocusedWindow();
     setNativeDialogOpen(true);

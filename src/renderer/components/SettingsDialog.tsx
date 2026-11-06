@@ -244,6 +244,7 @@ interface SettingsDialogProps {
   onCategoriesExpandedChange: (expanded: boolean) => void;
   onFilesExpandedChange?: (expanded: boolean) => void;
   onLanguageChange?: (language: 'ru' | 'en') => void;
+  onThemeChange?: (theme: 'light' | 'dark') => void;
   onNavReorderStart: () => void;
   categories?: string[];
   onClearHistory?: (input: ClearHistoryInput) => Promise<void>;
@@ -257,6 +258,7 @@ export function SettingsDialog({
   onCategoriesExpandedChange,
   onFilesExpandedChange = () => {},
   onLanguageChange = () => {},
+  onThemeChange = () => {},
   onNavReorderStart,
   categories = [],
   onClearHistory = async () => {},
@@ -333,7 +335,7 @@ export function SettingsDialog({
   if (clearOpen) {
     const periodButtons = [['hour', 'За час'], ['3hours', 'За 3 часа'], ['today', 'За сутки'], ['all', 'За всё время']];
     const scopeButtons: Array<[ClearHistoryScope, string]> = [['all', 'Все'], ['starred', 'Избранное'], ['text', 'Текст'], ['file', 'Файлы'], ['category', 'Категории']];
-    const fileLabels: Record<FileGroup, string> = { documents: 'Документы', images: 'Изображения', audio: 'Аудио', files: 'Файлы', folders: 'Папки' };
+    const fileLabels: Record<FileGroup, string> = { documents: 'Документы', images: 'Изображения', audio: 'Аудио', video: 'Видео', files: 'Файлы', folders: 'Папки' };
     const fileGroups = DEFAULT_FILE_SECTION_ORDER.filter((value): value is FileGroup => value !== 'all');
     const options: Array<[string, string]> = [];
     if (scope !== 'starred') options.push(['starred', 'Избранное']);
@@ -441,11 +443,20 @@ export function SettingsDialog({
           <button type="button" className="button ghost wide" onClick={() => setClearOpen(true)}>{t('Очистить историю')}</button>
         </div>
 
-        <div className="field">
-          <span className="field-label">{t('Язык')}</span>
-          <div className="settings-button-grid" role="group" aria-label={t('Язык')}>
-            <button type="button" className={settings?.language !== 'en' ? 'button settings-choice active' : 'button settings-choice'} aria-pressed={settings?.language !== 'en'} onClick={() => onLanguageChange('ru')}>RU</button>
-            <button type="button" className={settings?.language === 'en' ? 'button settings-choice active' : 'button settings-choice'} aria-pressed={settings?.language === 'en'} onClick={() => onLanguageChange('en')}>ENG</button>
+        <div className="field-pair">
+          <div className="field">
+            <span className="field-label">{t('Язык')}</span>
+            <div className="settings-button-grid" role="group" aria-label={t('Язык')}>
+              <button type="button" className={settings?.language !== 'en' ? 'button settings-choice active' : 'button settings-choice'} aria-pressed={settings?.language !== 'en'} onClick={() => onLanguageChange('ru')}>RU</button>
+              <button type="button" className={settings?.language === 'en' ? 'button settings-choice active' : 'button settings-choice'} aria-pressed={settings?.language === 'en'} onClick={() => onLanguageChange('en')}>ENG</button>
+            </div>
+          </div>
+          <div className="field field-align-end">
+            <span className="field-label">{t('Тема')}</span>
+            <div className="settings-button-grid" role="group" aria-label={t('Тема')}>
+              <button type="button" className={settings?.theme !== 'light' ? 'button settings-choice active' : 'button settings-choice'} aria-pressed={settings?.theme !== 'light'} onClick={() => onThemeChange('dark')}>{t('Тёмная')}</button>
+              <button type="button" className={settings?.theme === 'light' ? 'button settings-choice active' : 'button settings-choice'} aria-pressed={settings?.theme === 'light'} onClick={() => onThemeChange('light')}>{t('Светлая')}</button>
+            </div>
           </div>
         </div>
 

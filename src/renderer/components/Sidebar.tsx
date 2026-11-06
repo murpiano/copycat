@@ -26,7 +26,7 @@ const NAV_ITEMS: Record<NavKey, { label: string; icon: JSX.Element }> = {
   images: { label: 'Изображения', icon: <ImageIcon /> },
   files: { label: 'Файлы', icon: <BoxIcon /> },
 };
-const FILE_GROUPS: Array<[FileGroup, string]> = [['documents', 'Документы'], ['images', 'Изображения'], ['audio', 'Аудио'], ['files', 'Файлы'], ['folders', 'Папки']];
+const FILE_GROUPS: Array<[FileGroup, string]> = [['documents', 'Документы'], ['images', 'Изображения'], ['audio', 'Аудио'], ['video', 'Видео'], ['files', 'Файлы'], ['folders', 'Папки']];
 const FILE_LABELS: Record<FileSection, string> = { all: 'Все файлы', ...Object.fromEntries(FILE_GROUPS) } as Record<FileSection, string>;
 
 interface SidebarProps {

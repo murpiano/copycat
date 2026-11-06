@@ -13,6 +13,7 @@ describe('settings-store', () => {
   it('starts from the defaults when there is no file yet', () => {
     expect(createSettingsStore(tempFile()).get()).toEqual({
       language: 'ru',
+      theme: 'dark',
       hotkey: DEFAULT_HOTKEY,
       categoriesExpanded: false,
       filesExpanded: false,

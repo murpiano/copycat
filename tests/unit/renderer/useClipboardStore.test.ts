@@ -219,7 +219,7 @@ describe('useClipboardStore', () => {
     });
     expect(api.updateSettings).toHaveBeenCalledWith({
       navOrder: ['files', 'history', 'starred', 'images'],
-      fileSectionOrder: ['all', 'documents', 'images', 'audio', 'files', 'folders'],
+      fileSectionOrder: ['all', 'documents', 'images', 'audio', 'video', 'files', 'folders'],
     });
     expect(useClipboardStore.getState().navReorderMode).toBe(false);
   });
@@ -247,7 +247,7 @@ describe('useClipboardStore', () => {
     await act(async () => useClipboardStore.getState().toggleNavVisibility('files'));
     expect(api.updateSettings).toHaveBeenCalledWith({
       hiddenNavEntries: ['files'],
-      hiddenFileSections: ['all', 'documents', 'images', 'audio', 'files', 'folders'],
+      hiddenFileSections: ['all', 'documents', 'images', 'audio', 'video', 'files', 'folders'],
     });
   });
 

@@ -1,5 +1,5 @@
 export type ItemType = 'text' | 'image' | 'file';
-export type ItemKind = 'text' | 'document' | 'image' | 'audio' | 'file' | 'folder';
+export type ItemKind = 'text' | 'document' | 'image' | 'audio' | 'video' | 'file' | 'folder';
 
 export interface ClipboardItem {
   id: number;
@@ -69,9 +69,11 @@ export interface WindowBounds {
 }
 
 export type Language = 'ru' | 'en';
+export type Theme = 'light' | 'dark';
 
 export interface AppSettings {
   language?: Language;
+  theme?: Theme;
   /** Electron accelerator that opens the window, e.g. "CommandOrControl+Shift+V". */
   hotkey: string;
   /** Opens the sidebar's category selector on start instead of collapsed. */

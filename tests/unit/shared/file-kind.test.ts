@@ -9,6 +9,7 @@ describe('file classification', () => {
     ['manual.pdf', 'document'],
     ['photo.avif', 'image'],
     ['voice.opus', 'audio'],
+    ['clip.mp4', 'video'],
     ['archive.zip', 'file'],
   ] as const)('classifies %s as %s', (filePath, kind) => {
     expect(kindFromPath(filePath)).toBe(kind);
@@ -21,5 +22,6 @@ describe('file classification', () => {
   it('maps persisted kinds to the Files subsections', () => {
     expect(fileGroupOf({ type: 'file', content: '["C:\\\\a.bin"]', kind: 'folder' })).toBe('folders');
     expect(fileGroupOf({ type: 'file', content: '["C:\\\\a.bin"]', kind: 'audio' })).toBe('audio');
+    expect(fileGroupOf({ type: 'file', content: '["C:\\\\a.bin"]', kind: 'video' })).toBe('video');
   });
 });
