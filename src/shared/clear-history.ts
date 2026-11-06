@@ -1,7 +1,7 @@
 import { fileGroupOf, type FileGroup } from './file-kind';
 import type { ClearHistoryInput, ClipboardItem } from './types';
 
-const FILE_GROUPS = new Set<FileGroup>(['documents', 'images', 'audio', 'files', 'folders']);
+const FILE_GROUPS = new Set<FileGroup>(['documents', 'images', 'audio', 'video', 'files', 'folders']);
 
 export function matchesClearHistory(item: ClipboardItem, input: ClearHistoryInput): boolean {
   if (input.since !== undefined && item.createdAt < input.since) return false;

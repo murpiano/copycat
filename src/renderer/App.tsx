@@ -15,8 +15,10 @@ import type { ClipboardItem } from '../shared/types';
 export function App() {
   const t = useT();
   const language = useLanguage();
+  const theme = useClipboardStore((state) => (state.settings?.theme === 'light' ? 'light' : 'dark'));
 
   useEffect(() => { document.documentElement.lang = language; }, [language]);
+  useEffect(() => { document.documentElement.setAttribute('data-theme', theme); }, [theme]);
   const {
     items,
     search,
@@ -290,6 +292,7 @@ export function App() {
           }
           onFilesExpandedChange={(filesExpanded) => void updateSettings({ filesExpanded })}
           onLanguageChange={(language) => void updateSettings({ language })}
+          onThemeChange={(theme) => void updateSettings({ theme })}
           onNavReorderStart={startNavReorder}
           categories={categories}
           onClearHistory={clearHistory}

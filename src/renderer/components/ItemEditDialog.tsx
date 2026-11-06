@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { ClipboardItem, CreateItemInput, PickedObject } from '../../shared/types';
 import { fileGroupOf, type FileGroup } from '../../shared/file-kind';
 import { KIND_LABEL, fileIcon } from './ItemCard';
-import { AudioIcon, BoxIcon, CloseIcon, FileIcon, FolderIcon, ImageIcon, PlusIcon, StarIcon, TextDocumentIcon } from './icons';
+import { AudioIcon, BoxIcon, CloseIcon, FileIcon, FolderIcon, ImageIcon, PlusIcon, StarIcon, TextDocumentIcon, VideoIcon } from './icons';
 import { Overlay } from './Overlay';
 import { ConfirmDialog } from './ConfirmDialog';
 import { useT } from '../i18n';
@@ -110,10 +110,11 @@ export function ItemEditDialog({
   // added elsewhere never silently disappears when the dialog saves.
   const options = [...new Set([...categories.map((c) => c.toLowerCase()), ...tags])];
   const contentLabel = t(item?.type === 'image' ? 'Путь к файлу' : 'Содержимое');
-  const groupLabels: Record<FileGroup | 'all', string> = { all: 'Файлы', documents: 'Документы', images: 'Изображения', audio: 'Аудио', files: 'Файлы', folders: 'Папки' };
+  const groupLabels: Record<FileGroup | 'all', string> = { all: 'Файлы', documents: 'Документы', images: 'Изображения', audio: 'Аудио', video: 'Видео', files: 'Файлы', folders: 'Папки' };
   const fixedLabel = t(creationGroup && creationGroup !== 'text' ? groupLabels[creationGroup] : 'Текст');
   const fixedIcon = creationGroup === 'images' ? <ImageIcon size={18} />
     : creationGroup === 'audio' ? <AudioIcon size={18} />
+    : creationGroup === 'video' ? <VideoIcon size={18} />
     : creationGroup === 'documents' ? <TextDocumentIcon size={18} />
     : creationGroup === 'folders' ? <FolderIcon size={18} />
     : creationGroup === 'files' ? <BoxIcon size={18} /> : null;
@@ -121,6 +122,7 @@ export function ItemEditDialog({
     ?? (picked?.kind === 'image' ? <ImageIcon size={18} />
       : picked?.kind === 'folder' ? <FolderIcon size={18} />
       : picked?.kind === 'audio' ? <AudioIcon size={18} />
+      : picked?.kind === 'video' ? <VideoIcon size={18} />
       : picked?.kind === 'document' ? fileIcon({ content: picked.path, kind: picked.kind }, 18)
       : <BoxIcon size={18} />);
 
@@ -193,7 +195,7 @@ export function ItemEditDialog({
             value={content}
             onChange={(e) => setContent(e.target.value)}
           />
-        </label> : <div className="field field-grow"><span className="field-label">{t('Содержимое')}</span><div className="object-picker"><button type="button" className={picked && (creationGroup === 'folders' ? picked.kind === 'folder' : picked.kind !== 'folder') ? 'button settings-choice active' : 'button'} aria-pressed={Boolean(picked && (creationGroup === 'folders' ? picked.kind === 'folder' : picked.kind !== 'folder'))} onClick={() => void chooseObject(creationGroup === 'folders' ? 'folder' : 'file')}>{t('Выбрать ' + (creationGroup === 'folders' ? 'папку' : creationGroup === 'audio' ? 'аудио' : creationGroup === 'images' ? 'изображение' : creationGroup === 'documents' ? 'документ' : 'объект'))}</button>{(creationGroup === null || creationGroup === 'all') && <button type="button" className={picked?.kind === 'folder' ? 'button settings-choice active' : 'button'} aria-pressed={picked?.kind === 'folder'} onClick={() => void chooseObject('folder')}>{t('Выбрать папку')}</button>}</div>{picked && <input className="field-input object-path" aria-label={t('Путь к объекту')} readOnly value={picked.path} title={picked.path} />}</div>}
+        </label> : <div className="field field-grow"><span className="field-label">{t('Содержимое')}</span><div className="object-picker"><button type="button" className={picked && (creationGroup === 'folders' ? picked.kind === 'folder' : picked.kind !== 'folder') ? 'button settings-choice active' : 'button'} aria-pressed={Boolean(picked && (creationGroup === 'folders' ? picked.kind === 'folder' : picked.kind !== 'folder'))} onClick={() => void chooseObject(creationGroup === 'folders' ? 'folder' : 'file')}>{t('Выбрать ' + (creationGroup === 'folders' ? 'папку' : creationGroup === 'audio' ? 'аудио' : creationGroup === 'video' ? 'видео' : creationGroup === 'images' ? 'изображение' : creationGroup === 'documents' ? 'документ' : 'объект'))}</button>{(creationGroup === null || creationGroup === 'all') && <button type="button" className={picked?.kind === 'folder' ? 'button settings-choice active' : 'button'} aria-pressed={picked?.kind === 'folder'} onClick={() => void chooseObject('folder')}>{t('Выбрать папку')}</button>}</div>{picked && <input className="field-input object-path" aria-label={t('Путь к объекту')} readOnly value={picked.path} title={picked.path} />}</div>}
 
         <div className="field">
           <span className="field-label">{t('Категории')}</span>

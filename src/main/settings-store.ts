@@ -20,6 +20,7 @@ export interface SettingsStore {
 function defaults(): AppSettings {
   return {
     language: 'ru',
+    theme: 'dark',
     hotkey: DEFAULT_HOTKEY,
     categoriesExpanded: false,
     filesExpanded: false,
@@ -90,6 +91,7 @@ export function createSettingsStore(filePath: string): SettingsStore {
         : [...DEFAULT_NAV_ORDER];
       return {
         language: raw.language === 'en' ? 'en' : 'ru',
+        theme: raw.theme === 'light' ? 'light' : 'dark',
         hotkey: typeof raw.hotkey === 'string' && raw.hotkey ? raw.hotkey : base.hotkey,
         categoriesExpanded: raw.categoriesExpanded === true,
         filesExpanded: raw.filesExpanded === true,
@@ -124,6 +126,7 @@ export function createSettingsStore(filePath: string): SettingsStore {
       return write({
         ...current,
         ...(input.language !== undefined ? { language: input.language === 'en' ? 'en' : 'ru' } : {}),
+        ...(input.theme !== undefined ? { theme: input.theme === 'light' ? 'light' : 'dark' } : {}),
         ...(input.categoriesExpanded !== undefined
           ? { categoriesExpanded: input.categoriesExpanded }
           : {}),

@@ -1,7 +1,7 @@
 import { useState, type DragEvent, type MouseEvent } from 'react';
 import { useSelectionCursor } from '../useSelectionCursor';
 import type { ClipboardItem, ItemType } from '../../shared/types';
-import { AudioIcon, BoxIcon, CloseIcon, ExcelIcon, FileIcon, FolderIcon, ImageIcon, PdfIcon, PencilIcon, PowerPointIcon, StarIcon, TextDocumentIcon, WordIcon } from './icons';
+import { AudioIcon, BoxIcon, CloseIcon, ExcelIcon, FileIcon, FolderIcon, ImageIcon, PdfIcon, PencilIcon, PowerPointIcon, StarIcon, TextDocumentIcon, VideoIcon, WordIcon } from './icons';
 import { firstPath, kindFromPath } from '../../shared/file-kind';
 import { translateUi, useLanguage, useT, type Language } from '../i18n';
 
@@ -44,6 +44,7 @@ export function fileIcon(item: Pick<ClipboardItem, 'content' | 'kind'>, size = 1
   if (/\.pdf$/.test(name)) return <PdfIcon size={size} />;
   if (item.kind === 'document') return <TextDocumentIcon size={size} />;
   if (item.kind === 'audio') return <AudioIcon size={size} />;
+  if (item.kind === 'video') return <VideoIcon size={size} />;
   if (item.kind === 'folder') return <FolderIcon size={size} />;
   return <BoxIcon size={size} />;
 }
@@ -51,7 +52,7 @@ export function fileIcon(item: Pick<ClipboardItem, 'content' | 'kind'>, size = 1
 export function copyLabel(item: ClipboardItem): string {
   if (item.type === 'text') return 'Скопировать содержимое';
   const kind = item.kind ?? (item.type === 'image' ? 'image' : kindFromPath(firstPath(item.content)));
-  return `Скопировать ${({ document: 'документ', image: 'изображение', audio: 'аудио', file: 'файл', folder: 'папку', text: 'содержимое' } as const)[kind]}`;
+  return `Скопировать ${({ document: 'документ', image: 'изображение', audio: 'аудио', video: 'видео', file: 'файл', folder: 'папку', text: 'содержимое' } as const)[kind]}`;
 }
 
 interface ItemCardProps {
