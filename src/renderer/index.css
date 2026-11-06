@@ -1142,8 +1142,8 @@ button:disabled {
 }
 
 .mp-signature {
-  --mp-signature-surface: #f5f3ed;
-  --mp-signature-ink: #111111;
+  --mp-signature-surface: var(--surface);
+  --mp-signature-ink: var(--accent-text);
   --mp-signature-glow: #d8b25c;
   box-sizing: border-box;
   display: inline-flex;
