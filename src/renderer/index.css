@@ -1275,8 +1275,15 @@ button:disabled {
   transition: transform 95ms ease-out;
 }
 
-.mp-signature:hover,
-.mp-signature:focus {
+.mp-signature-zone {
+  /* Same footprint as the plaque, not bigger — but never transformed
+     itself, so the lift below (applied only to the inner .mp-signature)
+     can never nudge a stationary cursor out from under the hover target. */
+  display: inline-block;
+}
+
+.mp-signature-zone:hover .mp-signature,
+.mp-signature-zone:focus-within .mp-signature {
   transform: translateY(-2px);
 }
 
@@ -1346,8 +1353,8 @@ button:disabled {
   .mp-eye-track-r {
     transition: none;
   }
-  .mp-signature:hover,
-  .mp-signature:focus,
+  .mp-signature-zone:hover .mp-signature,
+  .mp-signature-zone:focus-within .mp-signature,
   .mp-signature:active {
     transform: none;
     animation: none;

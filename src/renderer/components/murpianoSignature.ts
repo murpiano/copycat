@@ -38,6 +38,10 @@ function easeOut(t: number): number {
 export function attachMurpianoSignature(sig: HTMLAnchorElement): () => void {
   const svg = sig.querySelector<SVGSVGElement>('.mp-signature__mark');
   if (!svg) return () => {};
+  // Pointer events bind to the static outer zone, not the plaque itself
+  // (which is the thing that visually lifts), so a stationary cursor is
+  // never nudged out of hover by the plaque's own transform.
+  const zone = sig.closest<HTMLElement>('.mp-signature-zone') || sig;
 
   const reduceMotion = typeof window.matchMedia === 'function'
     ? window.matchMedia('(prefers-reduced-motion: reduce)')
@@ -473,16 +477,16 @@ export function attachMurpianoSignature(sig: HTMLAnchorElement): () => void {
     if (!hovering) stop();
   }
 
-  sig.addEventListener('pointerenter', onPointerEnter);
-  sig.addEventListener('pointermove', onPointerMove);
-  sig.addEventListener('pointerleave', onPointerLeave);
+  zone.addEventListener('pointerenter', onPointerEnter);
+  zone.addEventListener('pointermove', onPointerMove);
+  zone.addEventListener('pointerleave', onPointerLeave);
   sig.addEventListener('focus', onFocus);
   sig.addEventListener('blur', onBlur);
 
   return () => {
-    sig.removeEventListener('pointerenter', onPointerEnter);
-    sig.removeEventListener('pointermove', onPointerMove);
-    sig.removeEventListener('pointerleave', onPointerLeave);
+    zone.removeEventListener('pointerenter', onPointerEnter);
+    zone.removeEventListener('pointermove', onPointerMove);
+    zone.removeEventListener('pointerleave', onPointerLeave);
     sig.removeEventListener('focus', onFocus);
     sig.removeEventListener('blur', onBlur);
     timers.forEach((id) => window.clearTimeout(id));
