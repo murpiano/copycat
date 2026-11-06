@@ -1297,7 +1297,7 @@ button:disabled {
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  box-shadow: 0 0 10px 2.5px rgba(216, 178, 92, 0.28);
+  box-shadow: 0 0 10px 2.5px rgba(216, 178, 92, 0.5);
   opacity: 0;
   pointer-events: none;
   z-index: -1;
