@@ -1143,7 +1143,7 @@ button:disabled {
 
 .mp-signature {
   --mp-signature-surface: var(--surface);
-  --mp-signature-ink: var(--accent-text);
+  --mp-signature-ink: var(--text);
   --mp-signature-glow: #d8b25c;
   box-sizing: border-box;
   display: inline-flex;
@@ -1205,7 +1205,9 @@ button:disabled {
   flex: 0 0 auto;
   width: 30px;
   height: 34px;
-  color: var(--mp-signature-cat, var(--mp-signature-ink));
+  /* The cat silhouette and piano bed are always strictly black — not
+     theme-adjustable. Only the plaque background and the text color are. */
+  color: #000;
   overflow: visible;
 }
 
@@ -1282,7 +1284,7 @@ button:disabled {
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  box-shadow: 0 0 20px 5px color-mix(in srgb, var(--mp-signature-glow) 55%, transparent);
+  box-shadow: 0 0 10px 2.5px color-mix(in srgb, var(--mp-signature-glow) 28%, transparent);
   opacity: 0;
   pointer-events: none;
   z-index: -1;
