@@ -380,7 +380,7 @@ export function SettingsDialog({
         setClearing(false);
       }
     }
-    return <Overlay onClose={() => setClearOpen(false)} dismissOnBackdrop={false}><div className="popup settings-dialog clear-history-dialog" role="dialog" aria-label={t('Очистить историю')}>
+    return <Overlay onClose={() => setClearOpen(false)} dismissOnBackdrop={false} dragBackdrop><div className="popup settings-dialog clear-history-dialog" role="dialog" aria-label={t('Очистить историю')}>
       <div className="popup-head"><div className="popup-title">{t('Очистить историю')}</div><button className="item-card-action" aria-label={t('Закрыть')} onClick={() => setClearOpen(false)}><CloseIcon size={15} /></button></div>
       <div className="settings-button-grid">{periodButtons.map(([value, label]) => <button key={value} className={period === value ? 'button settings-choice active' : 'button settings-choice'} onClick={() => setPeriod(value)}>{t(label)}</button>)}</div>
       <div className="settings-button-grid">{scopeButtons.map(([value, label]) => <button key={value} className={scope === value ? 'button settings-choice active' : 'button settings-choice'} onClick={() => { setScope(value); setCategory(''); setFileGroup(null); resetExclusions(value); }}>{t(label)}</button>)}</div>
@@ -393,7 +393,7 @@ export function SettingsDialog({
   }
 
   return (
-    <Overlay onClose={() => void requestClose()} dismissOnBackdrop={false}>
+    <Overlay onClose={() => void requestClose()} dismissOnBackdrop={false} dragBackdrop>
       <div
         className="popup settings-dialog"
         role="dialog"
