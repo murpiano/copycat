@@ -153,10 +153,10 @@ function MurpianoSignature() {
         </g>
         <g className="mp-cat--eyes">
           <g className="mp-eye-track-l">
-            <rect className="mp-eye-l" x="38" y="56" width="2" height="2" rx="1.6" fill="var(--mp-signature-surface, #f5f3ed)" />
+            <rect className="mp-eye-l" x="38" y="56" width="2" height="2" rx="1.6" fill="#fff" />
           </g>
           <g className="mp-eye-track-r">
-            <rect className="mp-eye-r" x="66" y="56" width="2" height="2" rx="1.6" fill="var(--mp-signature-surface, #f5f3ed)" />
+            <rect className="mp-eye-r" x="66" y="56" width="2" height="2" rx="1.6" fill="#fff" />
           </g>
         </g>
         <g className="mp-cat--paw" fill="currentColor" pointerEvents="none">

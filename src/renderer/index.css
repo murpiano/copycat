@@ -1142,9 +1142,6 @@ button:disabled {
 }
 
 .mp-signature {
-  --mp-signature-surface: var(--surface);
-  --mp-signature-ink: var(--text);
-  --mp-signature-glow: #d8b25c;
   box-sizing: border-box;
   display: inline-flex;
   position: relative;
@@ -1156,8 +1153,8 @@ button:disabled {
   padding: 1px 14px;
   border: 1px solid color-mix(in srgb, currentColor 9%, transparent);
   border-radius: 8px;
-  background: var(--mp-signature-surface);
-  color: var(--mp-signature-ink);
+  background: #eae7df;
+  color: #272925;
   box-shadow:
     0 2px 3px rgba(0, 0, 0, 0.08),
     0 6px 15px rgba(0, 0, 0, 0.1);
@@ -1175,12 +1172,21 @@ button:disabled {
     box-shadow 460ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Keep the same fixed palette even if the host styles links on hover,
+   focus or after visiting them. */
+.mp-signature:is(:link, :visited, :hover, :focus, :active) {
+  background-color: #eae7df;
+  color: #272925;
+}
+
 .mp-signature__label {
   display: inline-block;
+  color: #272925;
 }
 
 .mp-signature__label strong {
   font-weight: 700;
+  color: #272925;
 }
 
 .mp-signature__name {
@@ -1291,7 +1297,7 @@ button:disabled {
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  box-shadow: 0 0 10px 2.5px color-mix(in srgb, var(--mp-signature-glow) 28%, transparent);
+  box-shadow: 0 0 10px 2.5px rgba(216, 178, 92, 0.28);
   opacity: 0;
   pointer-events: none;
   z-index: -1;
@@ -1322,7 +1328,7 @@ button:disabled {
 }
 
 .mp-signature:focus-visible {
-  outline: 2px solid var(--mp-signature-ink);
+  outline: 2px solid #272925;
   outline-offset: 4px;
 }
 
