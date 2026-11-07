@@ -76,6 +76,16 @@ function sanitizeFileSections(value: unknown): FileSection[] {
     }
     result.splice(insertAt, 0, entry);
   }
+  // A previously published build appended a newly introduced 'video' entry
+  // to the very end instead of slotting it after 'audio'; that stale order
+  // is already on disk for anyone who ran that build, so pin it here too,
+  // not just when the entry is missing outright.
+  const audioIndex = result.indexOf('audio');
+  const videoIndex = result.indexOf('video');
+  if (audioIndex !== -1 && videoIndex !== -1 && videoIndex !== audioIndex + 1) {
+    result.splice(videoIndex, 1);
+    result.splice(result.indexOf('audio') + 1, 0, 'video');
+  }
   return result;
 }
 

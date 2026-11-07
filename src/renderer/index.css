@@ -58,7 +58,7 @@
 
   --surface: #f7f8fa;
   --surface-border: #dadfe6;
-  --divider: #e1e5eb;
+  --divider: #c2c9d2;
 
   --text: #2b313c;
   --text-dim: #626b79;
@@ -205,7 +205,6 @@ button:disabled {
   align-self: center;
   background: var(--logo-bg);
   border-radius: 6px;
-  padding: 3px;
 }
 
 .sidebar-title {
