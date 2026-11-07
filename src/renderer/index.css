@@ -46,25 +46,25 @@
 :root[data-theme='light'] {
   color-scheme: light;
 
-  /* Muted, slightly warm neutrals instead of stark white/near-black, so the
-     light theme doesn't read as glaring next to the dark one. */
-  --bg-core: #e3e7ed;
-  --bg-mid: #eaedf2;
-  --bg-edge: #f1f3f6;
+  /* Warm, muted neutrals — a cream/sand cast instead of stark white or a
+     cool blue-grey — so the light theme reads as cosy, not glaring. */
+  --bg-core: #ece5d7;
+  --bg-mid: #f1ebdf;
+  --bg-edge: #f7f2e7;
 
-  --surface: #f7f8fa;
-  --surface-border: #dadfe6;
-  --divider: #e1e5eb;
+  --surface: #faf6ee;
+  --surface-border: #e2d6bf;
+  --divider: #ece2cd;
 
-  --text: #2b313c;
-  --text-dim: #626b79;
-  --text-faint: #8d94a1;
+  --text: #332c21;
+  --text-dim: #6f6350;
+  --text-faint: #9c8f78;
 
-  --nav-active-bg: #dce7f8;
-  --nav-active-border: #bcd0ee;
+  --nav-active-bg: #f3e6cc;
+  --nav-active-border: #ddc290;
 
-  --field-bg: #eef0f3;
-  --field-border: #d6dbe2;
+  --field-bg: #f3ecdd;
+  --field-border: #ddcfb4;
 
   --accent-text: #2f6fc4;
   --accent-image: #7c5bc0;
@@ -72,13 +72,13 @@
   --accent-star: #b87a16;
   --accent-danger: #c23f3a;
 
-  --scrollbar-thumb: #c5cbd4;
-  --hover-overlay: rgba(20, 20, 20, 0.05);
-  --chip-bg: #e9ecf0;
-  --chip-border: #d0d5dc;
-  --preview-bg: #e9ecf0;
-  --image-frame-bg: #dde1e7;
-  --overlay-scrim: rgba(20, 24, 32, 0.35);
+  --scrollbar-thumb: #d6c7a6;
+  --hover-overlay: rgba(90, 68, 24, 0.06);
+  --chip-bg: #f1e5cd;
+  --chip-border: #ddcdac;
+  --preview-bg: #f1e5cd;
+  --image-frame-bg: #e8dac0;
+  --overlay-scrim: rgba(42, 33, 18, 0.35);
 }
 
 * {
@@ -193,10 +193,10 @@ button:disabled {
 }
 
 .sidebar-logo {
-  height: 100%;
+  height: 36px;
   width: auto;
   object-fit: contain;
-  border-radius: 5px;
+  align-self: center;
 }
 
 .sidebar-title {
@@ -1495,15 +1495,17 @@ button:disabled {
   overflow-y: auto;
 }
 
-/* While Settings sits over the app, letting the dimmed backdrop also act as
- * a drag handle means grabbing the background window's own header still
- * moves the window, not just the popup's head. */
-.overlay-drag {
+/* While Settings sits over the app, a thin strip across the top keeps the
+ * background window's own header draggable — matching the app's normal
+ * header height — without turning the whole dimmed backdrop into a drag
+ * handle, so a click anywhere else on it still closes the popup. */
+.overlay-drag-strip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 72px;
   -webkit-app-region: drag;
-}
-
-.overlay-drag .popup {
-  -webkit-app-region: no-drag;
 }
 
 .settings-dialog .popup-head {

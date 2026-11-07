@@ -32,7 +32,8 @@ export function Overlay({ onClose, children, dismissOnBackdrop = true, dragBackd
   }
 
   return (
-    <div className={`overlay${dragBackdrop ? ' overlay-drag' : ''}`} onMouseDown={handleMouseDown} onClick={handleClick}>
+    <div className="overlay" onMouseDown={handleMouseDown} onClick={handleClick}>
+      {dragBackdrop && <div className="overlay-drag-strip" />}
       {children}
     </div>
   );
