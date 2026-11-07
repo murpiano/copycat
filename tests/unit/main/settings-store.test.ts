@@ -12,11 +12,11 @@ function tempFile(): string {
 describe('settings-store', () => {
   it('starts from the defaults when there is no file yet', () => {
     expect(createSettingsStore(tempFile()).get()).toEqual({
-      language: 'ru',
+      language: 'en',
       theme: 'dark',
       hotkey: DEFAULT_HOTKEY,
-      categoriesExpanded: false,
-      filesExpanded: false,
+      categoriesExpanded: true,
+      filesExpanded: true,
       navOrder: [...DEFAULT_NAV_ORDER],
       hiddenNavEntries: [],
       fileSectionOrder: DEFAULT_FILE_SECTION_ORDER,

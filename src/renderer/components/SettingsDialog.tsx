@@ -393,7 +393,7 @@ export function SettingsDialog({
   }
 
   return (
-    <Overlay onClose={() => void requestClose()} dismissOnBackdrop={false} dragBackdrop>
+    <Overlay onClose={() => void requestClose()} dragBackdrop>
       <div
         className="popup settings-dialog"
         role="dialog"

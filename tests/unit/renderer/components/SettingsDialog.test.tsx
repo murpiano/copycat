@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { act, render, screen, fireEvent, waitFor } from '@testing-library/react';
 import {
   SettingsDialog,
   toAccelerator,
@@ -47,6 +47,26 @@ describe('formatAccelerator', () => {
 });
 
 describe('SettingsDialog', () => {
+  // These tests exercise the Russian-localized UI explicitly; pin the store
+  // to 'ru' so they stay independent of the app's current default language.
+  let previousSettings: ReturnType<typeof useClipboardStore.getState>['settings'];
+  beforeEach(() => {
+    previousSettings = useClipboardStore.getState().settings;
+    useClipboardStore.setState({
+      settings: {
+        language: 'ru',
+        hotkey: 'CommandOrControl+Shift+V',
+        categoriesExpanded: true,
+        filesExpanded: true,
+        navOrder: ['history', 'starred', 'text', 'files', 'categories'],
+        windowBounds: null,
+      },
+    });
+  });
+  afterEach(() => {
+    act(() => { useClipboardStore.setState({ settings: previousSettings }); });
+  });
+
   it('offers RU and ENG and translates the settings UI', () => {
     const onLanguageChange = jest.fn();
     const previous = useClipboardStore.getState().settings;

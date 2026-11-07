@@ -73,7 +73,7 @@ export function translateUi(value: string, language: Language): string {
 }
 
 export function useLanguage(): Language {
-  return useClipboardStore((state) => state.settings?.language === 'en' ? 'en' : 'ru');
+  return useClipboardStore((state) => state.settings?.language === 'ru' ? 'ru' : 'en');
 }
 
 export function useT(): (value: string) => string {
