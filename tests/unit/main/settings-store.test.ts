@@ -49,6 +49,14 @@ describe('settings-store', () => {
     ]);
   });
 
+  it('relocates a stale video entry already saved at the end back next to audio', () => {
+    const file = tempFile();
+    fs.writeFileSync(file, JSON.stringify({ fileSectionOrder: ['all', 'documents', 'images', 'audio', 'files', 'folders', 'video'] }));
+    expect(createSettingsStore(file).get().fileSectionOrder).toEqual([
+      'all', 'documents', 'images', 'audio', 'video', 'files', 'folders',
+    ]);
+  });
+
   it('persists a new hotkey across stores', () => {
     const file = tempFile();
     createSettingsStore(file).setHotkey('Alt+Space');
