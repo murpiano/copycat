@@ -5,23 +5,23 @@
   scrollbar-color: auto;
   scrollbar-width: auto;
 
-  --bg-core: #101a2b;
-  --bg-mid: #0d1525;
-  --bg-edge: #0a1120;
+  --bg-core: #0e1930;
+  --bg-mid: #0b1226;
+  --bg-edge: #080e1d;
 
-  --surface: #151e2e;
-  --surface-border: #242f45;
-  --divider: #18212f;
+  --surface: #141f38;
+  --surface-border: #223154;
+  --divider: #162038;
 
   --text: #eef1f6;
   --text-dim: #93a0b4;
   --text-faint: #5f6b80;
 
-  --nav-active-bg: #1a253e;
-  --nav-active-border: #2a3a5c;
+  --nav-active-bg: #1b2746;
+  --nav-active-border: #2d3f6b;
 
-  --field-bg: #1c2538;
-  --field-border: #27334a;
+  --field-bg: #1a2640;
+  --field-border: #283a58;
 
   --accent-text: #45a1f9;
   --accent-image: #a57df6;
@@ -32,39 +32,43 @@
   --open-hover: var(--nav-active-bg);
   --open-text: var(--text-dim);
 
-  --scrollbar-thumb: #243047;
+  --scrollbar-thumb: #27365a;
   --hover-overlay: rgba(255, 255, 255, 0.08);
-  --chip-bg: #1a2435;
-  --chip-border: #263147;
-  --preview-bg: #1a2338;
-  --image-frame-bg: #121a2b;
-  --overlay-scrim: rgba(6, 10, 18, 0.62);
-  --tooltip-bg: #1f2937;
+  --chip-bg: #1a2744;
+  --chip-border: #283a58;
+  --preview-bg: #1a2640;
+  --image-frame-bg: #101c36;
+  --overlay-scrim: rgba(4, 8, 20, 0.64);
+  --tooltip-bg: #1f2c4a;
   --tooltip-ink: #f3f5f9;
+
+  /* In the dark theme the logo artwork needs a white backdrop to read
+     clearly; the light theme already gives it enough contrast. */
+  --logo-bg: #ffffff;
 }
 
 :root[data-theme='light'] {
   color-scheme: light;
 
-  /* Warm, muted neutrals — a cream/sand cast instead of stark white or a
-     cool blue-grey — so the light theme reads as cosy, not glaring. */
-  --bg-core: #ece5d7;
-  --bg-mid: #f1ebdf;
-  --bg-edge: #f7f2e7;
+  /* Muted, slightly warm neutrals instead of stark white/near-black, so the
+     light theme doesn't read as glaring next to the dark one. */
+  --bg-core: #e3e7ed;
+  --bg-mid: #eaedf2;
+  --bg-edge: #f1f3f6;
 
-  --surface: #faf6ee;
-  --surface-border: #e2d6bf;
-  --divider: #ece2cd;
+  --surface: #f7f8fa;
+  --surface-border: #dadfe6;
+  --divider: #e1e5eb;
 
-  --text: #332c21;
-  --text-dim: #6f6350;
-  --text-faint: #9c8f78;
+  --text: #2b313c;
+  --text-dim: #626b79;
+  --text-faint: #8d94a1;
 
-  --nav-active-bg: #f3e6cc;
-  --nav-active-border: #ddc290;
+  --nav-active-bg: #dce7f8;
+  --nav-active-border: #bcd0ee;
 
-  --field-bg: #f3ecdd;
-  --field-border: #ddcfb4;
+  --field-bg: #eef0f3;
+  --field-border: #d6dbe2;
 
   --accent-text: #2f6fc4;
   --accent-image: #7c5bc0;
@@ -72,13 +76,15 @@
   --accent-star: #b87a16;
   --accent-danger: #c23f3a;
 
-  --scrollbar-thumb: #d6c7a6;
-  --hover-overlay: rgba(90, 68, 24, 0.06);
-  --chip-bg: #f1e5cd;
-  --chip-border: #ddcdac;
-  --preview-bg: #f1e5cd;
-  --image-frame-bg: #e8dac0;
-  --overlay-scrim: rgba(42, 33, 18, 0.35);
+  --scrollbar-thumb: #c5cbd4;
+  --hover-overlay: rgba(20, 20, 20, 0.05);
+  --chip-bg: #e9ecf0;
+  --chip-border: #d0d5dc;
+  --preview-bg: #e9ecf0;
+  --image-frame-bg: #dde1e7;
+  --overlay-scrim: rgba(20, 24, 32, 0.35);
+
+  --logo-bg: transparent;
 }
 
 * {
@@ -197,6 +203,9 @@ button:disabled {
   width: auto;
   object-fit: contain;
   align-self: center;
+  background: var(--logo-bg);
+  border-radius: 6px;
+  padding: 3px;
 }
 
 .sidebar-title {
@@ -363,7 +372,7 @@ button:disabled {
   align-items: center;
   width: 100%;
   padding: 8px 10px;
-  border: none;
+  border: 1px solid transparent;
   border-radius: 9px;
   background: transparent;
   color: var(--text-dim);
@@ -433,6 +442,7 @@ button:disabled {
 }
 
 .category-item.active {
+  border: 1px solid var(--nav-active-border);
   background: var(--nav-active-bg);
   color: var(--text);
 }
