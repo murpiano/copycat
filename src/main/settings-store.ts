@@ -19,11 +19,11 @@ export interface SettingsStore {
 
 function defaults(): AppSettings {
   return {
-    language: 'ru',
+    language: 'en',
     theme: 'dark',
     hotkey: DEFAULT_HOTKEY,
-    categoriesExpanded: false,
-    filesExpanded: false,
+    categoriesExpanded: true,
+    filesExpanded: true,
     navOrder: [...DEFAULT_NAV_ORDER],
     hiddenNavEntries: [],
     fileSectionOrder: [...DEFAULT_FILE_SECTION_ORDER],
@@ -111,11 +111,11 @@ export function createSettingsStore(filePath: string): SettingsStore {
         ? sanitizeNavOrder(raw.navOrder)
         : [...DEFAULT_NAV_ORDER];
       return {
-        language: raw.language === 'en' ? 'en' : 'ru',
+        language: raw.language === 'ru' ? 'ru' : 'en',
         theme: raw.theme === 'light' ? 'light' : 'dark',
         hotkey: typeof raw.hotkey === 'string' && raw.hotkey ? raw.hotkey : base.hotkey,
-        categoriesExpanded: raw.categoriesExpanded === true,
-        filesExpanded: raw.filesExpanded === true,
+        categoriesExpanded: raw.categoriesExpanded !== false,
+        filesExpanded: raw.filesExpanded !== false,
         navOrder,
         hiddenNavEntries: sanitizeHiddenEntries(raw.hiddenNavEntries),
         fileSectionOrder: sanitizeFileSections(raw.fileSectionOrder),
@@ -146,7 +146,7 @@ export function createSettingsStore(filePath: string): SettingsStore {
       const current = read();
       return write({
         ...current,
-        ...(input.language !== undefined ? { language: input.language === 'en' ? 'en' : 'ru' } : {}),
+        ...(input.language !== undefined ? { language: input.language === 'ru' ? 'ru' : 'en' } : {}),
         ...(input.theme !== undefined ? { theme: input.theme === 'light' ? 'light' : 'dark' } : {}),
         ...(input.categoriesExpanded !== undefined
           ? { categoriesExpanded: input.categoriesExpanded }

@@ -1,15 +1,26 @@
 /** @jest-environment jsdom */
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ItemEditDialog } from '../../../../src/renderer/components/ItemEditDialog';
 import type { CopycatAPI } from '../../../../src/shared/types';
+import { useClipboardStore } from '../../../../src/renderer/store/useClipboardStore';
 
 const onClose = jest.fn();
 const onCategoryAdd = jest.fn();
+
+// These tests check Russian-localized labels explicitly; pin the store to
+// 'ru' so they stay independent of the app's default language.
+let previousSettings: ReturnType<typeof useClipboardStore.getState>['settings'];
 
 beforeEach(() => {
   (window as unknown as { copycat: Partial<CopycatAPI> }).copycat = {
     pickObject: jest.fn().mockResolvedValue(null),
   };
+  previousSettings = useClipboardStore.getState().settings;
+  useClipboardStore.setState({ settings: { language: 'ru', hotkey: 'CommandOrControl+F1', categoriesExpanded: true, filesExpanded: true, navOrder: ['history', 'starred', 'text', 'files', 'categories'], windowBounds: null } });
+});
+
+afterEach(() => {
+  act(() => { useClipboardStore.setState({ settings: previousSettings }); });
 });
 
 it('creates a starred object link with the selected filename', async () => {

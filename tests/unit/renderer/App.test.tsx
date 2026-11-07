@@ -10,7 +10,10 @@ beforeEach(() => {
   useClipboardStore.setState({
     items: [], search: '', nav: 'history', activeCategory: null, activeFileGroup: null,
     expandedId: null, editingId: null, composing: false, settingsOpen: false,
-    settings: null, navOrder: ['history', 'starred', 'text', 'files', 'categories'],
+    // Pinned to 'ru' since these tests check Russian-localized labels
+    // explicitly, independent of the app's default language.
+    settings: { language: 'ru', hotkey: 'CommandOrControl+F1', categoriesExpanded: false, filesExpanded: false, navOrder: ['history', 'starred', 'text', 'files', 'categories'], windowBounds: null },
+    navOrder: ['history', 'starred', 'text', 'files', 'categories'],
     hiddenNavEntries: [], navReorderMode: false,
   });
   const api: CopycatAPI = {
@@ -22,6 +25,7 @@ beforeEach(() => {
     removeTag: jest.fn(),
     deleteItem: jest.fn(),
     getSettings: jest.fn().mockResolvedValue({
+      language: 'ru',
       hotkey: 'CommandOrControl+Shift+V',
       categoriesExpanded: false,
       navOrder: ['history', 'starred', 'text', 'files'],

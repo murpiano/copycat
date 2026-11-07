@@ -46,37 +46,39 @@
 :root[data-theme='light'] {
   color-scheme: light;
 
-  --bg-core: #eef2f8;
-  --bg-mid: #f4f6fa;
-  --bg-edge: #f8f9fc;
+  /* Muted, slightly warm neutrals instead of stark white/near-black, so the
+     light theme doesn't read as glaring next to the dark one. */
+  --bg-core: #e3e7ed;
+  --bg-mid: #eaedf2;
+  --bg-edge: #f1f3f6;
 
-  --surface: #ffffff;
-  --surface-border: #e1e5ec;
-  --divider: #e7eaf0;
+  --surface: #f7f8fa;
+  --surface-border: #dadfe6;
+  --divider: #e1e5eb;
 
-  --text: #1b2330;
-  --text-dim: #5b6576;
-  --text-faint: #8793a6;
+  --text: #2b313c;
+  --text-dim: #626b79;
+  --text-faint: #8d94a1;
 
-  --nav-active-bg: #e7eefc;
-  --nav-active-border: #c7d7f5;
+  --nav-active-bg: #dce7f8;
+  --nav-active-border: #bcd0ee;
 
-  --field-bg: #f3f5f9;
-  --field-border: #dde2ea;
+  --field-bg: #eef0f3;
+  --field-border: #d6dbe2;
 
-  --accent-text: #2f7fe0;
-  --accent-image: #8c5de0;
-  --accent-file: #279e68;
-  --accent-star: #c9871a;
-  --accent-danger: #d1453f;
+  --accent-text: #2f6fc4;
+  --accent-image: #7c5bc0;
+  --accent-file: #289764;
+  --accent-star: #b87a16;
+  --accent-danger: #c23f3a;
 
-  --scrollbar-thumb: #ced4df;
-  --hover-overlay: rgba(17, 17, 17, 0.06);
-  --chip-bg: #eef1f6;
-  --chip-border: #d9dee7;
-  --preview-bg: #eef1f6;
-  --image-frame-bg: #e7eaf0;
-  --overlay-scrim: rgba(20, 24, 32, 0.4);
+  --scrollbar-thumb: #c5cbd4;
+  --hover-overlay: rgba(20, 20, 20, 0.05);
+  --chip-bg: #e9ecf0;
+  --chip-border: #d0d5dc;
+  --preview-bg: #e9ecf0;
+  --image-frame-bg: #dde1e7;
+  --overlay-scrim: rgba(20, 24, 32, 0.35);
 }
 
 * {
@@ -176,6 +178,12 @@ button:disabled {
   align-items: center;
   gap: 4px;
   -webkit-app-region: no-drag;
+}
+
+/* The settings gear sits directly in the (now stretched) header row, so it
+ * needs its own centering instead of inheriting the row's full height. */
+.sidebar-head > .icon-button {
+  align-self: center;
 }
 
 .sidebar-title-group {
