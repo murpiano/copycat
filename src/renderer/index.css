@@ -41,10 +41,6 @@
   --overlay-scrim: rgba(4, 8, 20, 0.64);
   --tooltip-bg: #1f2c4a;
   --tooltip-ink: #f3f5f9;
-
-  /* In the dark theme the logo artwork needs a white backdrop to read
-     clearly; the light theme already gives it enough contrast. */
-  --logo-bg: #ffffff;
 }
 
 :root[data-theme='light'] {
@@ -83,8 +79,6 @@
   --preview-bg: #e9ecf0;
   --image-frame-bg: #dde1e7;
   --overlay-scrim: rgba(20, 24, 32, 0.35);
-
-  --logo-bg: transparent;
 }
 
 * {
@@ -203,9 +197,6 @@ button:disabled {
   width: auto;
   object-fit: contain;
   align-self: center;
-  background: var(--logo-bg);
-  border-radius: 6px;
-  padding: 1px;
 }
 
 .sidebar-title {
@@ -1502,7 +1493,7 @@ button:disabled {
 
 .settings-dialog {
   width: min(420px, 100%);
-  overflow-y: auto;
+  min-height: 0;
 }
 
 /* While Settings sits over the app, a thin strip across the top keeps the
@@ -1518,17 +1509,19 @@ button:disabled {
   -webkit-app-region: drag;
 }
 
-/* Settings can get taller than the window; pin the title and close button
- * so they stay reachable instead of scrolling out of reach with the fields. */
 .settings-dialog .popup-head {
   -webkit-app-region: drag;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  margin: -18px -20px -14px;
-  padding: 18px 20px 14px;
-  background: var(--surface);
-  border-radius: 14px 14px 0 0;
+}
+
+/* Settings can get taller than the window; the title/close row stays outside
+ * the scrolling area (a frozen top row) instead of scrolling with the fields. */
+.popup-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .settings-dialog .popup-head .item-card-action {
