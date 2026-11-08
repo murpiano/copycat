@@ -382,13 +382,15 @@ export function SettingsDialog({
     }
     return <Overlay onClose={() => setClearOpen(false)} dismissOnBackdrop={false} dragBackdrop><div className="popup settings-dialog clear-history-dialog" role="dialog" aria-label={t('Очистить историю')}>
       <div className="popup-head"><div className="popup-title">{t('Очистить историю')}</div><button className="item-card-action" aria-label={t('Закрыть')} onClick={() => setClearOpen(false)}><CloseIcon size={15} /></button></div>
-      <div className="settings-button-grid">{periodButtons.map(([value, label]) => <button key={value} className={period === value ? 'button settings-choice active' : 'button settings-choice'} onClick={() => setPeriod(value)}>{t(label)}</button>)}</div>
-      <div className="settings-button-grid">{scopeButtons.map(([value, label]) => <button key={value} className={scope === value ? 'button settings-choice active' : 'button settings-choice'} onClick={() => { setScope(value); setCategory(''); setFileGroup(null); resetExclusions(value); }}>{t(label)}</button>)}</div>
-      {scope === 'file' && <div className="settings-button-grid clear-subsections">{[['all', 'Все файлы'], ...fileGroups.map((group): [string, string] => [group, fileLabels[group]])].map(([value, label]) => <button key={value} className={(fileGroup ?? 'all') === value ? 'button settings-choice active' : 'button settings-choice'} onClick={() => { setFileGroup(value === 'all' ? null : value as FileGroup); resetExclusions(scope); }}>{t(label)}</button>)}</div>}
-      {scope === 'category' && <div className="settings-button-grid clear-subsections">{[['', 'Все категории'], ...categories.map((name): [string, string] => [name, name])].map(([value, label]) => <button key={value || '__all_categories'} className={category === value ? 'button settings-choice active' : 'button settings-choice'} onClick={() => { setCategory(value); resetExclusions(scope); }}>{value ? label : t(label)}</button>)}</div>}
-      <div className="field"><span className="field-label">{t('Удалить из выбранного раздела/подраздела всё, кроме:')}</span><div className="settings-exclusions">{options.map(([value, label]) => <label className="field-row" key={value}><input type="checkbox" checked={exclude.includes(value)} onChange={e => toggleExclusion(value, e.target.checked)} /><span>{value.startsWith('category:') ? label : t(label)}</span></label>)}</div></div>
-      {clearError && <div role="alert" className="field-hint">{t(clearError)}</div>}
-      <div className="dialog-actions"><button className="button ghost" disabled={clearing} onClick={() => setClearOpen(false)}>{t('Отмена')}</button><button className="button danger" disabled={clearing} onClick={() => void confirmClear()}>{t('Очистить')}</button></div>
+      <div className="popup-body">
+        <div className="settings-button-grid">{periodButtons.map(([value, label]) => <button key={value} className={period === value ? 'button settings-choice active' : 'button settings-choice'} onClick={() => setPeriod(value)}>{t(label)}</button>)}</div>
+        <div className="settings-button-grid">{scopeButtons.map(([value, label]) => <button key={value} className={scope === value ? 'button settings-choice active' : 'button settings-choice'} onClick={() => { setScope(value); setCategory(''); setFileGroup(null); resetExclusions(value); }}>{t(label)}</button>)}</div>
+        {scope === 'file' && <div className="settings-button-grid clear-subsections">{[['all', 'Все файлы'], ...fileGroups.map((group): [string, string] => [group, fileLabels[group]])].map(([value, label]) => <button key={value} className={(fileGroup ?? 'all') === value ? 'button settings-choice active' : 'button settings-choice'} onClick={() => { setFileGroup(value === 'all' ? null : value as FileGroup); resetExclusions(scope); }}>{t(label)}</button>)}</div>}
+        {scope === 'category' && <div className="settings-button-grid clear-subsections">{[['', 'Все категории'], ...categories.map((name): [string, string] => [name, name])].map(([value, label]) => <button key={value || '__all_categories'} className={category === value ? 'button settings-choice active' : 'button settings-choice'} onClick={() => { setCategory(value); resetExclusions(scope); }}>{value ? label : t(label)}</button>)}</div>}
+        <div className="field"><span className="field-label">{t('Удалить из выбранного раздела/подраздела всё, кроме:')}</span><div className="settings-exclusions">{options.map(([value, label]) => <label className="field-row" key={value}><input type="checkbox" checked={exclude.includes(value)} onChange={e => toggleExclusion(value, e.target.checked)} /><span>{value.startsWith('category:') ? label : t(label)}</span></label>)}</div></div>
+        {clearError && <div role="alert" className="field-hint">{t(clearError)}</div>}
+        <div className="dialog-actions"><button className="button ghost" disabled={clearing} onClick={() => setClearOpen(false)}>{t('Отмена')}</button><button className="button danger" disabled={clearing} onClick={() => void confirmClear()}>{t('Очистить')}</button></div>
+      </div>
     </div></Overlay>;
   }
 
@@ -411,60 +413,62 @@ export function SettingsDialog({
           </button>
         </div>
 
-        <div className="field">
-          <span className="field-label">{t('Горячая клавиша')}</span>
-          <button
-            type="button"
-            className={capturing ? 'hotkey-field capturing' : 'hotkey-field'}
-            aria-label={t('Горячая клавиша')}
-            onClick={() => void startCapture()}
-            onKeyDown={capturing ? (e) => void captureKey(e) : undefined}
-          >
-            {capturing
-              ? t('Нажмите сочетание…')
-              : settings
-                ? formatAccelerator(settings.hotkey)
-                : '—'}
-          </button>
-          {(error || saved) && <span className="field-hint">{t(error ?? 'Сохранено')}</span>}
-        </div>
-
-        <div className="field">
-          <span className="field-label">{t('Разделы')}</span>
-          <label className="field field-row"><input type="checkbox" checked={settings?.categoriesExpanded ?? false} onChange={(e) => onCategoriesExpandedChange(e.target.checked)} /><span>{t('Развернуть раздел категорий')}</span></label>
-          <label className="field field-row"><input type="checkbox" checked={settings?.filesExpanded ?? false} onChange={(e) => onFilesExpandedChange(e.target.checked)} /><span>{t('Развернуть раздел файлов')}</span></label>
-          <button type="button" className="button ghost wide" onClick={onNavReorderStart}>
-            {t('Настроить разделы')}
-          </button>
-        </div>
-
-        <div className="field">
-          <span className="field-label">{t('История')}</span>
-          <button type="button" className="button ghost wide" onClick={() => setClearOpen(true)}>{t('Очистить историю')}</button>
-        </div>
-
-        <div className="field-pair">
+        <div className="popup-body">
           <div className="field">
-            <span className="field-label">{t('Язык')}</span>
-            <div className="settings-button-grid" role="group" aria-label={t('Язык')}>
-              <button type="button" className={settings?.language !== 'en' ? 'button settings-choice active' : 'button settings-choice'} aria-pressed={settings?.language !== 'en'} onClick={() => onLanguageChange('ru')}>RU</button>
-              <button type="button" className={settings?.language === 'en' ? 'button settings-choice active' : 'button settings-choice'} aria-pressed={settings?.language === 'en'} onClick={() => onLanguageChange('en')}>ENG</button>
-            </div>
+            <span className="field-label">{t('Горячая клавиша')}</span>
+            <button
+              type="button"
+              className={capturing ? 'hotkey-field capturing' : 'hotkey-field'}
+              aria-label={t('Горячая клавиша')}
+              onClick={() => void startCapture()}
+              onKeyDown={capturing ? (e) => void captureKey(e) : undefined}
+            >
+              {capturing
+                ? t('Нажмите сочетание…')
+                : settings
+                  ? formatAccelerator(settings.hotkey)
+                  : '—'}
+            </button>
+            {(error || saved) && <span className="field-hint">{t(error ?? 'Сохранено')}</span>}
           </div>
-          <div className="field field-align-end">
-            <span className="field-label">{t('Тема')}</span>
-            <div className="settings-button-grid" role="group" aria-label={t('Тема')}>
-              <button type="button" className={settings?.theme !== 'light' ? 'button settings-choice active' : 'button settings-choice'} aria-pressed={settings?.theme !== 'light'} onClick={() => onThemeChange('dark')}>{t('Тёмная')}</button>
-              <button type="button" className={settings?.theme === 'light' ? 'button settings-choice active' : 'button settings-choice'} aria-pressed={settings?.theme === 'light'} onClick={() => onThemeChange('light')}>{t('Светлая')}</button>
-            </div>
-          </div>
-        </div>
 
-        <div className="dialog-actions dialog-actions--split">
-          <MurpianoSignature />
-          <button type="button" className="button ghost" onClick={() => void requestClose()}>
-            {t('Закрыть')}
-          </button>
+          <div className="field">
+            <span className="field-label">{t('Разделы')}</span>
+            <label className="field field-row"><input type="checkbox" checked={settings?.categoriesExpanded ?? false} onChange={(e) => onCategoriesExpandedChange(e.target.checked)} /><span>{t('Развернуть раздел категорий')}</span></label>
+            <label className="field field-row"><input type="checkbox" checked={settings?.filesExpanded ?? false} onChange={(e) => onFilesExpandedChange(e.target.checked)} /><span>{t('Развернуть раздел файлов')}</span></label>
+            <button type="button" className="button ghost wide" onClick={onNavReorderStart}>
+              {t('Настроить разделы')}
+            </button>
+          </div>
+
+          <div className="field">
+            <span className="field-label">{t('История')}</span>
+            <button type="button" className="button ghost wide" onClick={() => setClearOpen(true)}>{t('Очистить историю')}</button>
+          </div>
+
+          <div className="field-pair">
+            <div className="field">
+              <span className="field-label">{t('Язык')}</span>
+              <div className="settings-button-grid" role="group" aria-label={t('Язык')}>
+                <button type="button" className={settings?.language !== 'en' ? 'button settings-choice active' : 'button settings-choice'} aria-pressed={settings?.language !== 'en'} onClick={() => onLanguageChange('ru')}>RU</button>
+                <button type="button" className={settings?.language === 'en' ? 'button settings-choice active' : 'button settings-choice'} aria-pressed={settings?.language === 'en'} onClick={() => onLanguageChange('en')}>ENG</button>
+              </div>
+            </div>
+            <div className="field field-align-end">
+              <span className="field-label">{t('Тема')}</span>
+              <div className="settings-button-grid" role="group" aria-label={t('Тема')}>
+                <button type="button" className={settings?.theme !== 'light' ? 'button settings-choice active' : 'button settings-choice'} aria-pressed={settings?.theme !== 'light'} onClick={() => onThemeChange('dark')}>{t('Тёмная')}</button>
+                <button type="button" className={settings?.theme === 'light' ? 'button settings-choice active' : 'button settings-choice'} aria-pressed={settings?.theme === 'light'} onClick={() => onThemeChange('light')}>{t('Светлая')}</button>
+              </div>
+            </div>
+          </div>
+
+          <div className="dialog-actions dialog-actions--split">
+            <MurpianoSignature />
+            <button type="button" className="button ghost" onClick={() => void requestClose()}>
+              {t('Закрыть')}
+            </button>
+          </div>
         </div>
       </div>
     </Overlay>
