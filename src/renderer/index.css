@@ -41,10 +41,6 @@
   --overlay-scrim: rgba(4, 8, 20, 0.64);
   --tooltip-bg: #1f2c4a;
   --tooltip-ink: #f3f5f9;
-
-  /* The dark theme needs a white backdrop behind the logo artwork to read
-     clearly; the light theme already gives it enough contrast on its own. */
-  --logo-bg: #ffffff;
 }
 
 :root[data-theme='light'] {
@@ -201,9 +197,6 @@ button:disabled {
   width: auto;
   object-fit: contain;
   align-self: center;
-  background: var(--logo-bg, transparent);
-  border-radius: 6px;
-  padding: 1px;
 }
 
 .sidebar-title {
@@ -1526,6 +1519,11 @@ button:disabled {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
+  /* Reserve the scrollbar gutter unconditionally: without it, a hovered
+   * descendant's own hover transform (e.g. the signature badge lifting by
+   * a couple of pixels) can nudge scrollHeight just under clientHeight,
+   * toggling the scrollbar and jolting the whole popup sideways. */
+  scrollbar-gutter: stable;
   display: flex;
   flex-direction: column;
   gap: 14px;
