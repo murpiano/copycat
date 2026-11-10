@@ -30,6 +30,10 @@ export interface ItemsRepo {
   deleteItem(id: number): void;
   pruneToLimit(limit: number): number;
   clearHistory(input: ClearHistoryInput): ClipboardItem[];
+  /** Flags (or clears, with null) that an item's file/folder could not be found. */
+  setMissing(id: number, missingSince: number | null): void;
+  /** Points an item at a new path found for it (a rename/move, or a manual relink). */
+  relinkItem(id: number, content: string, kind: ItemKind): void;
 }
 
 interface ItemRow {
@@ -43,6 +47,7 @@ interface ItemRow {
   sort_order: number | null;
   starred: number;
   pinned: number;
+  missing_since: number | null;
 }
 
 export function createItemsRepo(db: Database.Database, tagsRepo: TagsRepo): ItemsRepo {
@@ -56,6 +61,10 @@ export function createItemsRepo(db: Database.Database, tagsRepo: TagsRepo): Item
   const contentStmt = db.prepare(`UPDATE items SET content = ? WHERE id = ?`);
   const sortOrderStmt = db.prepare(`UPDATE items SET sort_order = ? WHERE id = ?`);
   const deleteStmt = db.prepare(`DELETE FROM items WHERE id = ?`);
+  const missingStmt = db.prepare(`UPDATE items SET missing_since = ? WHERE id = ?`);
+  const relinkStmt = db.prepare(
+    `UPDATE items SET content = ?, file_kind = ?, missing_since = NULL WHERE id = ?`,
+  );
 
   function rowToItem(row: ItemRow): ClipboardItem {
     let kind = row.file_kind ?? (row.type === 'text' ? 'text' : row.type === 'image' ? 'image' : undefined);
@@ -77,6 +86,7 @@ export function createItemsRepo(db: Database.Database, tagsRepo: TagsRepo): Item
       starred: row.starred === 1,
       pinned: row.pinned === 1,
       tags: tagsRepo.getTagsForItem(row.id),
+      missing: row.missing_since != null,
     };
   }
 
@@ -169,6 +179,14 @@ export function createItemsRepo(db: Database.Database, tagsRepo: TagsRepo): Item
 
     deleteItem(id) {
       deleteStmt.run(id);
+    },
+
+    setMissing(id, missingSince) {
+      missingStmt.run(missingSince, id);
+    },
+
+    relinkItem(id, content, kind) {
+      relinkStmt.run(content, kind, id);
     },
 
     pruneToLimit(limit) {

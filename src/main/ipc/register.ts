@@ -36,6 +36,7 @@ import {
   handleReorderItems,
   handleDeleteItem,
   handleClearHistory,
+  handleRelinkItem,
   type IpcDeps,
 } from './handlers';
 
@@ -79,6 +80,8 @@ export interface RegisterIpcDeps {
    */
   markSelfWrite: (hash: string) => void;
   previewsDir: string;
+  /** Re-points the file-move tracker's watchers at the current item set. */
+  refreshLocations?: () => void;
 }
 
 function copyItemToClipboard(item: ClipboardItem, markSelfWrite: (hash: string) => void): void {
@@ -109,6 +112,7 @@ export function registerIpcHandlers(ipcMain: IpcMain, deps: RegisterIpcDeps): vo
     writeSettings: deps.writeSettings,
     hideWindow: deps.hideWindow,
     cleanupPreviews: () => cleanupUnusedPreviews(deps.previewsDir, deps.itemsRepo),
+    refreshLocations: deps.refreshLocations,
   };
 
   ipcMain.handle(IPC.GET_ITEMS, (_e, query: GetItemsQuery) => handleGetItems(ipcDeps, query));
@@ -147,7 +151,11 @@ export function registerIpcHandlers(ipcMain: IpcMain, deps: RegisterIpcDeps): vo
     const path = firstPath(item.content);
     if (!path) throw new Error('Object path is empty');
     const error = await shell.openPath(path);
-    if (error) throw new Error(error);
+    if (error) {
+      deps.itemsRepo.setMissing(id, Date.now());
+      deps.refreshLocations?.();
+      throw new Error(error);
+    }
   });
   ipcMain.handle(IPC.GET_SETTINGS, () => handleGetSettings(ipcDeps));
   ipcMain.handle(IPC.SET_HOTKEY, (_e, accelerator: string) =>
@@ -180,6 +188,9 @@ export function registerIpcHandlers(ipcMain: IpcMain, deps: RegisterIpcDeps): vo
   ipcMain.handle(IPC.REORDER_ITEMS, (_e, ids: number[]) => handleReorderItems(ipcDeps, ids));
   ipcMain.handle(IPC.DELETE_ITEM, (_e, id: number) => handleDeleteItem(ipcDeps, id));
   ipcMain.handle(IPC.CLEAR_HISTORY, (_e, input: ClearHistoryInput) => handleClearHistory(ipcDeps, input));
+  ipcMain.handle(IPC.RELINK_ITEM, (_e, id: number, newPath: string) =>
+    handleRelinkItem(ipcDeps, id, newPath),
+  );
   ipcMain.handle(IPC.OPEN_EXTERNAL, (_e, url: string) => {
     if (!/^https:\/\/github\.com\/murpiano(\/|$)/.test(url)) return;
     return shell.openExternal(url);

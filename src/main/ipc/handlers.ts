@@ -23,6 +23,8 @@ export interface IpcDeps {
   writeSettings: (input: UpdateSettingsInput) => AppSettings;
   hideWindow: () => void;
   cleanupPreviews?: () => void;
+  /** Re-points the file-move tracker's watchers at the current item set. */
+  refreshLocations?: () => void;
 }
 
 export async function handleGetItems(
@@ -57,6 +59,7 @@ export async function handleCreateItem(
   if (input.title) deps.itemsRepo.updateItem(item.id, { title: input.title });
   for (const tag of input.tags) deps.tagsRepo.addTagToItem(item.id, tag);
   if (input.starred) deps.itemsRepo.toggleStar(item.id);
+  deps.refreshLocations?.();
   return deps.itemsRepo.getById(item.id) ?? item;
 }
 
@@ -133,9 +136,30 @@ export async function handleReorderItems(deps: IpcDeps, ids: number[]): Promise<
 export async function handleDeleteItem(deps: IpcDeps, id: number): Promise<void> {
   deps.itemsRepo.deleteItem(id);
   deps.cleanupPreviews?.();
+  deps.refreshLocations?.();
 }
 
 export async function handleClearHistory(deps: IpcDeps, input: ClearHistoryInput): Promise<void> {
   deps.itemsRepo.clearHistory(input);
   deps.cleanupPreviews?.();
+  deps.refreshLocations?.();
+}
+
+export async function handleRelinkItem(
+  deps: IpcDeps,
+  id: number,
+  newPath: string,
+): Promise<void> {
+  const item = deps.itemsRepo.getById(id);
+  if (!item) throw new Error('Item not found');
+  let stat;
+  try {
+    stat = fs.statSync(newPath);
+  } catch {
+    throw new Error('Selected path does not exist');
+  }
+  const kind = kindFromPath(newPath, stat.isDirectory());
+  const content = item.type === 'file' ? JSON.stringify([newPath]) : newPath;
+  deps.itemsRepo.relinkItem(id, content, kind);
+  deps.refreshLocations?.();
 }

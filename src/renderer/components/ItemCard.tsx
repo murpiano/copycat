@@ -4,6 +4,7 @@ import type { ClipboardItem, ItemType } from '../../shared/types';
 import { AudioIcon, BoxIcon, CloseIcon, ExcelIcon, FileIcon, FolderIcon, ImageIcon, PdfIcon, PencilIcon, PowerPointIcon, StarIcon, TextDocumentIcon, VideoIcon, WordIcon } from './icons';
 import { firstPath, kindFromPath } from '../../shared/file-kind';
 import { translateUi, useLanguage, useT, type Language } from '../i18n';
+import { useClipboardStore } from '../store/useClipboardStore';
 
 export const KIND_LABEL: Record<ItemType, string> = {
   text: 'Текст',
@@ -84,7 +85,15 @@ export function ItemCard({
   const t = useT();
   const { selecting, ref: contentRef } = useSelectionCursor<HTMLDivElement>();
   const [openError, setOpenError] = useState(false);
+  const relinkItem = useClipboardStore((s) => s.relinkItem);
   const title = itemDisplayTitle(item, language);
+
+  async function handleRelink() {
+    const picked = await window.copycat.pickObject(item.kind === 'folder' ? 'folder' : 'file');
+    if (!picked) return;
+    await relinkItem(item.id, picked.path);
+    setOpenError(false);
+  }
 
   // The whole card opens the popup, so there is no dead area inside it. A
   // click that leaves text highlighted is the end of picking an excerpt and
@@ -185,7 +194,14 @@ export function ItemCard({
             ))}
           </div>
         </div>
-        {openError && <span className="item-open-error" role="alert">{t('Исходный объект не найден.')}</span>}
+        {(item.missing || openError) && (
+          <div className="item-open-error" role="alert">
+            <span>{t('Исходный объект не найден.')}</span>
+            <button type="button" className="item-relink-link" onClick={actOnly(() => void handleRelink())}>
+              {t('Указать расположение')}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

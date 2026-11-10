@@ -19,6 +19,7 @@ import { createItemsRepo } from './storage/items-repo';
 import { ClipboardWatcher } from './clipboard/watcher';
 import { ElectronClipboardReader } from './clipboard/electron-reader';
 import { createCapturePipeline } from './clipboard/capture-pipeline';
+import { createLocationTracker, type LocationTracker } from './files/location-tracker';
 import { registerIpcHandlers } from './ipc/register';
 import { IPC } from '../shared/ipc-channels';
 import { DEFAULT_RETENTION_LIMIT } from '../shared/config';
@@ -28,6 +29,7 @@ import { DEFAULT_RETENTION_LIMIT } from '../shared/config';
 let tray: Tray | null = null;
 let paused = false;
 let hotkeyCaptureActive = false;
+let locationTrackerRef: LocationTracker | null = null;
 
 app.whenReady().then(() => {
   const userDataDir = app.getPath('userData');
@@ -43,12 +45,22 @@ app.whenReady().then(() => {
   if (DEV_WINDOW) showWindow(win);
   registerContextMenu(win, () => settingsStore.get().language === 'en' ? 'en' : 'ru');
 
+  const locationTracker = createLocationTracker({
+    itemsRepo,
+    previewsDir: path.join(userDataDir, 'previews'),
+    onChanged: () => {
+      if (!win.isDestroyed()) win.webContents.send(IPC.ITEMS_CHANGED);
+    },
+  });
+  locationTrackerRef = locationTracker;
+
   const pipeline = createCapturePipeline({
     itemsRepo,
     previewsDir: path.join(userDataDir, 'previews'),
     retentionLimit: DEFAULT_RETENTION_LIMIT,
     onItemAdded: (item) => {
       if (!win.isDestroyed()) win.webContents.send(IPC.ITEM_ADDED, item);
+      locationTracker.refresh();
     },
   });
   const watcher = new ClipboardWatcher(new ElectronClipboardReader(), pipeline);
@@ -78,6 +90,7 @@ app.whenReady().then(() => {
     itemsRepo,
     tagsRepo,
     previewsDir: path.join(userDataDir, 'previews'),
+    refreshLocations: () => locationTracker.refresh(),
     markSelfWrite: (hash) => watcher.markSelfWrite(hash),
     readSettings: () => settingsStore.get(),
     setHotkeyCapture: (capturing) => {
@@ -116,6 +129,7 @@ app.on('before-quit', () => {
 
 app.on('will-quit', () => {
   globalShortcut.unregisterAll();
+  locationTrackerRef?.stop();
 });
 
 app.on('window-all-closed', () => {

@@ -121,6 +121,7 @@ interface ClipboardState {
   updateItem: (id: number, input: UpdateItemInput) => Promise<void>;
   deleteItem: (id: number) => Promise<void>;
   clearHistory: (input: ClearHistoryInput) => Promise<void>;
+  relinkItem: (id: number, newPath: string) => Promise<void>;
   subscribeToNewItems: () => () => void;
 }
 
@@ -467,11 +468,24 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
     await get().fetchItems();
   },
 
+  async relinkItem(id, newPath) {
+    await window.copycat.relinkItem(id, newPath);
+    await get().fetchItems();
+  },
+
   subscribeToNewItems() {
-    return window.copycat.onItemAdded(() => {
+    const offAdded = window.copycat.onItemAdded(() => {
       // A capture landing mid-drag would reshuffle the cards under the cursor.
       if (get().reorderMode) return;
       void get().fetchItems();
     });
+    const offChanged = window.copycat.onItemsChanged(() => {
+      if (get().reorderMode) return;
+      void get().fetchItems();
+    });
+    return () => {
+      offAdded();
+      offChanged();
+    };
   },
 }));

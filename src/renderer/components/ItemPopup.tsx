@@ -5,6 +5,7 @@ import { CloseIcon, CopyIcon, PencilIcon } from './icons';
 import { useSelectionCursor } from '../useSelectionCursor';
 import { Overlay } from './Overlay';
 import { useLanguage, useT } from '../i18n';
+import { useClipboardStore } from '../store/useClipboardStore';
 
 interface ItemPopupProps {
   item: ClipboardItem;
@@ -18,6 +19,14 @@ export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
   const t = useT();
   const { selecting, ref: contentRef } = useSelectionCursor<HTMLDivElement>();
   const [openError, setOpenError] = useState(false);
+  const relinkItem = useClipboardStore((s) => s.relinkItem);
+
+  async function handleRelink() {
+    const picked = await window.copycat.pickObject(item.kind === 'folder' ? 'folder' : 'file');
+    if (!picked) return;
+    await relinkItem(item.id, picked.path);
+    setOpenError(false);
+  }
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -88,7 +97,14 @@ export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
           </div>
         )}
         {item.type !== 'text' && <button type="button" className="button open-object" onClick={() => { void window.copycat.openItem(item.id).then(() => setOpenError(false)).catch(() => setOpenError(true)); }}>{t('Открыть')}</button>}
-        {openError && <span className="field-hint" role="alert">{t('Исходный объект не найден.')}</span>}
+        {(item.missing || openError) && (
+          <div className="field-hint popup-missing" role="alert">
+            <span>{t('Исходный объект не найден.')}</span>
+            <button type="button" className="item-relink-link" onClick={() => void handleRelink()}>
+              {t('Указать расположение')}
+            </button>
+          </div>
+        )}
       </div>
     </Overlay>
   );
