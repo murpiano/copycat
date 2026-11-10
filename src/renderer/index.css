@@ -207,13 +207,13 @@ button:disabled {
   align-self: center;
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: 10px;
   background: var(--logo-bg, transparent);
 }
 
 .sidebar-logo {
   /* Square, not height-only: the artwork is square-padded at build time, so a
-     square box keeps the badge's circular backdrop equidistant on every side. */
+     rounded-square badge keeps it equidistant from the backdrop on every side. */
   height: 32px;
   width: 32px;
   object-fit: contain;
