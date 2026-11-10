@@ -18,6 +18,9 @@ export interface ClipboardItem {
   /** The file/folder this card points to was moved or deleted and could not
    * be found again automatically; the user can point it at its new location. */
   missing?: boolean;
+  /** A downscaled copy of an image item for the grid card; the full file at
+   * `content` is still what gets copied, pasted or shown in the expanded view. */
+  thumbPath?: string;
 }
 
 export interface GetItemsQuery {

@@ -1,7 +1,7 @@
 import type { ClipboardItem } from '../../shared/types';
 import type { ItemsRepo } from '../storage/items-repo';
 import type { ClipboardSnapshot } from './types';
-import { saveImagePreview, saveSvgPreview } from './image-store';
+import { saveImagePreview, saveSvgPreview, thumbPathFor } from './image-store';
 import fs from 'node:fs';
 import path from 'node:path';
 import { kindFromPath } from '../../shared/file-kind';
@@ -16,7 +16,12 @@ export interface CapturePipelineDeps {
 
 export function cleanupUnusedPreviews(previewsDir: string, itemsRepo: ItemsRepo): void {
   if (!fs.existsSync(previewsDir)) return;
-  const referenced = new Set(itemsRepo.getItems({ type: 'image' }).map((x) => x.content));
+  const referenced = new Set<string>();
+  for (const item of itemsRepo.getItems({ type: 'image' })) {
+    referenced.add(item.content);
+    const thumb = thumbPathFor(item.content);
+    if (thumb) referenced.add(thumb);
+  }
   for (const name of fs.readdirSync(previewsDir)) {
     if (!/\.(png|svg)$/i.test(name)) continue;
     const file = path.join(previewsDir, name);

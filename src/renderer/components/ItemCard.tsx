@@ -173,7 +173,7 @@ export function ItemCard({
 
         {item.type === 'image' ? (
           <div className="item-card-preview">
-            <img src={window.copycat.toFileUrl(item.content)} alt={t('Предпросмотр изображения')} />
+            <img src={window.copycat.toFileUrl(item.thumbPath ?? item.content)} alt={t('Предпросмотр изображения')} />
           </div>
         ) : (
           <div
