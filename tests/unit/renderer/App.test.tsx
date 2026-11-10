@@ -34,6 +34,7 @@ beforeEach(() => {
     updateSettings: jest.fn(),
     hideWindow: jest.fn(),
     onItemAdded: jest.fn().mockReturnValue(() => {}),
+    onItemsChanged: jest.fn().mockReturnValue(() => {}),
   } as unknown as CopycatAPI;
   (window as unknown as { copycat: CopycatAPI }).copycat = api;
 });

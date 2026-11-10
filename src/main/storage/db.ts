@@ -37,6 +37,7 @@ const ADDED_COLUMNS: { name: string; ddl: string }[] = [
   { name: 'title', ddl: 'ALTER TABLE items ADD COLUMN title TEXT' },
   { name: 'sort_order', ddl: 'ALTER TABLE items ADD COLUMN sort_order INTEGER' },
   { name: 'file_kind', ddl: 'ALTER TABLE items ADD COLUMN file_kind TEXT' },
+  { name: 'missing_since', ddl: 'ALTER TABLE items ADD COLUMN missing_since INTEGER' },
 ];
 
 function migrate(db: Database.Database): void {

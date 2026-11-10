@@ -42,6 +42,7 @@ const api: CopycatAPI = {
   reorderItems: (ids: number[]) => ipcRenderer.invoke(IPC.REORDER_ITEMS, ids),
   deleteItem: (id: number) => ipcRenderer.invoke(IPC.DELETE_ITEM, id),
   clearHistory: (input: ClearHistoryInput) => ipcRenderer.invoke(IPC.CLEAR_HISTORY, input),
+  relinkItem: (id: number, newPath: string) => ipcRenderer.invoke(IPC.RELINK_ITEM, id, newPath),
   getSettings: () => ipcRenderer.invoke(IPC.GET_SETTINGS),
   setHotkey: (accelerator: string) => ipcRenderer.invoke(IPC.SET_HOTKEY, accelerator),
   setHotkeyCapture: (capturing: boolean) =>
@@ -64,6 +65,11 @@ const api: CopycatAPI = {
     const listener = (_e: unknown, item: ClipboardItem) => cb(item);
     ipcRenderer.on(IPC.ITEM_ADDED, listener);
     return () => ipcRenderer.removeListener(IPC.ITEM_ADDED, listener);
+  },
+  onItemsChanged: (cb: () => void) => {
+    const listener = () => cb();
+    ipcRenderer.on(IPC.ITEMS_CHANGED, listener);
+    return () => ipcRenderer.removeListener(IPC.ITEMS_CHANGED, listener);
   },
   openExternal: (url: string) => ipcRenderer.invoke(IPC.OPEN_EXTERNAL, url),
 };

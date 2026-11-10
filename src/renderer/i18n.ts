@@ -32,6 +32,7 @@ const english: Record<string, string> = {
   'Скопировать документ': 'Copy document', 'Скопировать изображение': 'Copy image',
   'Скопировать аудио': 'Copy audio', 'Скопировать видео': 'Copy video', 'Скопировать файл': 'Copy file',
   'Скопировать папку': 'Copy folder', 'Исходный объект не найден.': 'Source object not found.',
+  'Указать расположение': 'Locate…',
   'Добавить категорию': 'Add category', 'Удалить категорию': 'Delete category',
   'Свернуть категории': 'Collapse categories', 'Развернуть категории': 'Expand categories',
   'Группы файлов': 'File groups', 'Показать': 'Show', 'Скрыть': 'Hide',

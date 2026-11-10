@@ -15,6 +15,9 @@ export interface ClipboardItem {
   starred: boolean;
   pinned: boolean;
   tags: string[];
+  /** The file/folder this card points to was moved or deleted and could not
+   * be found again automatically; the user can point it at its new location. */
+  missing?: boolean;
 }
 
 export interface GetItemsQuery {
@@ -114,6 +117,8 @@ export interface CopycatAPI {
   reorderItems(ids: number[]): Promise<void>;
   deleteItem(id: number): Promise<void>;
   clearHistory?: (input: ClearHistoryInput) => Promise<void>;
+  /** Points a card whose source was moved/deleted at a new path the user picked. */
+  relinkItem(id: number, newPath: string): Promise<void>;
   getSettings(): Promise<AppSettings>;
   setHotkey(accelerator: string): Promise<HotkeyResult>;
   setHotkeyCapture(capturing: boolean): Promise<void>;
@@ -123,6 +128,9 @@ export interface CopycatAPI {
   hideWindow(): Promise<void>;
   onWindowShown(cb: () => void): () => void;
   onItemAdded(cb: (item: ClipboardItem) => void): () => void;
+  /** Fires when background bookkeeping (e.g. a tracked file being found moved
+   * or back in place) changed items without the renderer asking for it. */
+  onItemsChanged(cb: () => void): () => void;
   openExternal(url: string): Promise<void>;
 }
 

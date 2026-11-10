@@ -716,7 +716,10 @@ button:disabled {
 .button.open-object:hover { background: var(--open-hover); border-color: var(--nav-active-border); color: var(--text); }
 .button.open-object:active { transform: scale(.94); }
 .button.open-object:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
-.item-open-error { position: absolute; left: 10px; bottom: 34px; color: var(--accent-danger); background: var(--surface); font-size: 11px; }
+.item-open-error { position: absolute; left: 10px; bottom: 34px; color: var(--accent-danger); background: var(--surface); font-size: 11px; display: flex; align-items: center; gap: 8px; }
+.item-relink-link { font: inherit; color: var(--accent-text); background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline; }
+.item-relink-link:hover { color: var(--text); }
+.popup-missing { display: flex; align-items: center; gap: 10px; }
 
 @media (prefers-reduced-motion: reduce) {
   .item-card.jiggle {
