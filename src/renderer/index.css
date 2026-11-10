@@ -208,9 +208,10 @@ button:disabled {
 }
 
 .sidebar-logo {
-  height: 28px;
-  width: auto;
-  max-width: 28px;
+  /* Square, not height-only: the artwork is square-padded at build time, so a
+     square box keeps the badge's circular backdrop equidistant on every side. */
+  height: 26px;
+  width: 26px;
   object-fit: contain;
 }
 
@@ -1542,6 +1543,11 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  /* Give the scrollbar its own breathing room instead of letting it touch the
+   * fields/buttons: borrow from the popup's own right padding rather than
+   * shrinking the content, so nothing shifts when the scrollbar appears. */
+  margin-right: -14px;
+  padding-right: 14px;
 }
 
 .settings-dialog .popup-head .item-card-action {
