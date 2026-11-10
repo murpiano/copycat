@@ -41,6 +41,10 @@
   --overlay-scrim: rgba(4, 8, 20, 0.64);
   --tooltip-bg: #1f2c4a;
   --tooltip-ink: #f3f5f9;
+
+  /* The dark theme needs a white backdrop behind the logo artwork to read
+     clearly; the light theme already gives it enough contrast on its own. */
+  --logo-bg: #ffffff;
 }
 
 :root[data-theme='light'] {
@@ -192,11 +196,22 @@ button:disabled {
   gap: 8px;
 }
 
-.sidebar-logo {
-  height: 36px;
-  width: auto;
-  object-fit: contain;
+.sidebar-logo-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   align-self: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--logo-bg, transparent);
+}
+
+.sidebar-logo {
+  height: 28px;
+  width: auto;
+  max-width: 28px;
+  object-fit: contain;
 }
 
 .sidebar-title {
