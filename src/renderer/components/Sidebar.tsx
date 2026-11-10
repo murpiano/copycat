@@ -259,7 +259,9 @@ export function Sidebar({
     <div className={reorderMode ? 'sidebar reordering' : 'sidebar'}>
       <div className="sidebar-head">
         <div className="sidebar-title-group">
-          <img className="sidebar-logo" src={appIcon} alt="" />
+          <span className="sidebar-logo-badge">
+            <img className="sidebar-logo" src={appIcon} alt="" />
+          </span>
           <span className="sidebar-title">CopyCat</span>
         </div>
         {reorderMode ? (
