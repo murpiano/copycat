@@ -11,6 +11,7 @@ import type {
 import { MAX_CONTENT_LENGTH } from '../../shared/config';
 import type { TagsRepo } from './tags-repo';
 import { firstPath, kindFromPath } from '../../shared/file-kind';
+import { thumbPathFor } from '../clipboard/image-store';
 import { matchesClearHistory } from '../../shared/clear-history';
 
 export interface InsertItemInput {
@@ -87,7 +88,13 @@ export function createItemsRepo(db: Database.Database, tagsRepo: TagsRepo): Item
       pinned: row.pinned === 1,
       tags: tagsRepo.getTagsForItem(row.id),
       missing: row.missing_since != null,
+      thumbPath: row.type === 'image' ? findThumb(row.content) : undefined,
     };
+  }
+
+  function findThumb(content: string): string | undefined {
+    const thumb = thumbPathFor(content);
+    return thumb && fs.existsSync(thumb) ? thumb : undefined;
   }
 
   return {
