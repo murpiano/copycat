@@ -83,6 +83,10 @@
   --preview-bg: #e9ecf0;
   --image-frame-bg: #dde1e7;
   --overlay-scrim: rgba(20, 24, 32, 0.35);
+
+  /* :root always matches, so its --logo-bg would otherwise leak in here too;
+     the light theme reads fine on its own and gets no backdrop. */
+  --logo-bg: transparent;
 }
 
 * {
@@ -210,8 +214,8 @@ button:disabled {
 .sidebar-logo {
   /* Square, not height-only: the artwork is square-padded at build time, so a
      square box keeps the badge's circular backdrop equidistant on every side. */
-  height: 26px;
-  width: 26px;
+  height: 32px;
+  width: 32px;
   object-fit: contain;
 }
 
