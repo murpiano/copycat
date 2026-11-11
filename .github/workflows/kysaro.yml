@@ -20,7 +20,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: '24'
+          # 22, not 24: better-sqlite3's prebuilt binary targets this ABI; on 24 npm falls
+          # back to node-gyp, which crashes in cacache's promisify call (unrelated to kysaro
+          # itself) — see ci.yml's own note on the same pin.
+          node-version: '22'
 
       - name: Install dependencies
         run: npm ci
