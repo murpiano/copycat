@@ -7,9 +7,24 @@ on:
   push:
     branches:
       - master
+  schedule:
+    - cron: '0 6 * * 1' # weekly, catches a new advisory against an already-installed dependency
 
 jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # audit-level=critical for now, not high: the 7 high findings are all Electron's own
+      # advisories, fixed only by the major Electron 32 -> 45 upgrade tracked separately in
+      # murpiano-dx's BACKLOG.md. Raise this to --audit-level=high once that upgrade lands.
+      - run: npm audit --audit-level=critical
+
   checks:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
