@@ -7,7 +7,7 @@ Copycat is a clipboard history manager for Windows. Built on Electron, React, an
 [![CI](https://github.com/murpiano/copycat/actions/workflows/ci.yml/badge.svg)](https://github.com/murpiano/copycat/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/murpiano/copycat?color=informational)](https://github.com/murpiano/copycat/releases/latest)
 
-[How it works](#how-it-works) · [Run locally](#run-locally) · [Where things live](#where-things-live) · [API](#api) · [Rough edges](#rough-edges)
+[How it works](#how-it-works) · [Run locally](#run-locally) · [Where things live](#where-things-live) · [Rough edges](#rough-edges)
 
 First run creates its own SQLite database and settings under the Electron user-data folder; nothing leaves the machine except the GitHub release feed used for auto-updates.
 
@@ -32,6 +32,18 @@ A `better-sqlite3` database lives under the app's user-data folder. Clipboard im
 ### Renderer
 
 The React UI talks to the main process only through the `contextBridge` surface in `src/preload`, exposed as `window.copycat`, backed by a Zustand store (`src/renderer/store/useClipboardStore.ts`). The card grid is row-virtualized, so a long history doesn't mount every card at once.
+
+### Renderer ↔ main
+
+Copycat has no network API. The renderer reaches the main process only through the `contextBridge` surface (`window.copycat`, defined in `src/preload/index.ts`), over the channels declared in `src/shared/ipc-channels.ts`.
+
+| Channel | Direction | Purpose |
+| --- | --- | --- |
+| `get-items` | renderer → main | Fetch the card list for the current view or search |
+| `create-item` | renderer → main | Add a manually typed or picked card |
+| `open-item` / `copy-item` / `paste-item` | renderer → main | Open a card's source, or put it back on the system clipboard |
+| `relink-item` | renderer → main | Point a "not found" card at a new path |
+| `item-added` / `items-changed` | main → renderer | Push a new capture, or a background change such as an auto-relink |
 
 ## Run locally
 
@@ -62,18 +74,6 @@ src/
 ```
 
 Tests mirror this layout under `tests/unit/{main,clipboard,ipc,storage,renderer,shared}`; `tests/e2e` holds the Playwright suite.
-
-## API
-
-Copycat has no network API. The renderer reaches the main process only through the `contextBridge` surface (`window.copycat`, defined in `src/preload/index.ts`), over the channels declared in `src/shared/ipc-channels.ts`.
-
-| Channel | Direction | Purpose |
-| --- | --- | --- |
-| `get-items` | renderer → main | Fetch the card list for the current view or search |
-| `create-item` | renderer → main | Add a manually typed or picked card |
-| `open-item` / `copy-item` / `paste-item` | renderer → main | Open a card's source, or put it back on the system clipboard |
-| `relink-item` | renderer → main | Point a "not found" card at a new path |
-| `item-added` / `items-changed` | main → renderer | Push a new capture, or a background change such as an auto-relink |
 
 ## Rough edges
 
