@@ -1,5 +1,24 @@
+import { decodeFilenamesPboardBuffer } from './mac-pasteboard';
+
+/** A single `public.file-url` pasteboard entry: a `file://`-prefixed,
+ * percent-encoded URL, not a path — the fallback used when Finder's legacy
+ * `NSFilenamesPboardType` (the format Copycat otherwise reads) isn't set. */
+function parseFileUrlBuffer(buf: Buffer): string[] {
+  try {
+    const url = buf.toString('utf8').trim();
+    if (!url.startsWith('file://')) return [];
+    return [decodeURIComponent(url.slice('file://'.length))];
+  } catch {
+    return [];
+  }
+}
+
 export function parseFileDropBuffer(buf: Buffer): string[] {
   if (!buf || buf.length === 0) return [];
+  if (process.platform === 'darwin') {
+    const bplist = decodeFilenamesPboardBuffer(buf);
+    return bplist.length > 0 ? bplist : parseFileUrlBuffer(buf);
+  }
   try {
     const text = buf.toString('ucs2');
     return text

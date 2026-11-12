@@ -18,6 +18,22 @@ win:
   target: nsis
   icon: resources/small/small.ico
   artifactName: Copycat-Setup-${version}.${ext}
+mac:
+  target:
+    - target: dmg
+      arch: [universal]
+    - target: zip
+      arch: [universal]
+  icon: resources/small/small.icns
+  category: public.app-category.utilities
+  # No Apple Developer ID yet: ship unsigned rather than have electron-builder
+  # try (and fail) ad-hoc signing. Users open an unsigned .app via
+  # right-click > Open the first time; auto-update needs a signed/notarized
+  # build to work reliably, so it is not expected to function on macOS yet.
+  identity: null
+  # better-sqlite3's native binary is single-arch; this tells the universal
+  # build to lipo the two per-arch copies together instead of keeping just one.
+  x64ArchFiles: "**/*.node"
 nsis:
   installerSidebar: resources/large/installer-sidebar.bmp
   installerIcon: resources/small/small.ico

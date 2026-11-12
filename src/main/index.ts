@@ -32,6 +32,10 @@ let hotkeyCaptureActive = false;
 let locationTrackerRef: LocationTracker | null = null;
 
 app.whenReady().then(() => {
+  // Tray-only app: without this, macOS would also show a Dock icon and a
+  // Cmd+Tab entry for a window that otherwise only ever opens from the tray.
+  if (process.platform === 'darwin') app.dock?.hide();
+
   const userDataDir = app.getPath('userData');
   const settingsStore = createSettingsStore(path.join(userDataDir, 'settings.json'));
   const db = createDb(path.join(userDataDir, 'db.sqlite'));

@@ -19,6 +19,7 @@ import { setNativeDialogOpen } from '../window';
 import { AUDIO_EXTS, DOCUMENT_EXTS, IMAGE_EXTS, VIDEO_EXTS, firstPath, kindFromPath, type FileGroup } from '../../shared/file-kind';
 import { cleanupUnusedPreviews } from '../clipboard/capture-pipeline';
 import { buildCFDropBuffer } from '../clipboard/file-drop';
+import { encodeFilenamesPboardBuffer } from '../clipboard/mac-pasteboard';
 import {
   handleGetItems,
   handleCreateItem,
@@ -59,6 +60,13 @@ function writeFilePathsToClipboard(paths: string[]): void {
     );
     if (result.error) throw result.error;
     if (result.status !== 0) throw new Error('PowerShell failed to copy file paths to clipboard');
+    return;
+  }
+
+  if (process.platform === 'darwin') {
+    // Finder reads a file list off the pasteboard from this legacy format; see
+    // mac-pasteboard.ts for why there is no higher-level Electron API for it.
+    clipboard.writeBuffer('NSFilenamesPboardType', encodeFilenamesPboardBuffer(paths));
     return;
   }
 

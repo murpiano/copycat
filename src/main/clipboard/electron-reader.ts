@@ -4,6 +4,9 @@ import type { ClipboardReader } from './types';
 
 export class ElectronClipboardReader implements ClipboardReader {
   hasFileDrop(): boolean {
+    if (process.platform === 'darwin') {
+      return clipboard.has('NSFilenamesPboardType') || clipboard.has('public.file-url');
+    }
     return clipboard.has('FileNameW');
   }
 
@@ -26,6 +29,10 @@ export class ElectronClipboardReader implements ClipboardReader {
   }
 
   readFileDropBuffer(): Buffer {
+    if (process.platform === 'darwin') {
+      if (clipboard.has('NSFilenamesPboardType')) return clipboard.readBuffer('NSFilenamesPboardType');
+      return clipboard.readBuffer('public.file-url');
+    }
     return clipboard.readBuffer('FileNameW');
   }
 
