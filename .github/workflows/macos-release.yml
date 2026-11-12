@@ -3,6 +3,16 @@ name: macOS installer
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref (tag or branch) to build
+        required: false
+        default: ''
+      debug:
+        description: Run electron-builder with verbose debug logging
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -13,13 +23,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.event.release.tag_name || inputs.ref || github.ref }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
       - name: Match package version to release tag
+        if: github.event_name == 'release'
         shell: bash
         run: npm version --no-git-tag-version "${GITHUB_REF_NAME#v}"
       - run: npm run typecheck
@@ -32,3 +43,4 @@ jobs:
           # No Developer ID yet (see electron-builder.yml): keep electron-builder
           # from picking up any ad-hoc signing identity the runner happens to have.
           CSC_IDENTITY_AUTO_DISCOVERY: false
+          DEBUG: ${{ (github.event_name == 'workflow_dispatch' && inputs.debug) && 'electron-builder' || '' }}
