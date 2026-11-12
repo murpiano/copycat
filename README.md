@@ -62,7 +62,7 @@ npm run typecheck # tsc --noEmit
 npm run build     # electron-vite production build
 ```
 
-Needs Node 22 — `better-sqlite3` ships a prebuilt binary for that ABI, so `npm install` needs no C++ toolchain. Packaging needs the target OS: `npm run dist` builds the Windows NSIS installer (Windows only), `npm run dist:mac` builds a universal (Apple Silicon + Intel) `.dmg`/`.zip` (macOS only).
+Needs Node 22 — `better-sqlite3` ships a prebuilt binary for that ABI, so `npm install` needs no C++ toolchain. Packaging needs the target OS: `npm run dist` builds the Windows NSIS installer (Windows only), `npm run dist:mac` builds separate Apple Silicon and Intel `.dmg`/`.zip` files (macOS only — not a single universal binary; see Rough edges).
 
 Unit tests under `tests/unit` cover storage, IPC handlers, and renderer components; `tests/e2e` drives the built renderer with Playwright (`npm run test:e2e`). `.github/workflows/ci.yml` runs `typecheck` and the unit suite on every push and pull request to `master`. A successful CI run there triggers `.github/workflows/release.yml`, which reads Conventional Commit messages since the last tag to cut a GitHub release; `.github/workflows/windows-release.yml` and `.github/workflows/macos-release.yml` then each build and attach their platform's installer, which `electron-updater` picks up on Windows.
 
@@ -85,6 +85,7 @@ Tests mirror this layout under `tests/unit/{main,clipboard,ipc,storage,renderer,
 - Automatic file/folder relinking only works when the new location is a folder Copycat is already watching (i.e. it holds another tracked card); a move anywhere else needs the manual "locate" action.
 - Drag-to-reorder disables grid virtualization for that view, so a very large starred or category list renders in full while reordering.
 - The macOS build is unsigned and not notarized (no Apple Developer ID yet): Gatekeeper blocks a plain double-click the first time, so open it once via right-click → Open; `electron-updater`'s auto-update needs a signed build to work, so it is not expected to function on macOS.
+- macOS ships as two separate `.dmg`s (Apple Silicon and Intel) rather than one universal binary: electron-builder's universal-merge step silently produces nothing on this project (a known, unresolved upstream issue), so building per-arch avoids it instead of working around it.
 - Copying files to the clipboard on macOS writes Finder's legacy bplist-based format by hand (see "Clipboard file paths, per platform" above); it round-trips against an independent plist implementation in tests, but hasn't been confirmed against real Finder paste behavior on physical hardware.
 
 ---
