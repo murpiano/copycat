@@ -1,5 +1,4 @@
 import { hashContent } from './hash';
-import { parseFileDropBuffer } from './file-drop';
 import type { ClipboardReader, ClipboardSnapshot } from './types';
 import { POLL_INTERVAL_MS } from '../../shared/config';
 
@@ -37,7 +36,7 @@ export class ClipboardWatcher {
     // into Explorer. Skip those references before image promotion changes the
     // clipboard hash from the stored path to the image bytes.
     if (this.reader.hasFileDrop()) {
-      const paths = parseFileDropBuffer(this.reader.readFileDropBuffer());
+      const paths = this.reader.readFileDropPaths();
       if (paths.length > 0 && hashContent(paths.join('|')) === this.lastHash) return;
     }
 
@@ -49,7 +48,7 @@ export class ClipboardWatcher {
 
   private capture(): ClipboardSnapshot | null {
     if (this.reader.hasFileDrop()) {
-      const paths = parseFileDropBuffer(this.reader.readFileDropBuffer());
+      const paths = this.reader.readFileDropPaths();
       if (paths.length === 0) return null;
       if (paths.length === 1 && isImagePath(paths[0]))
         return { type: 'image-file', path: paths[0], hash: hashContent(paths[0]) };

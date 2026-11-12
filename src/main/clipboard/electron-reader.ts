@@ -1,6 +1,8 @@
 import { clipboard, nativeImage } from 'electron';
 import { readFileSync } from 'node:fs';
 import type { ClipboardReader } from './types';
+import { parseFileDropBuffer } from './file-drop';
+import { decodeFilenamesPboardBuffer, parseFileUrlBuffer } from './mac-pasteboard';
 
 export class ElectronClipboardReader implements ClipboardReader {
   hasFileDrop(): boolean {
@@ -28,12 +30,14 @@ export class ElectronClipboardReader implements ClipboardReader {
     return clipboard.readImage().toPNG();
   }
 
-  readFileDropBuffer(): Buffer {
+  readFileDropPaths(): string[] {
     if (process.platform === 'darwin') {
-      if (clipboard.has('NSFilenamesPboardType')) return clipboard.readBuffer('NSFilenamesPboardType');
-      return clipboard.readBuffer('public.file-url');
+      if (clipboard.has('NSFilenamesPboardType')) {
+        return decodeFilenamesPboardBuffer(clipboard.readBuffer('NSFilenamesPboardType'));
+      }
+      return parseFileUrlBuffer(clipboard.readBuffer('public.file-url'));
     }
-    return clipboard.readBuffer('FileNameW');
+    return parseFileDropBuffer(clipboard.readBuffer('FileNameW'));
   }
 
   readFileAsImagePNG(filePath: string): Buffer | null {

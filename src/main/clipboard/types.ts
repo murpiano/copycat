@@ -10,7 +10,7 @@ export interface ClipboardReader {
   hasImage(): boolean;
   readText(): string;
   readImagePNG(): Buffer;
-  readFileDropBuffer(): Buffer;
+  readFileDropPaths(): string[];
   /** Read a local image file as a PNG buffer; returns null when the file is not a supported image. */
   readFileAsImagePNG?(filePath: string): Buffer | null;
   /** Read a local SVG file without rasterizing it. */
