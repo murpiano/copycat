@@ -12,6 +12,19 @@
 
 const MAGIC = 'bplist00';
 
+/** A single `public.file-url` pasteboard entry: a `file://`-prefixed,
+ * percent-encoded URL, not a path — the fallback used when Finder's legacy
+ * `NSFilenamesPboardType` (the format read first) isn't set. */
+export function parseFileUrlBuffer(buf: Buffer): string[] {
+  try {
+    const url = buf.toString('utf8').trim();
+    if (!url.startsWith('file://')) return [];
+    return [decodeURIComponent(url.slice('file://'.length))];
+  } catch {
+    return [];
+  }
+}
+
 function isAscii(value: string): boolean {
   for (let i = 0; i < value.length; i++) {
     if (value.charCodeAt(i) > 0x7f) return false;

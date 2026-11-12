@@ -2,12 +2,12 @@ import { ClipboardWatcher } from '../../../src/main/clipboard/watcher';
 import type { ClipboardReader } from '../../../src/main/clipboard/types';
 
 class FakeReader implements ClipboardReader {
-  fileDrop: Buffer | null = null;
+  filePaths: string[] = [];
   image: Buffer | null = null;
   text = '';
 
   hasFileDrop() {
-    return this.fileDrop !== null && this.fileDrop.length > 0;
+    return this.filePaths.length > 0;
   }
   hasImage() {
     return this.image !== null && this.image.length > 0;
@@ -18,8 +18,8 @@ class FakeReader implements ClipboardReader {
   readImagePNG() {
     return this.image ?? Buffer.alloc(0);
   }
-  readFileDropBuffer() {
-    return this.fileDrop ?? Buffer.alloc(0);
+  readFileDropPaths() {
+    return this.filePaths;
   }
 }
 
@@ -65,7 +65,7 @@ describe('ClipboardWatcher', () => {
     const captured: unknown[] = [];
     const watcher = new ClipboardWatcher(reader, (s) => captured.push(s));
 
-    reader.fileDrop = Buffer.from('C:\\a.txt\u0000\u0000', 'ucs2');
+    reader.filePaths = ['C:\\a.txt'];
     watcher.pollOnce();
     expect(captured).toEqual([
       { type: 'file', paths: ['C:\\a.txt'], hash: expect.any(String) },
