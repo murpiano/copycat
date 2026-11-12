@@ -2,7 +2,7 @@
 
 # Copycat
 
-Copycat is a clipboard history manager for Windows. Built on Electron, React, and SQLite.
+Copycat is a clipboard history manager for Windows and macOS. Built on Electron, React, and SQLite.
 
 [![CI](https://github.com/murpiano/copycat/actions/workflows/ci.yml/badge.svg)](https://github.com/murpiano/copycat/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/murpiano/copycat?color=informational)](https://github.com/murpiano/copycat/releases/latest)
@@ -24,6 +24,10 @@ Every clipboard change is picked up once in `src/main/clipboard` (`watcher.ts` p
 ### Storage
 
 A `better-sqlite3` database lives under the app's user-data folder. Clipboard images that have no file of their own (screenshots, pasted bitmaps) are saved once as PNGs under `previews/`; a downscaled 480px thumbnail is generated alongside for the grid, while the first full-resolution copy stays untouched for paste, copy, and the expanded view.
+
+### Clipboard file paths, per platform
+
+Writing file references onto the system clipboard (so they can be pasted into Explorer/Finder) and reading them back use the native formats each OS actually understands: Windows goes through PowerShell's `Set-Clipboard` and the `CF_HDROP`/`FileNameW` formats (`src/main/clipboard/file-drop.ts`); macOS writes and reads Finder's legacy `NSFilenamesPboardType`, a binary-plist-encoded path array built and parsed by hand in `src/main/clipboard/mac-pasteboard.ts`, since Electron has no higher-level API for it.
 
 ### File link tracking
 
@@ -58,9 +62,9 @@ npm run typecheck # tsc --noEmit
 npm run build     # electron-vite production build
 ```
 
-Needs Node 22 — `better-sqlite3` ships a prebuilt binary for that ABI, so `npm install` needs no C++ toolchain. Running the packaged app, or `npm run dist` (NSIS installer via electron-builder), needs Windows.
+Needs Node 22 — `better-sqlite3` ships a prebuilt binary for that ABI, so `npm install` needs no C++ toolchain. Packaging needs the target OS: `npm run dist` builds the Windows NSIS installer (Windows only), `npm run dist:mac` builds a universal (Apple Silicon + Intel) `.dmg`/`.zip` (macOS only).
 
-Unit tests under `tests/unit` cover storage, IPC handlers, and renderer components; `tests/e2e` drives the built renderer with Playwright (`npm run test:e2e`). `.github/workflows/ci.yml` runs `typecheck` and the unit suite on every push and pull request to `master`. A successful CI run there triggers `.github/workflows/release.yml`, which reads Conventional Commit messages since the last tag to cut a GitHub release and publish the Windows installer that `electron-updater` picks up.
+Unit tests under `tests/unit` cover storage, IPC handlers, and renderer components; `tests/e2e` drives the built renderer with Playwright (`npm run test:e2e`). `.github/workflows/ci.yml` runs `typecheck` and the unit suite on every push and pull request to `master`. A successful CI run there triggers `.github/workflows/release.yml`, which reads Conventional Commit messages since the last tag to cut a GitHub release; `.github/workflows/windows-release.yml` and `.github/workflows/macos-release.yml` then each build and attach their platform's installer, which `electron-updater` picks up on Windows.
 
 ## Where things live
 
@@ -79,8 +83,9 @@ Tests mirror this layout under `tests/unit/{main,clipboard,ipc,storage,renderer,
 
 - History keeps at most 1,000 non-starred cards; starred cards are never pruned, so starring many screenshots grows `previews/` without a cap.
 - Automatic file/folder relinking only works when the new location is a folder Copycat is already watching (i.e. it holds another tracked card); a move anywhere else needs the manual "locate" action.
-- Packaged distribution targets Windows only (NSIS); copying file paths back onto the system clipboard shells out to PowerShell there.
 - Drag-to-reorder disables grid virtualization for that view, so a very large starred or category list renders in full while reordering.
+- The macOS build is unsigned and not notarized (no Apple Developer ID yet): Gatekeeper blocks a plain double-click the first time, so open it once via right-click → Open; `electron-updater`'s auto-update needs a signed build to work, so it is not expected to function on macOS.
+- Copying files to the clipboard on macOS writes Finder's legacy bplist-based format by hand (see "Clipboard file paths, per platform" above); it round-trips against an independent plist implementation in tests, but hasn't been confirmed against real Finder paste behavior on physical hardware.
 
 ---
 

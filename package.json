@@ -2,7 +2,7 @@
   "name": "copycat",
   "version": "0.4.17",
   "private": true,
-  "description": "Менеджер истории буфера обмена для Windows",
+  "description": "Менеджер истории буфера обмена",
   "author": "murpiano",
   "main": "out/main/index.js",
   "scripts": {
@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "test": "jest --runInBand",
     "test:e2e": "playwright test",
-    "dist": "npm run build && electron-builder --win"
+    "dist": "npm run build && electron-builder --win",
+    "dist:mac": "npm run build && electron-builder --mac"
   },
   "dependencies": {
     "better-sqlite3": "^11.3.0",

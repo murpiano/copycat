@@ -39,6 +39,12 @@ export function rebindHotkey(
   registerHotkey(previous, onTrigger);
   return {
     ok: false,
-    reason: 'Сочетание занято другой программой или не поддерживается',
+    // On macOS, globalShortcut also silently returns false when Copycat
+    // hasn't been granted Accessibility access — indistinguishable here from
+    // the combination being taken, so the message covers both causes.
+    reason:
+      process.platform === 'darwin'
+        ? 'Сочетание занято другой программой, не поддерживается, или приложению не дали доступ в Настройки → Конфиденциальность и безопасность → Универсальный доступ'
+        : 'Сочетание занято другой программой или не поддерживается',
   };
 }

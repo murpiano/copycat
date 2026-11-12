@@ -1,5 +1,13 @@
-import { Menu, Tray } from 'electron';
+import { Menu, nativeImage, Tray } from 'electron';
 import type { Language } from '../shared/types';
+
+/** macOS menu-bar icons are tiny (~22pt); handing Tray the full-resolution
+ * source image would render oversized, so it is scaled down first. Windows
+ * and Linux keep getting their own already-sized .ico/.png file untouched. */
+function trayIcon(iconPath: string) {
+  if (process.platform !== 'darwin') return iconPath;
+  return nativeImage.createFromPath(iconPath).resize({ width: 22, height: 22 });
+}
 
 export interface TrayCallbacks {
   onOpen: () => void;
@@ -20,7 +28,7 @@ export function updateTrayMenu(tray: Tray, callbacks: TrayCallbacks, language: L
 }
 
 export function createTray(iconPath: string, callbacks: TrayCallbacks, language: Language): Tray {
-  const tray = new Tray(iconPath);
+  const tray = new Tray(trayIcon(iconPath));
   tray.setToolTip('Copycat');
   updateTrayMenu(tray, callbacks, language);
   tray.on('click', callbacks.onOpen);
