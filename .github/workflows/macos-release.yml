@@ -9,6 +9,14 @@ on:
         description: Git ref (tag or branch) to build
         required: false
         default: ''
+      version:
+        description: >-
+          Version to stamp into package.json before building (e.g. 0.14.1),
+          so --publish targets that existing release instead of whatever
+          version is committed. Leave empty to keep the committed version
+          and skip --publish's version match entirely.
+        required: false
+        default: ''
       debug:
         description: Run electron-builder with verbose debug logging
         type: boolean
@@ -30,9 +38,11 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Match package version to release tag
-        if: github.event_name == 'release'
+        if: github.event_name == 'release' || inputs.version != ''
         shell: bash
-        run: npm version --no-git-tag-version "${GITHUB_REF_NAME#v}"
+        run: |
+          raw="${{ github.event.release.tag_name || inputs.version }}"
+          npm version --no-git-tag-version "${raw#v}"
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
