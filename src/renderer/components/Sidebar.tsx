@@ -3,7 +3,11 @@ import appIcon from '../../../resources/small/app-logo.png';
 import { ConfirmDialog } from './ConfirmDialog';
 import { useT } from '../i18n';
 import type { NavKey, SidebarEntry } from '../store/useClipboardStore';
-import { DEFAULT_FILE_SECTION_ORDER, type FileGroup, type FileSection } from '../../shared/file-kind';
+import {
+  DEFAULT_FILE_SECTION_ORDER,
+  type FileGroup,
+  type FileSection,
+} from '../../shared/file-kind';
 import {
   BoxIcon,
   CheckIcon,
@@ -26,8 +30,18 @@ const NAV_ITEMS: Record<NavKey, { label: string; icon: JSX.Element }> = {
   images: { label: 'Изображения', icon: <ImageIcon /> },
   files: { label: 'Файлы', icon: <BoxIcon /> },
 };
-const FILE_GROUPS: Array<[FileGroup, string]> = [['documents', 'Документы'], ['images', 'Изображения'], ['audio', 'Аудио'], ['video', 'Видео'], ['files', 'Файлы'], ['folders', 'Папки']];
-const FILE_LABELS: Record<FileSection, string> = { all: 'Все файлы', ...Object.fromEntries(FILE_GROUPS) } as Record<FileSection, string>;
+const FILE_GROUPS: Array<[FileGroup, string]> = [
+  ['documents', 'Документы'],
+  ['images', 'Изображения'],
+  ['audio', 'Аудио'],
+  ['video', 'Видео'],
+  ['files', 'Файлы'],
+  ['folders', 'Папки'],
+];
+const FILE_LABELS: Record<FileSection, string> = {
+  all: 'Все файлы',
+  ...Object.fromEntries(FILE_GROUPS),
+} as Record<FileSection, string>;
 
 interface SidebarProps {
   nav: NavKey;
@@ -97,6 +111,7 @@ export function Sidebar({
   const dragged = useRef<{ kind: 'nav' | 'category' | 'file'; id: string } | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: syncs local open state when external props change (reorderMode forces expand)
     setCategoriesOpen(reorderMode || categoriesExpanded);
     setFilesOpen(reorderMode || filesExpanded);
   }, [categoriesExpanded, filesExpanded, reorderMode]);
@@ -140,14 +155,116 @@ export function Sidebar({
   }
 
   function renderNavItem(key: NavKey) {
-    if (key === 'files') return <div key="files">
-      <div className={['nav-item nav-row', reorderMode ? 'jiggle' : '', hiddenNavEntries.includes(key) ? 'nav-hidden' : ''].join(' ')} {...navDragProps(key)} onClick={() => { if (!reorderMode) setFilesOpen((value) => !value); }}>
-        <button className="nav-row-main" aria-expanded={filesOpen} onClick={(event) => { event.stopPropagation(); if (!reorderMode) setFilesOpen((value) => !value); }}><BoxIcon /><span>{t('Файлы')}</span></button>
-        {reorderMode && <button className="nav-visibility" aria-label={t(hiddenNavEntries.includes(key) ? 'Показать Файлы' : 'Скрыть Файлы')} onClick={(event) => { event.stopPropagation(); onNavVisibilityToggle(key); }}><EyeIcon closed={hiddenNavEntries.includes(key)} size={15} /></button>}
-        <button className={filesOpen ? 'nav-chevron open' : 'nav-chevron'} aria-label={t('Группы файлов')} onClick={(event) => { event.stopPropagation(); if (!reorderMode) setFilesOpen((value) => !value); }}><ChevronDownIcon size={14} /></button>
-      </div>
-      {filesOpen && <div className="category-list">{fileSectionOrder.filter((section) => reorderMode || !hiddenFileSections.includes(section)).map((section) => <div key={section} className={['category-item', nav === 'files' && !activeCategory && !reorderMode && activeFileGroup === (section === 'all' ? null : section) ? 'active' : '', reorderMode ? 'jiggle' : '', hiddenFileSections.includes(section) ? 'nav-hidden' : ''].join(' ')} draggable={reorderMode} onDragStart={() => { dragged.current = { kind: 'file', id: section }; }} onDragOver={(event) => { if (reorderMode && dragged.current?.kind === 'file') { event.preventDefault(); onFileSectionMove(dragged.current.id as FileSection, section); } }} onDragEnd={() => { dragged.current = null; }} onClick={() => { if (!reorderMode) onFileGroupSelect(section === 'all' ? null : section); }}><button className="category-item-main" onClick={(event) => { event.stopPropagation(); if (!reorderMode) onFileGroupSelect(section === 'all' ? null : section); }}>{t(FILE_LABELS[section])}</button>{reorderMode && <button className="nav-visibility" aria-label={`${t(hiddenFileSections.includes(section) ? 'Показать' : 'Скрыть')} ${t(FILE_LABELS[section])}`} onClick={(event) => { event.stopPropagation(); onFileSectionVisibilityToggle(section); }}><EyeIcon closed={hiddenFileSections.includes(section)} size={15} /></button>}</div>)}</div>}
-    </div>;
+    if (key === 'files')
+      return (
+        <div key="files">
+          <div
+            className={[
+              'nav-item nav-row',
+              reorderMode ? 'jiggle' : '',
+              hiddenNavEntries.includes(key) ? 'nav-hidden' : '',
+            ].join(' ')}
+            {...navDragProps(key)}
+            onClick={() => {
+              if (!reorderMode) setFilesOpen((value) => !value);
+            }}
+          >
+            <button
+              className="nav-row-main"
+              aria-expanded={filesOpen}
+              onClick={(event) => {
+                event.stopPropagation();
+                if (!reorderMode) setFilesOpen((value) => !value);
+              }}
+            >
+              <BoxIcon />
+              <span>{t('Файлы')}</span>
+            </button>
+            {reorderMode && (
+              <button
+                className="nav-visibility"
+                aria-label={t(hiddenNavEntries.includes(key) ? 'Показать Файлы' : 'Скрыть Файлы')}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onNavVisibilityToggle(key);
+                }}
+              >
+                <EyeIcon closed={hiddenNavEntries.includes(key)} size={15} />
+              </button>
+            )}
+            <button
+              className={filesOpen ? 'nav-chevron open' : 'nav-chevron'}
+              aria-label={t('Группы файлов')}
+              onClick={(event) => {
+                event.stopPropagation();
+                if (!reorderMode) setFilesOpen((value) => !value);
+              }}
+            >
+              <ChevronDownIcon size={14} />
+            </button>
+          </div>
+          {filesOpen && (
+            <div className="category-list">
+              {fileSectionOrder
+                .filter((section) => reorderMode || !hiddenFileSections.includes(section))
+                .map((section) => (
+                  <div
+                    key={section}
+                    className={[
+                      'category-item',
+                      nav === 'files' &&
+                      !activeCategory &&
+                      !reorderMode &&
+                      activeFileGroup === (section === 'all' ? null : section)
+                        ? 'active'
+                        : '',
+                      reorderMode ? 'jiggle' : '',
+                      hiddenFileSections.includes(section) ? 'nav-hidden' : '',
+                    ].join(' ')}
+                    draggable={reorderMode}
+                    onDragStart={() => {
+                      dragged.current = { kind: 'file', id: section };
+                    }}
+                    onDragOver={(event) => {
+                      if (reorderMode && dragged.current?.kind === 'file') {
+                        event.preventDefault();
+                        onFileSectionMove(dragged.current.id as FileSection, section);
+                      }
+                    }}
+                    onDragEnd={() => {
+                      dragged.current = null;
+                    }}
+                    onClick={() => {
+                      if (!reorderMode) onFileGroupSelect(section === 'all' ? null : section);
+                    }}
+                  >
+                    <button
+                      className="category-item-main"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        if (!reorderMode) onFileGroupSelect(section === 'all' ? null : section);
+                      }}
+                    >
+                      {t(FILE_LABELS[section])}
+                    </button>
+                    {reorderMode && (
+                      <button
+                        className="nav-visibility"
+                        aria-label={`${t(hiddenFileSections.includes(section) ? 'Показать' : 'Скрыть')} ${t(FILE_LABELS[section])}`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onFileSectionVisibilityToggle(section);
+                        }}
+                      >
+                        <EyeIcon closed={hiddenFileSections.includes(section)} size={15} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
+      );
     return (
       <div
         key={key}
@@ -161,8 +278,28 @@ export function Sidebar({
         {...navDragProps(key)}
         onClick={() => !reorderMode && onNavChange(key)}
       >
-        <button className="nav-row-main" onClick={(event) => { event.stopPropagation(); if (!reorderMode) onNavChange(key); }}>{NAV_ITEMS[key].icon}<span>{t(NAV_ITEMS[key].label)}</span></button>
-        {reorderMode && <button className="nav-visibility" aria-label={`${t(hiddenNavEntries.includes(key) ? 'Показать' : 'Скрыть')} ${t(NAV_ITEMS[key].label)}`} onClick={(event) => { event.stopPropagation(); onNavVisibilityToggle(key); }}><EyeIcon closed={hiddenNavEntries.includes(key)} size={15} /></button>}
+        <button
+          className="nav-row-main"
+          onClick={(event) => {
+            event.stopPropagation();
+            if (!reorderMode) onNavChange(key);
+          }}
+        >
+          {NAV_ITEMS[key].icon}
+          <span>{t(NAV_ITEMS[key].label)}</span>
+        </button>
+        {reorderMode && (
+          <button
+            className="nav-visibility"
+            aria-label={`${t(hiddenNavEntries.includes(key) ? 'Показать' : 'Скрыть')} ${t(NAV_ITEMS[key].label)}`}
+            onClick={(event) => {
+              event.stopPropagation();
+              onNavVisibilityToggle(key);
+            }}
+          >
+            <EyeIcon closed={hiddenNavEntries.includes(key)} size={15} />
+          </button>
+        )}
       </div>
     );
   }
@@ -175,25 +312,48 @@ export function Sidebar({
             itself is the drag handle for this whole entry, so it jiggles
             like any other nav-item while sections are being arranged. */}
         <div
-          className={['nav-item nav-row', reorderMode ? 'jiggle' : '', hiddenNavEntries.includes('categories') ? 'nav-hidden' : ''].join(' ')}
+          className={[
+            'nav-item nav-row',
+            reorderMode ? 'jiggle' : '',
+            hiddenNavEntries.includes('categories') ? 'nav-hidden' : '',
+          ].join(' ')}
           {...navDragProps('categories')}
           onClick={() => !reorderMode && setCategoriesOpen((open) => !open)}
         >
           <button
             className="nav-row-main"
             aria-expanded={categoriesOpen}
-            onClick={(event) => { event.stopPropagation(); if (!reorderMode) setCategoriesOpen((open) => !open); }}
+            onClick={(event) => {
+              event.stopPropagation();
+              if (!reorderMode) setCategoriesOpen((open) => !open);
+            }}
           >
             <TagIcon />
             <span>{t('Категории')}</span>
           </button>
-          {reorderMode && <button className="nav-visibility" aria-label={t(hiddenNavEntries.includes('categories') ? 'Показать Категории' : 'Скрыть Категории')} onClick={(event) => { event.stopPropagation(); onNavVisibilityToggle('categories'); }}><EyeIcon closed={hiddenNavEntries.includes('categories')} size={15} /></button>}
+          {reorderMode && (
+            <button
+              className="nav-visibility"
+              aria-label={t(
+                hiddenNavEntries.includes('categories') ? 'Показать Категории' : 'Скрыть Категории',
+              )}
+              onClick={(event) => {
+                event.stopPropagation();
+                onNavVisibilityToggle('categories');
+              }}
+            >
+              <EyeIcon closed={hiddenNavEntries.includes('categories')} size={15} />
+            </button>
+          )}
           {categoriesOpen && !reorderMode && (
             <button
               className="nav-row-add"
               aria-label={t('Добавить категорию')}
               title={t('Добавить категорию')}
-              onClick={(event) => { event.stopPropagation(); setDraft(''); }}
+              onClick={(event) => {
+                event.stopPropagation();
+                setDraft('');
+              }}
             >
               <PlusIcon size={14} />
             </button>
@@ -201,7 +361,10 @@ export function Sidebar({
           <button
             className={categoriesOpen ? 'nav-chevron open' : 'nav-chevron'}
             aria-label={t(categoriesOpen ? 'Свернуть категории' : 'Развернуть категории')}
-            onClick={(event) => { event.stopPropagation(); if (!reorderMode) setCategoriesOpen((open) => !open); }}
+            onClick={(event) => {
+              event.stopPropagation();
+              if (!reorderMode) setCategoriesOpen((open) => !open);
+            }}
           >
             <ChevronDownIcon size={14} />
           </button>
@@ -224,31 +387,66 @@ export function Sidebar({
               />
             )}
 
-            {categories.filter((name) => reorderMode || !hiddenCategories.includes(name)).map((name) => (
-              <div
-                key={name}
-                className={[
-                  activeCategory === name && !reorderMode ? 'category-item active' : 'category-item',
-                  reorderMode ? 'jiggle' : '',
-                  hiddenCategories.includes(name) ? 'nav-hidden' : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ')}
-                draggable={reorderMode}
-                onDragStart={() => {
-                  dragged.current = { kind: 'category', id: name };
-                }}
-                onDragOver={categoryDragOver(name)}
-                onDragEnd={() => {
-                  dragged.current = null;
-                }}
-                onClick={() => !reorderMode && onCategorySelect(name)}
-              >
-                <button className="category-item-main" onClick={(event) => { event.stopPropagation(); if (!reorderMode) onCategorySelect(name); }}><span>{name}</span></button>
-                {reorderMode && <button className="nav-visibility" aria-label={`${t(hiddenCategories.includes(name) ? 'Показать' : 'Скрыть')} ${name}`} onClick={(event) => { event.stopPropagation(); onCategoryVisibilityToggle(name); }}><EyeIcon closed={hiddenCategories.includes(name)} size={15} /></button>}
-                {reorderMode && <button className="nav-visibility category-delete" aria-label={`${t('Удалить категорию')} ${name}`} title={t('Удалить категорию')} onClick={(event) => { event.stopPropagation(); setDeleteTarget(name); }}><CloseIcon size={15} /></button>}
-              </div>
-            ))}
+            {categories
+              .filter((name) => reorderMode || !hiddenCategories.includes(name))
+              .map((name) => (
+                <div
+                  key={name}
+                  className={[
+                    activeCategory === name && !reorderMode
+                      ? 'category-item active'
+                      : 'category-item',
+                    reorderMode ? 'jiggle' : '',
+                    hiddenCategories.includes(name) ? 'nav-hidden' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  draggable={reorderMode}
+                  onDragStart={() => {
+                    dragged.current = { kind: 'category', id: name };
+                  }}
+                  onDragOver={categoryDragOver(name)}
+                  onDragEnd={() => {
+                    dragged.current = null;
+                  }}
+                  onClick={() => !reorderMode && onCategorySelect(name)}
+                >
+                  <button
+                    className="category-item-main"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      if (!reorderMode) onCategorySelect(name);
+                    }}
+                  >
+                    <span>{name}</span>
+                  </button>
+                  {reorderMode && (
+                    <button
+                      className="nav-visibility"
+                      aria-label={`${t(hiddenCategories.includes(name) ? 'Показать' : 'Скрыть')} ${name}`}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onCategoryVisibilityToggle(name);
+                      }}
+                    >
+                      <EyeIcon closed={hiddenCategories.includes(name)} size={15} />
+                    </button>
+                  )}
+                  {reorderMode && (
+                    <button
+                      className="nav-visibility category-delete"
+                      aria-label={`${t('Удалить категорию')} ${name}`}
+                      title={t('Удалить категорию')}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setDeleteTarget(name);
+                      }}
+                    >
+                      <CloseIcon size={15} />
+                    </button>
+                  )}
+                </div>
+              ))}
           </div>
         )}
       </div>
@@ -291,9 +489,40 @@ export function Sidebar({
       </div>
 
       <nav className="sidebar-nav">
-        {navOrder.filter((key) => reorderMode || !hiddenNavEntries.includes(key)).map((key) => (key === 'categories' ? renderCategories() : renderNavItem(key)))}
+        {navOrder
+          .filter((key) => reorderMode || !hiddenNavEntries.includes(key))
+          .map((key) => (key === 'categories' ? renderCategories() : renderNavItem(key)))}
       </nav>
-      {deleteTarget && <ConfirmDialog title={t('Удалить категорию')} message={t('Удалить категорию') + ` «${deleteTarget}»? ` + t('Блоки останутся в истории, но отметка категории будет удалена.')} confirmLabel={t('Удалить')} cancelLabel={t('Отмена')} danger busy={deleting} error={deleteError ? t('Не удалось удалить категорию.') : null} onConfirm={() => { if (deleting) return; setDeleting(true); void onCategoryDelete(deleteTarget).then(() => { setDeleteTarget(null); setDeleteError(false); }).catch(() => setDeleteError(true)).finally(() => setDeleting(false)); }} onCancel={() => { setDeleteTarget(null); setDeleteError(false); }} />}
+      {deleteTarget && (
+        <ConfirmDialog
+          title={t('Удалить категорию')}
+          message={
+            t('Удалить категорию') +
+            ` «${deleteTarget}»? ` +
+            t('Блоки останутся в истории, но отметка категории будет удалена.')
+          }
+          confirmLabel={t('Удалить')}
+          cancelLabel={t('Отмена')}
+          danger
+          busy={deleting}
+          error={deleteError ? t('Не удалось удалить категорию.') : null}
+          onConfirm={() => {
+            if (deleting) return;
+            setDeleting(true);
+            void onCategoryDelete(deleteTarget)
+              .then(() => {
+                setDeleteTarget(null);
+                setDeleteError(false);
+              })
+              .catch(() => setDeleteError(true))
+              .finally(() => setDeleting(false));
+          }}
+          onCancel={() => {
+            setDeleteTarget(null);
+            setDeleteError(false);
+          }}
+        />
+      )}
     </div>
   );
 }

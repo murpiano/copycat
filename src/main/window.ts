@@ -3,7 +3,12 @@ import path from 'node:path';
 import type { WindowBounds } from '../shared/types';
 import { IPC } from '../shared/ipc-channels';
 
-const ICON_PATH = path.join(__dirname, process.platform === 'win32' ? '../../resources/small/small.ico' : '../../resources/small/small.png');
+const ICON_PATH = path.join(
+  __dirname,
+  process.platform === 'win32'
+    ? '../../resources/small/small.ico'
+    : '../../resources/small/small.png',
+);
 
 // Escape hatch for compositors that never focus a new window (WSLg): the
 // blur-hide below would fire immediately and the overlay could never be seen.
@@ -62,9 +67,7 @@ export function createMainWindow({ bounds, onBoundsChange }: MainWindowOptions):
       preload: `${__dirname}/../preload/index.js`,
     },
   });
-  win.loadURL(
-    process.env.ELECTRON_RENDERER_URL ?? `file://${__dirname}/../renderer/index.html`,
-  );
+  win.loadURL(process.env.ELECTRON_RENDERER_URL ?? `file://${__dirname}/../renderer/index.html`);
   // Remembering the spot the user dragged the window to, so it opens there
   // again after a restart. 'moved' and 'resized' fire once the drag is over.
   const remember = (): void => {
@@ -77,7 +80,10 @@ export function createMainWindow({ bounds, onBoundsChange }: MainWindowOptions):
     if (!win.webContents.isDestroyed()) win.webContents.send(IPC.WINDOW_SHOWN);
   });
 
-  if (!DEV_WINDOW) win.on('blur', () => { if (!nativeDialogOpen) win.hide(); });
+  if (!DEV_WINDOW)
+    win.on('blur', () => {
+      if (!nativeDialogOpen) win.hide();
+    });
   win.on('close', (event) => {
     if (isQuitting) return;
     event.preventDefault();

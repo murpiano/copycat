@@ -2,7 +2,18 @@ import { useEffect, useState } from 'react';
 import type { ClipboardItem, CreateItemInput, PickedObject } from '../../shared/types';
 import { fileGroupOf, type FileGroup } from '../../shared/file-kind';
 import { KIND_LABEL, fileIcon } from './ItemCard';
-import { AudioIcon, BoxIcon, CloseIcon, FileIcon, FolderIcon, ImageIcon, PlusIcon, StarIcon, TextDocumentIcon, VideoIcon } from './icons';
+import {
+  AudioIcon,
+  BoxIcon,
+  CloseIcon,
+  FileIcon,
+  FolderIcon,
+  ImageIcon,
+  PlusIcon,
+  StarIcon,
+  TextDocumentIcon,
+  VideoIcon,
+} from './icons';
 import { Overlay } from './Overlay';
 import { ConfirmDialog } from './ConfirmDialog';
 import { useT } from '../i18n';
@@ -18,7 +29,12 @@ interface ItemEditDialogProps {
   creationGroup?: FileGroup | 'all' | 'text' | null;
   initialStarred?: boolean;
   onClose: () => void;
-  onSave: (title: string | null, content: string, tags: string[], creation?: Pick<CreateItemInput, 'type' | 'starred' | 'expectedGroup'>) => Promise<void>;
+  onSave: (
+    title: string | null,
+    content: string,
+    tags: string[],
+    creation?: Pick<CreateItemInput, 'type' | 'starred' | 'expectedGroup'>,
+  ) => Promise<void>;
   onCategoryAdd: (name: string) => void;
 }
 
@@ -35,7 +51,9 @@ export function ItemEditDialog({
   const t = useT();
   const [title, setTitle] = useState(item?.title ?? '');
   const [content, setContent] = useState(item?.content ?? '');
-  const [mode, setMode] = useState<'text' | 'object'>(creationGroup && creationGroup !== 'text' ? 'object' : 'text');
+  const [mode, setMode] = useState<'text' | 'object'>(
+    creationGroup && creationGroup !== 'text' ? 'object' : 'text',
+  );
   const [picked, setPicked] = useState<PickedObject | null>(null);
   const [starred, setStarred] = useState(initialStarred);
   const [busy, setBusy] = useState(false);
@@ -45,7 +63,9 @@ export function ItemEditDialog({
   const [asking, setAsking] = useState(false);
 
   const dirty = item
-    ? title !== (item.title ?? '') || content !== item.content || tags.join('\u0000') !== item.tags.join('\u0000')
+    ? title !== (item.title ?? '') ||
+      content !== item.content ||
+      tags.join('\u0000') !== item.tags.join('\u0000')
     : Boolean(title.trim() || content.trim() || picked || draft.trim());
 
   async function save() {
@@ -59,9 +79,21 @@ export function ItemEditDialog({
     setSaveError(null);
     try {
       const objectType = picked?.kind === 'image' ? 'image' : 'file';
-      await onSave(title.trim() || null, item || mode === 'text' ? content : picked?.path ?? '', tags,
-        item ? undefined : { type: mode === 'text' ? 'text' : objectType, starred,
-          expectedGroup: creationGroup && creationGroup !== 'all' && creationGroup !== 'text' ? creationGroup : undefined });
+      await onSave(
+        title.trim() || null,
+        item || mode === 'text' ? content : (picked?.path ?? ''),
+        tags,
+        item
+          ? undefined
+          : {
+              type: mode === 'text' ? 'text' : objectType,
+              starred,
+              expectedGroup:
+                creationGroup && creationGroup !== 'all' && creationGroup !== 'text'
+                  ? creationGroup
+                  : undefined,
+            },
+      );
     } catch {
       setAsking(false);
       setSaveError(t('Не удалось создать блок. Проверьте выбранный объект.'));
@@ -73,11 +105,24 @@ export function ItemEditDialog({
   async function chooseObject(selection: 'file' | 'folder') {
     setSaveError(null);
     try {
-      const result = await window.copycat.pickObject(selection,
-        creationGroup && creationGroup !== 'all' && creationGroup !== 'text' ? creationGroup : undefined);
+      const result = await window.copycat.pickObject(
+        selection,
+        creationGroup && creationGroup !== 'all' && creationGroup !== 'text'
+          ? creationGroup
+          : undefined,
+      );
       if (!result) return;
-      const group = fileGroupOf({ type: result.kind === 'image' ? 'image' : 'file', kind: result.kind, content: result.path });
-      if (creationGroup && creationGroup !== 'all' && creationGroup !== 'text' && group !== creationGroup) {
+      const group = fileGroupOf({
+        type: result.kind === 'image' ? 'image' : 'file',
+        kind: result.kind,
+        content: result.path,
+      });
+      if (
+        creationGroup &&
+        creationGroup !== 'all' &&
+        creationGroup !== 'text' &&
+        group !== creationGroup
+      ) {
         setPicked(null);
         setSaveError(t('Выбранный объект не относится к этому разделу.'));
         return;
@@ -110,21 +155,50 @@ export function ItemEditDialog({
   // added elsewhere never silently disappears when the dialog saves.
   const options = [...new Set([...categories.map((c) => c.toLowerCase()), ...tags])];
   const contentLabel = t(item?.type === 'image' ? 'Путь к файлу' : 'Содержимое');
-  const groupLabels: Record<FileGroup | 'all', string> = { all: 'Файлы', documents: 'Документы', images: 'Изображения', audio: 'Аудио', video: 'Видео', files: 'Файлы', folders: 'Папки' };
-  const fixedLabel = t(creationGroup && creationGroup !== 'text' ? groupLabels[creationGroup] : 'Текст');
-  const fixedIcon = creationGroup === 'images' ? <ImageIcon size={18} />
-    : creationGroup === 'audio' ? <AudioIcon size={18} />
-    : creationGroup === 'video' ? <VideoIcon size={18} />
-    : creationGroup === 'documents' ? <TextDocumentIcon size={18} />
-    : creationGroup === 'folders' ? <FolderIcon size={18} />
-    : creationGroup === 'files' ? <BoxIcon size={18} /> : null;
-  const headerIcon = item ? null : mode === 'text' ? <FileIcon size={18} /> : fixedIcon
-    ?? (picked?.kind === 'image' ? <ImageIcon size={18} />
-      : picked?.kind === 'folder' ? <FolderIcon size={18} />
-      : picked?.kind === 'audio' ? <AudioIcon size={18} />
-      : picked?.kind === 'video' ? <VideoIcon size={18} />
-      : picked?.kind === 'document' ? fileIcon({ content: picked.path, kind: picked.kind }, 18)
-      : <BoxIcon size={18} />);
+  const groupLabels: Record<FileGroup | 'all', string> = {
+    all: 'Файлы',
+    documents: 'Документы',
+    images: 'Изображения',
+    audio: 'Аудио',
+    video: 'Видео',
+    files: 'Файлы',
+    folders: 'Папки',
+  };
+  const fixedLabel = t(
+    creationGroup && creationGroup !== 'text' ? groupLabels[creationGroup] : 'Текст',
+  );
+  const fixedIcon =
+    creationGroup === 'images' ? (
+      <ImageIcon size={18} />
+    ) : creationGroup === 'audio' ? (
+      <AudioIcon size={18} />
+    ) : creationGroup === 'video' ? (
+      <VideoIcon size={18} />
+    ) : creationGroup === 'documents' ? (
+      <TextDocumentIcon size={18} />
+    ) : creationGroup === 'folders' ? (
+      <FolderIcon size={18} />
+    ) : creationGroup === 'files' ? (
+      <BoxIcon size={18} />
+    ) : null;
+  const headerIcon = item ? null : mode === 'text' ? (
+    <FileIcon size={18} />
+  ) : (
+    (fixedIcon ??
+    (picked?.kind === 'image' ? (
+      <ImageIcon size={18} />
+    ) : picked?.kind === 'folder' ? (
+      <FolderIcon size={18} />
+    ) : picked?.kind === 'audio' ? (
+      <AudioIcon size={18} />
+    ) : picked?.kind === 'video' ? (
+      <VideoIcon size={18} />
+    ) : picked?.kind === 'document' ? (
+      fileIcon({ content: picked.path, kind: picked.kind }, 18)
+    ) : (
+      <BoxIcon size={18} />
+    )))
+  );
 
   function toggleTag(tag: string) {
     setTags((current) =>
@@ -162,9 +236,54 @@ export function ItemEditDialog({
         aria-label={t(item ? 'Редактирование' : 'Новый блок')}
       >
         <div className="popup-head">
-          <div className="popup-title edit-dialog-title">{headerIcon}{t(item ? 'Редактирование' : 'Новый блок')}</div>
-          {!item && <div className="creation-types">{creationGroup === null ? <><button type="button" className={mode === 'text' ? 'button settings-choice active' : 'button settings-choice'} aria-pressed={mode === 'text'} onClick={() => setMode('text')}>{t('Текст')}</button><button type="button" className={mode === 'object' ? 'button settings-choice active' : 'button settings-choice'} aria-pressed={mode === 'object'} onClick={() => setMode('object')}>{t('Объект')}</button></> : <span className="button settings-choice active creation-type-fixed">{fixedLabel}</span>}</div>}
-          {!item && <button type="button" className={starred ? 'item-card-action starred' : 'item-card-action'} aria-label={t(starred ? 'Убрать из избранного' : 'В избранное')} aria-pressed={starred} title={t('Избранное')} onClick={() => setStarred((value) => !value)}><StarIcon size={17} filled={starred} /></button>}
+          <div className="popup-title edit-dialog-title">
+            {headerIcon}
+            {t(item ? 'Редактирование' : 'Новый блок')}
+          </div>
+          {!item && (
+            <div className="creation-types">
+              {creationGroup === null ? (
+                <>
+                  <button
+                    type="button"
+                    className={
+                      mode === 'text' ? 'button settings-choice active' : 'button settings-choice'
+                    }
+                    aria-pressed={mode === 'text'}
+                    onClick={() => setMode('text')}
+                  >
+                    {t('Текст')}
+                  </button>
+                  <button
+                    type="button"
+                    className={
+                      mode === 'object' ? 'button settings-choice active' : 'button settings-choice'
+                    }
+                    aria-pressed={mode === 'object'}
+                    onClick={() => setMode('object')}
+                  >
+                    {t('Объект')}
+                  </button>
+                </>
+              ) : (
+                <span className="button settings-choice active creation-type-fixed">
+                  {fixedLabel}
+                </span>
+              )}
+            </div>
+          )}
+          {!item && (
+            <button
+              type="button"
+              className={starred ? 'item-card-action starred' : 'item-card-action'}
+              aria-label={t(starred ? 'Убрать из избранного' : 'В избранное')}
+              aria-pressed={starred}
+              title={t('Избранное')}
+              onClick={() => setStarred((value) => !value)}
+            >
+              <StarIcon size={17} filled={starred} />
+            </button>
+          )}
           <button
             className="item-card-action"
             aria-label={t('Закрыть')}
@@ -182,20 +301,86 @@ export function ItemEditDialog({
             autoFocus={item !== null}
             value={title}
             disabled={!item && mode === 'object' && !picked}
-            placeholder={t(item ? KIND_LABEL[item.type] : mode === 'object' ? 'Название объекта' : KIND_LABEL.text)}
+            placeholder={t(
+              item
+                ? KIND_LABEL[item.type]
+                : mode === 'object'
+                  ? 'Название объекта'
+                  : KIND_LABEL.text,
+            )}
             onChange={(e) => setTitle(e.target.value)}
           />
         </label>
 
-        {item || mode === 'text' ? <label className="field field-grow">
-          <span className="field-label">{contentLabel}</span>
-          <textarea
-            className="field-input field-textarea resize-none"
-            autoFocus={item === null}
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
-        </label> : <div className="field field-grow"><span className="field-label">{t('Содержимое')}</span><div className="object-picker"><button type="button" className={picked && (creationGroup === 'folders' ? picked.kind === 'folder' : picked.kind !== 'folder') ? 'button settings-choice active' : 'button'} aria-pressed={Boolean(picked && (creationGroup === 'folders' ? picked.kind === 'folder' : picked.kind !== 'folder'))} onClick={() => void chooseObject(creationGroup === 'folders' ? 'folder' : 'file')}>{t('Выбрать ' + (creationGroup === 'folders' ? 'папку' : creationGroup === 'audio' ? 'аудио' : creationGroup === 'video' ? 'видео' : creationGroup === 'images' ? 'изображение' : creationGroup === 'documents' ? 'документ' : 'объект'))}</button>{(creationGroup === null || creationGroup === 'all') && <button type="button" className={picked?.kind === 'folder' ? 'button settings-choice active' : 'button'} aria-pressed={picked?.kind === 'folder'} onClick={() => void chooseObject('folder')}>{t('Выбрать папку')}</button>}</div>{picked && <input className="field-input object-path" aria-label={t('Путь к объекту')} readOnly value={picked.path} title={picked.path} />}</div>}
+        {item || mode === 'text' ? (
+          <label className="field field-grow">
+            <span className="field-label">{contentLabel}</span>
+            <textarea
+              className="field-input field-textarea resize-none"
+              autoFocus={item === null}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+            />
+          </label>
+        ) : (
+          <div className="field field-grow">
+            <span className="field-label">{t('Содержимое')}</span>
+            <div className="object-picker">
+              <button
+                type="button"
+                className={
+                  picked &&
+                  (creationGroup === 'folders'
+                    ? picked.kind === 'folder'
+                    : picked.kind !== 'folder')
+                    ? 'button settings-choice active'
+                    : 'button'
+                }
+                aria-pressed={Boolean(
+                  picked &&
+                  (creationGroup === 'folders'
+                    ? picked.kind === 'folder'
+                    : picked.kind !== 'folder'),
+                )}
+                onClick={() => void chooseObject(creationGroup === 'folders' ? 'folder' : 'file')}
+              >
+                {t(
+                  'Выбрать ' +
+                    (creationGroup === 'folders'
+                      ? 'папку'
+                      : creationGroup === 'audio'
+                        ? 'аудио'
+                        : creationGroup === 'video'
+                          ? 'видео'
+                          : creationGroup === 'images'
+                            ? 'изображение'
+                            : creationGroup === 'documents'
+                              ? 'документ'
+                              : 'объект'),
+                )}
+              </button>
+              {(creationGroup === null || creationGroup === 'all') && (
+                <button
+                  type="button"
+                  className={picked?.kind === 'folder' ? 'button settings-choice active' : 'button'}
+                  aria-pressed={picked?.kind === 'folder'}
+                  onClick={() => void chooseObject('folder')}
+                >
+                  {t('Выбрать папку')}
+                </button>
+              )}
+            </div>
+            {picked && (
+              <input
+                className="field-input object-path"
+                aria-label={t('Путь к объекту')}
+                readOnly
+                value={picked.path}
+                title={picked.path}
+              />
+            )}
+          </div>
+        )}
 
         <div className="field">
           <span className="field-label">{t('Категории')}</span>
@@ -233,7 +418,11 @@ export function ItemEditDialog({
           </div>
         </div>
 
-        {saveError && <div className="field-hint" role="alert">{saveError}</div>}
+        {saveError && (
+          <div className="field-hint" role="alert">
+            {saveError}
+          </div>
+        )}
         <div className="dialog-actions">
           <button type="button" className="button ghost" onClick={requestClose}>
             {t('Отмена')}

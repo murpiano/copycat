@@ -15,12 +15,22 @@ export interface TrayCallbacks {
   onQuit: () => void;
 }
 
-export function updateTrayMenu(tray: Tray, callbacks: TrayCallbacks, language: Language, paused = false): void {
+export function updateTrayMenu(
+  tray: Tray,
+  callbacks: TrayCallbacks,
+  language: Language,
+  paused = false,
+): void {
   const english = language === 'en';
   tray.setContextMenu(
     Menu.buildFromTemplate([
       { label: english ? 'Open' : 'Открыть', click: callbacks.onOpen },
-      { label: english ? 'Pause capture' : 'Приостановить захват', type: 'checkbox', checked: paused, click: callbacks.onPauseToggle },
+      {
+        label: english ? 'Pause capture' : 'Приостановить захват',
+        type: 'checkbox',
+        checked: paused,
+        click: callbacks.onPauseToggle,
+      },
       { type: 'separator' },
       { label: english ? 'Quit' : 'Выход', click: callbacks.onQuit },
     ]),

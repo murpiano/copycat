@@ -16,11 +16,7 @@ export function registerHotkey(accelerator: string, onTrigger: () => void): bool
  * one in place, so a combination already taken by another app cannot strand
  * the user with no way to open the window from the keyboard.
  */
-export function rebindHotkey(
-  previous: string,
-  next: string,
-  onTrigger: () => void,
-): HotkeyResult {
+export function rebindHotkey(previous: string, next: string, onTrigger: () => void): HotkeyResult {
   if (previous === next) return { ok: true };
 
   globalShortcut.unregister(previous);

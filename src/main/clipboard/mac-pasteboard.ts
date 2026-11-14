@@ -45,7 +45,6 @@ function writeBigEndian(value: number, byteLength: number): Buffer {
   // so a plain Number, written byte by byte, never loses precision.
   for (let i = byteLength - 1; i >= 0; i--) {
     buf[i] = value & 0xff;
-    // eslint-disable-next-line no-param-reassign
     value = Math.floor(value / 256);
   }
   return buf;
@@ -133,7 +132,9 @@ function readObject(buf: Buffer, offset: number): BplistObject {
     if (type === 0x5) return buf.toString('ascii', dataOffset, dataOffset + length);
     // Unicode string objects are UTF-16BE; Node only decodes UTF-16LE, so the
     // byte pairs are swapped first (mirrors the swap done on encode).
-    return Buffer.from(buf.subarray(dataOffset, dataOffset + length * 2)).swap16().toString('utf16le');
+    return Buffer.from(buf.subarray(dataOffset, dataOffset + length * 2))
+      .swap16()
+      .toString('utf16le');
   }
 
   if (type === 0xa) {

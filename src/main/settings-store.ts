@@ -1,11 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type {
-  AppSettings,
-  SidebarEntry,
-  UpdateSettingsInput,
-  WindowBounds,
-} from '../shared/types';
+import type { AppSettings, SidebarEntry, UpdateSettingsInput, WindowBounds } from '../shared/types';
 import { DEFAULT_HOTKEY, DEFAULT_NAV_ORDER } from '../shared/config';
 import { DEFAULT_FILE_SECTION_ORDER, type FileSection } from '../shared/file-kind';
 
@@ -57,7 +52,9 @@ function sanitizeHiddenEntries(value: unknown): SidebarEntry[] {
  * of always tacking it onto the end. */
 function sanitizeFileSections(value: unknown): FileSection[] {
   const valid = new Set<string>(DEFAULT_FILE_SECTION_ORDER);
-  const stored = Array.isArray(value) ? value.filter((entry): entry is FileSection => valid.has(entry)) : [];
+  const stored = Array.isArray(value)
+    ? value.filter((entry): entry is FileSection => valid.has(entry))
+    : [];
   const result = [...new Set(stored)];
   for (const entry of DEFAULT_FILE_SECTION_ORDER) {
     if (result.includes(entry)) continue;
@@ -65,13 +62,19 @@ function sanitizeFileSections(value: unknown): FileSection[] {
     let insertAt = -1;
     for (let i = defaultIndex - 1; i >= 0; i--) {
       const idx = result.indexOf(DEFAULT_FILE_SECTION_ORDER[i]);
-      if (idx !== -1) { insertAt = idx + 1; break; }
+      if (idx !== -1) {
+        insertAt = idx + 1;
+        break;
+      }
     }
     if (insertAt === -1) {
       insertAt = result.length;
       for (let i = defaultIndex + 1; i < DEFAULT_FILE_SECTION_ORDER.length; i++) {
         const idx = result.indexOf(DEFAULT_FILE_SECTION_ORDER[i]);
-        if (idx !== -1) { insertAt = idx; break; }
+        if (idx !== -1) {
+          insertAt = idx;
+          break;
+        }
       }
     }
     result.splice(insertAt, 0, entry);
@@ -91,11 +94,15 @@ function sanitizeFileSections(value: unknown): FileSection[] {
 
 function sanitizeHiddenFileSections(value: unknown): FileSection[] {
   const valid = new Set<string>(DEFAULT_FILE_SECTION_ORDER);
-  return Array.isArray(value) ? [...new Set(value.filter((entry): entry is FileSection => valid.has(entry)))] : [];
+  return Array.isArray(value)
+    ? [...new Set(value.filter((entry): entry is FileSection => valid.has(entry)))]
+    : [];
 }
 
 function sanitizeHiddenCategories(value: unknown): string[] {
-  return Array.isArray(value) ? [...new Set(value.filter((entry): entry is string => typeof entry === 'string'))] : [];
+  return Array.isArray(value)
+    ? [...new Set(value.filter((entry): entry is string => typeof entry === 'string'))]
+    : [];
 }
 
 function sanitizeBounds(value: unknown): WindowBounds | null {
@@ -115,11 +122,14 @@ export function createSettingsStore(filePath: string): SettingsStore {
   function read(): AppSettings {
     const base = defaults();
     try {
-      const raw = JSON.parse(fs.readFileSync(filePath, 'utf8')) as Partial<AppSettings> & { navOrderVersion?: number };
+      const raw = JSON.parse(fs.readFileSync(filePath, 'utf8')) as Partial<AppSettings> & {
+        navOrderVersion?: number;
+      };
       // Reset arrangements from pre-default-order releases once.
-      const navOrder = raw.navOrderVersion === NAV_ORDER_VERSION
-        ? sanitizeNavOrder(raw.navOrder)
-        : [...DEFAULT_NAV_ORDER];
+      const navOrder =
+        raw.navOrderVersion === NAV_ORDER_VERSION
+          ? sanitizeNavOrder(raw.navOrder)
+          : [...DEFAULT_NAV_ORDER];
       return {
         language: raw.language === 'ru' ? 'ru' : 'en',
         theme: raw.theme === 'light' ? 'light' : 'dark',
@@ -141,7 +151,10 @@ export function createSettingsStore(filePath: string): SettingsStore {
 
   function write(settings: AppSettings): AppSettings {
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    fs.writeFileSync(filePath, `${JSON.stringify({ ...settings, navOrderVersion: NAV_ORDER_VERSION }, null, 2)}\n`);
+    fs.writeFileSync(
+      filePath,
+      `${JSON.stringify({ ...settings, navOrderVersion: NAV_ORDER_VERSION }, null, 2)}\n`,
+    );
     return settings;
   }
 
@@ -156,17 +169,27 @@ export function createSettingsStore(filePath: string): SettingsStore {
       const current = read();
       return write({
         ...current,
-        ...(input.language !== undefined ? { language: input.language === 'ru' ? 'ru' : 'en' } : {}),
+        ...(input.language !== undefined
+          ? { language: input.language === 'ru' ? 'ru' : 'en' }
+          : {}),
         ...(input.theme !== undefined ? { theme: input.theme === 'light' ? 'light' : 'dark' } : {}),
         ...(input.categoriesExpanded !== undefined
           ? { categoriesExpanded: input.categoriesExpanded }
           : {}),
         ...(input.filesExpanded !== undefined ? { filesExpanded: input.filesExpanded } : {}),
         ...(input.navOrder !== undefined ? { navOrder: sanitizeNavOrder(input.navOrder) } : {}),
-        ...(input.hiddenNavEntries !== undefined ? { hiddenNavEntries: sanitizeHiddenEntries(input.hiddenNavEntries) } : {}),
-        ...(input.fileSectionOrder !== undefined ? { fileSectionOrder: sanitizeFileSections(input.fileSectionOrder) } : {}),
-        ...(input.hiddenFileSections !== undefined ? { hiddenFileSections: sanitizeHiddenFileSections(input.hiddenFileSections) } : {}),
-        ...(input.hiddenCategories !== undefined ? { hiddenCategories: sanitizeHiddenCategories(input.hiddenCategories) } : {}),
+        ...(input.hiddenNavEntries !== undefined
+          ? { hiddenNavEntries: sanitizeHiddenEntries(input.hiddenNavEntries) }
+          : {}),
+        ...(input.fileSectionOrder !== undefined
+          ? { fileSectionOrder: sanitizeFileSections(input.fileSectionOrder) }
+          : {}),
+        ...(input.hiddenFileSections !== undefined
+          ? { hiddenFileSections: sanitizeHiddenFileSections(input.hiddenFileSections) }
+          : {}),
+        ...(input.hiddenCategories !== undefined
+          ? { hiddenCategories: sanitizeHiddenCategories(input.hiddenCategories) }
+          : {}),
         ...(input.windowBounds !== undefined
           ? { windowBounds: sanitizeBounds(input.windowBounds) }
           : {}),

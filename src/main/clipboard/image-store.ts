@@ -22,7 +22,10 @@ function writeThumbnail(filePath: string, pngBuffer: Buffer): void {
     // second file needed.
     if (width <= MAX_THUMB_DIMENSION && height <= MAX_THUMB_DIMENSION) return;
     const scale = MAX_THUMB_DIMENSION / Math.max(width, height);
-    const resized = image.resize({ width: Math.round(width * scale), height: Math.round(height * scale) });
+    const resized = image.resize({
+      width: Math.round(width * scale),
+      height: Math.round(height * scale),
+    });
     fs.writeFileSync(thumbPath, resized.toPNG());
   } catch {
     // Thumbnailing is an optimization; the full image still renders fine without one.

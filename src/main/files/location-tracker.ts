@@ -50,7 +50,11 @@ export function createLocationTracker(deps: LocationTrackerDeps): LocationTracke
       if (!isExternal(item.type, item.content)) continue;
       let paths: string[];
       if (item.type === 'file') {
-        try { paths = JSON.parse(item.content); } catch { paths = [item.content]; }
+        try {
+          paths = JSON.parse(item.content);
+        } catch {
+          paths = [item.content];
+        }
       } else {
         paths = [item.content];
       }
@@ -106,7 +110,11 @@ export function createLocationTracker(deps: LocationTrackerDeps): LocationTracke
     const entriesOf = (dir: string): Set<string> => {
       let set = dirEntries.get(dir);
       if (set) return set;
-      try { set = new Set(fs.readdirSync(dir)); } catch { set = new Set(); }
+      try {
+        set = new Set(fs.readdirSync(dir));
+      } catch {
+        set = new Set();
+      }
       dirEntries.set(dir, set);
       return set;
     };

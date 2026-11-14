@@ -1,7 +1,22 @@
 import { useState, type DragEvent, type MouseEvent } from 'react';
 import { useSelectionCursor } from '../useSelectionCursor';
 import type { ClipboardItem, ItemType } from '../../shared/types';
-import { AudioIcon, BoxIcon, CloseIcon, ExcelIcon, FileIcon, FolderIcon, ImageIcon, PdfIcon, PencilIcon, PowerPointIcon, StarIcon, TextDocumentIcon, VideoIcon, WordIcon } from './icons';
+import {
+  AudioIcon,
+  BoxIcon,
+  CloseIcon,
+  ExcelIcon,
+  FileIcon,
+  FolderIcon,
+  ImageIcon,
+  PdfIcon,
+  PencilIcon,
+  PowerPointIcon,
+  StarIcon,
+  TextDocumentIcon,
+  VideoIcon,
+  WordIcon,
+} from './icons';
 import { firstPath, kindFromPath } from '../../shared/file-kind';
 import { translateUi, useLanguage, useT, type Language } from '../i18n';
 import { useClipboardStore } from '../store/useClipboardStore';
@@ -18,7 +33,9 @@ export function formatAge(createdAt: number, language: Language = 'ru'): string 
   if (minutes < 60) return language === 'en' ? `${minutes} min ago` : `${minutes} мин назад`;
   const hours = Math.round(minutes / 60);
   if (hours < 24) return language === 'en' ? `${hours} h ago` : `${hours} ч назад`;
-  return language === 'en' ? `${Math.round(hours / 24)} d ago` : `${Math.round(hours / 24)} д назад`;
+  return language === 'en'
+    ? `${Math.round(hours / 24)} d ago`
+    : `${Math.round(hours / 24)} д назад`;
 }
 
 export function badgeIcon(type: ItemType, size = 14) {
@@ -30,11 +47,19 @@ export function badgeIcon(type: ItemType, size = 14) {
 export function itemDisplayTitle(item: ClipboardItem, language: Language = 'ru'): string {
   if (item.type === 'text') return item.title ?? translateUi(KIND_LABEL.text, language);
   let path = item.content;
-  if (item.type === 'file') { try { path = JSON.parse(item.content)[0] ?? item.content; } catch { /* plain path */ } }
+  if (item.type === 'file') {
+    try {
+      path = JSON.parse(item.content)[0] ?? item.content;
+    } catch {
+      /* plain path */
+    }
+  }
   const name = path.split(/[\\/]/).pop() ?? '';
   if (!item.title) return name || translateUi(KIND_LABEL[item.type], language);
   const extension = name.match(/(\.[^.]+)$/)?.[1];
-  return extension && !item.title.toLowerCase().endsWith(extension.toLowerCase()) ? `${item.title}${extension}` : item.title;
+  return extension && !item.title.toLowerCase().endsWith(extension.toLowerCase())
+    ? `${item.title}${extension}`
+    : item.title;
 }
 
 export function fileIcon(item: Pick<ClipboardItem, 'content' | 'kind'>, size = 14) {
@@ -52,7 +77,8 @@ export function fileIcon(item: Pick<ClipboardItem, 'content' | 'kind'>, size = 1
 
 export function copyLabel(item: ClipboardItem): string {
   if (item.type === 'text') return 'Скопировать содержимое';
-  const kind = item.kind ?? (item.type === 'image' ? 'image' : kindFromPath(firstPath(item.content)));
+  const kind =
+    item.kind ?? (item.type === 'image' ? 'image' : kindFromPath(firstPath(item.content)));
   return `Скопировать ${({ document: 'документ', image: 'изображение', audio: 'аудио', video: 'видео', file: 'файл', folder: 'папку', text: 'содержимое' } as const)[kind]}`;
 }
 
@@ -173,7 +199,10 @@ export function ItemCard({
 
         {item.type === 'image' ? (
           <div className="item-card-preview">
-            <img src={window.copycat.toFileUrl(item.thumbPath ?? item.content)} alt={t('Предпросмотр изображения')} />
+            <img
+              src={window.copycat.toFileUrl(item.thumbPath ?? item.content)}
+              alt={t('Предпросмотр изображения')}
+            />
           </div>
         ) : (
           <div
@@ -185,7 +214,20 @@ export function ItemCard({
         )}
 
         <div className="item-card-footer">
-          {item.type !== 'text' && !reorderMode && <button type="button" className="item-open" onClick={actOnly(() => { void window.copycat.openItem(item.id).then(() => setOpenError(false)).catch(() => setOpenError(true)); })}>{t('Открыть')}</button>}
+          {item.type !== 'text' && !reorderMode && (
+            <button
+              type="button"
+              className="item-open"
+              onClick={actOnly(() => {
+                void window.copycat
+                  .openItem(item.id)
+                  .then(() => setOpenError(false))
+                  .catch(() => setOpenError(true));
+              })}
+            >
+              {t('Открыть')}
+            </button>
+          )}
           <div className="item-card-tags" title={item.tags.join(', ')}>
             {item.tags.map((tag) => (
               <span key={tag} className="tag-chip">
@@ -197,7 +239,11 @@ export function ItemCard({
         {(item.missing || openError) && (
           <div className="item-open-error" role="alert">
             <span>{t('Исходный объект не найден.')}</span>
-            <button type="button" className="item-relink-link" onClick={actOnly(() => void handleRelink())}>
+            <button
+              type="button"
+              className="item-relink-link"
+              onClick={actOnly(() => void handleRelink())}
+            >
               {t('Указать расположение')}
             </button>
           </div>
