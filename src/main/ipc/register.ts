@@ -16,7 +16,15 @@ import type { ItemsRepo } from '../storage/items-repo';
 import type { TagsRepo } from '../storage/tags-repo';
 import { hashContent } from '../clipboard/hash';
 import { setNativeDialogOpen } from '../window';
-import { AUDIO_EXTS, DOCUMENT_EXTS, IMAGE_EXTS, VIDEO_EXTS, firstPath, kindFromPath, type FileGroup } from '../../shared/file-kind';
+import {
+  AUDIO_EXTS,
+  DOCUMENT_EXTS,
+  IMAGE_EXTS,
+  VIDEO_EXTS,
+  firstPath,
+  kindFromPath,
+  type FileGroup,
+} from '../../shared/file-kind';
 import { cleanupUnusedPreviews } from '../clipboard/capture-pipeline';
 import { buildCFDropBuffer } from '../clipboard/file-drop';
 import { encodeFilenamesPboardBuffer } from '../clipboard/mac-pasteboard';
@@ -124,27 +132,28 @@ export function registerIpcHandlers(ipcMain: IpcMain, deps: RegisterIpcDeps): vo
   };
 
   ipcMain.handle(IPC.GET_ITEMS, (_e, query: GetItemsQuery) => handleGetItems(ipcDeps, query));
-  ipcMain.handle(IPC.CREATE_ITEM, (_e, input: CreateItemInput) =>
-    handleCreateItem(ipcDeps, input),
-  );
+  ipcMain.handle(IPC.CREATE_ITEM, (_e, input: CreateItemInput) => handleCreateItem(ipcDeps, input));
   ipcMain.handle(IPC.PICK_OBJECT, async (_e, mode: 'file' | 'folder', group?: FileGroup) => {
     const english = deps.readSettings().language === 'en';
     const options: Electron.OpenDialogOptions = {
       properties: mode === 'folder' ? ['openDirectory'] : ['openFile'],
-      filters: mode === 'file' && group === 'images'
-        ? [{ name: english ? 'Images' : 'Изображения', extensions: [...IMAGE_EXTS] }]
-        : mode === 'file' && group === 'audio'
-          ? [{ name: english ? 'Audio' : 'Аудио', extensions: [...AUDIO_EXTS] }]
-          : mode === 'file' && group === 'video'
-            ? [{ name: english ? 'Video' : 'Видео', extensions: [...VIDEO_EXTS] }]
-            : mode === 'file' && group === 'documents'
-              ? [{ name: english ? 'Documents' : 'Документы', extensions: [...DOCUMENT_EXTS] }]
-              : undefined,
+      filters:
+        mode === 'file' && group === 'images'
+          ? [{ name: english ? 'Images' : 'Изображения', extensions: [...IMAGE_EXTS] }]
+          : mode === 'file' && group === 'audio'
+            ? [{ name: english ? 'Audio' : 'Аудио', extensions: [...AUDIO_EXTS] }]
+            : mode === 'file' && group === 'video'
+              ? [{ name: english ? 'Video' : 'Видео', extensions: [...VIDEO_EXTS] }]
+              : mode === 'file' && group === 'documents'
+                ? [{ name: english ? 'Documents' : 'Документы', extensions: [...DOCUMENT_EXTS] }]
+                : undefined,
     };
     const owner = BrowserWindow.getFocusedWindow();
     setNativeDialogOpen(true);
     try {
-      const result = owner ? await dialog.showOpenDialog(owner, options) : await dialog.showOpenDialog(options);
+      const result = owner
+        ? await dialog.showOpenDialog(owner, options)
+        : await dialog.showOpenDialog(options);
       if (result.canceled || !result.filePaths[0]) return null;
       const selectedPath = result.filePaths[0];
       return { path: selectedPath, kind: kindFromPath(selectedPath, mode === 'folder') };
@@ -195,7 +204,9 @@ export function registerIpcHandlers(ipcMain: IpcMain, deps: RegisterIpcDeps): vo
   );
   ipcMain.handle(IPC.REORDER_ITEMS, (_e, ids: number[]) => handleReorderItems(ipcDeps, ids));
   ipcMain.handle(IPC.DELETE_ITEM, (_e, id: number) => handleDeleteItem(ipcDeps, id));
-  ipcMain.handle(IPC.CLEAR_HISTORY, (_e, input: ClearHistoryInput) => handleClearHistory(ipcDeps, input));
+  ipcMain.handle(IPC.CLEAR_HISTORY, (_e, input: ClearHistoryInput) =>
+    handleClearHistory(ipcDeps, input),
+  );
   ipcMain.handle(IPC.RELINK_ITEM, (_e, id: number, newPath: string) =>
     handleRelinkItem(ipcDeps, id, newPath),
   );

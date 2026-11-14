@@ -46,7 +46,11 @@ export function createCapturePipeline(deps: CapturePipelineDeps) {
       content = JSON.stringify(snapshot.paths);
       const kinds = snapshot.paths.map((filePath) => {
         let isDirectory = false;
-        try { isDirectory = fs.statSync(filePath).isDirectory(); } catch { /* unavailable paths are generic files */ }
+        try {
+          isDirectory = fs.statSync(filePath).isDirectory();
+        } catch {
+          /* unavailable paths are generic files */
+        }
         return kindFromPath(filePath, isDirectory);
       });
       kind = kinds.every((value) => value === kinds[0]) ? kinds[0] : 'file';

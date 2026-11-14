@@ -12,7 +12,12 @@ import type {
   UpdateSettingsInput,
 } from '../../shared/types';
 import { DEFAULT_NAV_ORDER } from '../../shared/config';
-import { DEFAULT_FILE_SECTION_ORDER, fileGroupOf, type FileGroup, type FileSection } from '../../shared/file-kind';
+import {
+  DEFAULT_FILE_SECTION_ORDER,
+  fileGroupOf,
+  type FileGroup,
+  type FileSection,
+} from '../../shared/file-kind';
 
 export type { NavKey, SidebarEntry };
 
@@ -168,7 +173,10 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
       ordered: get().isOrderedView() || undefined,
     });
     if (nav === 'files' && activeCategory === null) {
-      items = items.filter((item) => item.type !== 'text' && (!activeFileGroup || fileGroupOf(item) === activeFileGroup));
+      items = items.filter(
+        (item) =>
+          item.type !== 'text' && (!activeFileGroup || fileGroupOf(item) === activeFileGroup),
+      );
     }
     if (generation === fetchGeneration) set({ items });
   },
@@ -196,9 +204,13 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
     await window.copycat.deleteCategory(name);
     const categories = get().categories.filter((entry) => entry !== name);
     saveCategories(categories);
-    set({ categories, activeCategory: get().activeCategory === name ? null : get().activeCategory });
+    set({
+      categories,
+      activeCategory: get().activeCategory === name ? null : get().activeCategory,
+    });
     const hidden = get().settings?.hiddenCategories ?? [];
-    if (hidden.includes(name)) await get().updateSettings({ hiddenCategories: hidden.filter((entry) => entry !== name) });
+    if (hidden.includes(name))
+      await get().updateSettings({ hiddenCategories: hidden.filter((entry) => entry !== name) });
     await get().fetchItems();
   },
 
@@ -237,17 +249,25 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
 
   async loadSettings() {
     const settings = await window.copycat.getSettings();
-    set({ settings, navOrder: settings.navOrder, hiddenNavEntries: settings.hiddenNavEntries ?? [], fileSectionOrder: settings.fileSectionOrder ?? [...DEFAULT_FILE_SECTION_ORDER] });
+    set({
+      settings,
+      navOrder: settings.navOrder,
+      hiddenNavEntries: settings.hiddenNavEntries ?? [],
+      fileSectionOrder: settings.fileSectionOrder ?? [...DEFAULT_FILE_SECTION_ORDER],
+    });
   },
 
   async updateSettings(input) {
     const settings = await window.copycat.updateSettings(input);
-    const keepDraft = get().navReorderMode && input.navOrder === undefined && input.fileSectionOrder === undefined;
+    const keepDraft =
+      get().navReorderMode && input.navOrder === undefined && input.fileSectionOrder === undefined;
     set({
       settings,
       navOrder: keepDraft ? get().navOrder : settings.navOrder,
       hiddenNavEntries: settings.hiddenNavEntries ?? [],
-      fileSectionOrder: keepDraft ? get().fileSectionOrder : settings.fileSectionOrder ?? [...DEFAULT_FILE_SECTION_ORDER],
+      fileSectionOrder: keepDraft
+        ? get().fileSectionOrder
+        : (settings.fileSectionOrder ?? [...DEFAULT_FILE_SECTION_ORDER]),
     });
   },
 
@@ -273,19 +293,29 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
       : [...get().hiddenNavEntries, key];
     await get().updateSettings({
       hiddenNavEntries: hidden,
-      ...(key === 'files' ? { hiddenFileSections: hiding ? [...DEFAULT_FILE_SECTION_ORDER] : [] } : {}),
+      ...(key === 'files'
+        ? { hiddenFileSections: hiding ? [...DEFAULT_FILE_SECTION_ORDER] : [] }
+        : {}),
       ...(key === 'categories' ? { hiddenCategories: hiding ? [...get().categories] : [] } : {}),
     });
   },
 
   async toggleFileSectionVisibility(key) {
     const current = get().settings?.hiddenFileSections ?? [];
-    await get().updateSettings({ hiddenFileSections: current.includes(key) ? current.filter((entry) => entry !== key) : [...current, key] });
+    await get().updateSettings({
+      hiddenFileSections: current.includes(key)
+        ? current.filter((entry) => entry !== key)
+        : [...current, key],
+    });
   },
 
   async toggleCategoryVisibility(name) {
     const current = get().settings?.hiddenCategories ?? [];
-    await get().updateSettings({ hiddenCategories: current.includes(name) ? current.filter((entry) => entry !== name) : [...current, name] });
+    await get().updateSettings({
+      hiddenCategories: current.includes(name)
+        ? current.filter((entry) => entry !== name)
+        : [...current, name],
+    });
   },
 
   moveFileSection(dragKey, overKey) {
@@ -310,7 +340,10 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
   },
 
   async commitNavOrder() {
-    await get().updateSettings({ navOrder: get().navOrder, fileSectionOrder: get().fileSectionOrder });
+    await get().updateSettings({
+      navOrder: get().navOrder,
+      fileSectionOrder: get().fileSectionOrder,
+    });
     set({ navReorderMode: false, navOrderDirty: false });
     get().restoreVisibleSelection();
   },
@@ -333,7 +366,11 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
     const hiddenCategories = state.settings?.hiddenCategories ?? [];
     const hiddenFiles = state.settings?.hiddenFileSections ?? [];
     if (state.activeCategory && !hiddenNav.includes('categories')) {
-      const category = nearestVisible(state.categories, state.activeCategory, (name) => !hiddenCategories.includes(name));
+      const category = nearestVisible(
+        state.categories,
+        state.activeCategory,
+        (name) => !hiddenCategories.includes(name),
+      );
       if (category) {
         if (category !== state.activeCategory) {
           set({ activeCategory: category });
@@ -344,7 +381,11 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
     }
     if (!state.activeCategory && state.nav === 'files' && !hiddenNav.includes('files')) {
       const current: FileSection = state.activeFileGroup ?? 'all';
-      const section = nearestVisible(state.fileSectionOrder, current, (entry) => !hiddenFiles.includes(entry));
+      const section = nearestVisible(
+        state.fileSectionOrder,
+        current,
+        (entry) => !hiddenFiles.includes(entry),
+      );
       if (section) {
         const group = section === 'all' ? null : section;
         if (group !== state.activeFileGroup) {
@@ -355,16 +396,27 @@ export const useClipboardStore = create<ClipboardState>((set, get) => ({
       }
     }
     const current = state.activeCategory ? 'categories' : state.nav;
-    const entry = nearestVisible(state.navOrder, current, (key) =>
-      !hiddenNav.includes(key) && (key !== 'categories' || state.categories.some((name) => !hiddenCategories.includes(name))) &&
-      (key !== 'files' || state.fileSectionOrder.some((section) => !hiddenFiles.includes(section))));
+    const entry = nearestVisible(
+      state.navOrder,
+      current,
+      (key) =>
+        !hiddenNav.includes(key) &&
+        (key !== 'categories' ||
+          state.categories.some((name) => !hiddenCategories.includes(name))) &&
+        (key !== 'files' ||
+          state.fileSectionOrder.some((section) => !hiddenFiles.includes(section))),
+    );
     if (!entry) return;
     if (entry === 'categories') {
       const category = state.categories.find((name) => !hiddenCategories.includes(name));
       if (category) set({ activeCategory: category, activeFileGroup: null });
     } else if (entry === 'files') {
       const section = state.fileSectionOrder.find((key) => !hiddenFiles.includes(key)) ?? 'all';
-      set({ nav: 'files', activeCategory: null, activeFileGroup: section === 'all' ? null : section });
+      set({
+        nav: 'files',
+        activeCategory: null,
+        activeFileGroup: section === 'all' ? null : section,
+      });
     } else {
       set({ nav: entry, activeCategory: null, activeFileGroup: null });
     }

@@ -47,7 +47,7 @@ app.whenReady().then(() => {
     onBoundsChange: (windowBounds) => settingsStore.update({ windowBounds }),
   });
   if (DEV_WINDOW) showWindow(win);
-  registerContextMenu(win, () => settingsStore.get().language === 'en' ? 'en' : 'ru');
+  registerContextMenu(win, () => (settingsStore.get().language === 'en' ? 'en' : 'ru'));
 
   const locationTracker = createLocationTracker({
     itemsRepo,
@@ -120,11 +120,23 @@ app.whenReady().then(() => {
     },
   });
 
-  tray = createTray(path.join(__dirname, process.platform === 'win32' ? '../../resources/small/small.ico' : '../../resources/small/small.png'), trayCallbacks, settingsStore.get().language === 'en' ? 'en' : 'ru');
+  tray = createTray(
+    path.join(
+      __dirname,
+      process.platform === 'win32'
+        ? '../../resources/small/small.ico'
+        : '../../resources/small/small.png',
+    ),
+    trayCallbacks,
+    settingsStore.get().language === 'en' ? 'en' : 'ru',
+  );
 
   registerHotkey(settingsStore.get().hotkey, toggle);
 
-  startAutoUpdates(() => tray, () => settingsStore.get().language === 'en' ? 'en' : 'ru');
+  startAutoUpdates(
+    () => tray,
+    () => (settingsStore.get().language === 'en' ? 'en' : 'ru'),
+  );
 });
 
 app.on('before-quit', () => {

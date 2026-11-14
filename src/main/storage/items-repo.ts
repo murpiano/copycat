@@ -68,11 +68,16 @@ export function createItemsRepo(db: Database.Database, tagsRepo: TagsRepo): Item
   );
 
   function rowToItem(row: ItemRow): ClipboardItem {
-    let kind = row.file_kind ?? (row.type === 'text' ? 'text' : row.type === 'image' ? 'image' : undefined);
+    let kind =
+      row.file_kind ?? (row.type === 'text' ? 'text' : row.type === 'image' ? 'image' : undefined);
     if (!kind && row.type === 'file') {
       const filePath = firstPath(row.content);
       let isDirectory = false;
-      try { isDirectory = fs.statSync(filePath).isDirectory(); } catch { /* missing source remains a generic file */ }
+      try {
+        isDirectory = fs.statSync(filePath).isDirectory();
+      } catch {
+        /* missing source remains a generic file */
+      }
       kind = kindFromPath(filePath, isDirectory);
     }
     return {
@@ -104,14 +109,24 @@ export function createItemsRepo(db: Database.Database, tagsRepo: TagsRepo): Item
           ? input.content.slice(0, MAX_CONTENT_LENGTH)
           : input.content;
       const createdAt = Date.now();
-      const kind = input.kind ?? (input.type === 'text' ? 'text' : input.type === 'image' ? 'image' : 'file');
+      const kind =
+        input.kind ?? (input.type === 'text' ? 'text' : input.type === 'image' ? 'image' : 'file');
       const result = insertStmt.run(input.type, kind, content, input.sourceApp, createdAt);
       const item = rowToItem(byIdStmt.get(result.lastInsertRowid) as ItemRow);
       if (input.type === 'image' || input.type === 'file') {
         let titleSource = content;
-        if (input.type === 'file') { try { titleSource = JSON.parse(content)[0] ?? content; } catch { /* keep content */ } }
+        if (input.type === 'file') {
+          try {
+            titleSource = JSON.parse(content)[0] ?? content;
+          } catch {
+            /* keep content */
+          }
+        }
         const base = titleSource.split(/[\\/]/).pop()?.trim();
-        if (base) { titleStmt.run(base, result.lastInsertRowid); item.title = base; }
+        if (base) {
+          titleStmt.run(base, result.lastInsertRowid);
+          item.title = base;
+        }
       }
       return item;
     },
@@ -136,9 +151,7 @@ export function createItemsRepo(db: Database.Database, tagsRepo: TagsRepo): Item
         // A card renamed by the user is found by that name, not only by the
         // text it holds. lower_unicode folds Cyrillic, which SQLite's own
         // LIKE does not.
-        clauses.push(
-          '(lower_unicode(items.content) LIKE ? OR lower_unicode(items.title) LIKE ?)',
-        );
+        clauses.push('(lower_unicode(items.content) LIKE ? OR lower_unicode(items.title) LIKE ?)');
         const needle = `%${query.search.toLowerCase()}%`;
         params.push(needle, needle);
       }

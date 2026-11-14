@@ -66,17 +66,56 @@ export function FileIcon(props: IconProps) {
 }
 
 function LabeledFileIcon({ label, ...props }: IconProps & { label: string }) {
-  return <Svg {...props}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><text x="7" y="17" fontSize="5.5" fill="currentColor" stroke="none" fontWeight="700">{label}</text></Svg>;
+  return (
+    <Svg {...props}>
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6" />
+      <text x="7" y="17" fontSize="5.5" fill="currentColor" stroke="none" fontWeight="700">
+        {label}
+      </text>
+    </Svg>
+  );
 }
-export function WordIcon(props: IconProps) { return <LabeledFileIcon {...props} label="W" />; }
-export function ExcelIcon(props: IconProps) { return <LabeledFileIcon {...props} label="X" />; }
-export function PowerPointIcon(props: IconProps) { return <LabeledFileIcon {...props} label="P" />; }
-export function PdfIcon(props: IconProps) { return <LabeledFileIcon {...props} label="PDF" />; }
-export function AudioIcon(props: IconProps) { return <Svg {...props}><path d="M10 18V5l10-2v13" /><path d="M10 8l10-2" /><ellipse cx="7" cy="18" rx="3" ry="2" /><ellipse cx="17" cy="16" rx="3" ry="2" /></Svg>; }
-export function VideoIcon(props: IconProps) { return <Svg {...props}><rect x="3" y="5" width="13" height="14" rx="2" /><path d="M16 10l5-3v10l-5-3z" /></Svg>; }
-export function TextDocumentIcon(props: IconProps) { return <LabeledFileIcon {...props} label="TXT" />; }
+export function WordIcon(props: IconProps) {
+  return <LabeledFileIcon {...props} label="W" />;
+}
+export function ExcelIcon(props: IconProps) {
+  return <LabeledFileIcon {...props} label="X" />;
+}
+export function PowerPointIcon(props: IconProps) {
+  return <LabeledFileIcon {...props} label="P" />;
+}
+export function PdfIcon(props: IconProps) {
+  return <LabeledFileIcon {...props} label="PDF" />;
+}
+export function AudioIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <path d="M10 18V5l10-2v13" />
+      <path d="M10 8l10-2" />
+      <ellipse cx="7" cy="18" rx="3" ry="2" />
+      <ellipse cx="17" cy="16" rx="3" ry="2" />
+    </Svg>
+  );
+}
+export function VideoIcon(props: IconProps) {
+  return (
+    <Svg {...props}>
+      <rect x="3" y="5" width="13" height="14" rx="2" />
+      <path d="M16 10l5-3v10l-5-3z" />
+    </Svg>
+  );
+}
+export function TextDocumentIcon(props: IconProps) {
+  return <LabeledFileIcon {...props} label="TXT" />;
+}
 export function BoxIcon(props: IconProps) {
-  return <Svg {...props}><path d="m4 7 8-4 8 4-8 4z" /><path d="M4 7v10l8 4 8-4V7M12 11v10" /></Svg>;
+  return (
+    <Svg {...props}>
+      <path d="m4 7 8-4 8 4-8 4z" />
+      <path d="M4 7v10l8 4 8-4V7M12 11v10" />
+    </Svg>
+  );
 }
 
 export function TagIcon(props: IconProps) {
@@ -104,7 +143,11 @@ export function PlusIcon(props: IconProps) {
   );
 }
 export function ArrowUpIcon(props: IconProps) {
-  return <Svg {...props}><path d="m6 10 6-6 6 6M12 4v16" /></Svg>;
+  return (
+    <Svg {...props}>
+      <path d="m6 10 6-6 6 6M12 4v16" />
+    </Svg>
+  );
 }
 
 export function SearchIcon(props: IconProps) {
@@ -134,7 +177,22 @@ export function SettingsIcon(props: IconProps) {
 }
 
 export function EyeIcon({ closed = false, ...props }: IconProps & { closed?: boolean }) {
-  return <Svg {...props}>{closed ? <><path d="M3 3l18 18" /><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" /><path d="M9.9 5.2A11.8 11.8 0 0 1 12 5c5 0 8.5 4.2 9.5 7-.4 1.1-1.2 2.3-2.3 3.4M6.1 6.1C3.9 7.7 2.8 10 2.5 12c.5 1.6 1.8 3.7 4.1 5.3" /></> : <><path d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7z" /><circle cx="12" cy="12" r="2.5" /></>}</Svg>;
+  return (
+    <Svg {...props}>
+      {closed ? (
+        <>
+          <path d="M3 3l18 18" />
+          <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+          <path d="M9.9 5.2A11.8 11.8 0 0 1 12 5c5 0 8.5 4.2 9.5 7-.4 1.1-1.2 2.3-2.3 3.4M6.1 6.1C3.9 7.7 2.8 10 2.5 12c.5 1.6 1.8 3.7 4.1 5.3" />
+        </>
+      ) : (
+        <>
+          <path d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7z" />
+          <circle cx="12" cy="12" r="2.5" />
+        </>
+      )}
+    </Svg>
+  );
 }
 
 export function PencilIcon(props: IconProps) {

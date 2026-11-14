@@ -67,10 +67,7 @@ export async function handleGetSettings(deps: IpcDeps): Promise<AppSettings> {
   return deps.readSettings();
 }
 
-export async function handleSetHotkey(
-  deps: IpcDeps,
-  accelerator: string,
-): Promise<HotkeyResult> {
+export async function handleSetHotkey(deps: IpcDeps, accelerator: string): Promise<HotkeyResult> {
   return deps.applyHotkey(accelerator);
 }
 
@@ -145,11 +142,7 @@ export async function handleClearHistory(deps: IpcDeps, input: ClearHistoryInput
   deps.refreshLocations?.();
 }
 
-export async function handleRelinkItem(
-  deps: IpcDeps,
-  id: number,
-  newPath: string,
-): Promise<void> {
+export async function handleRelinkItem(deps: IpcDeps, id: number, newPath: string): Promise<void> {
   const item = deps.itemsRepo.getById(id);
   if (!item) throw new Error('Item not found');
   let stat;

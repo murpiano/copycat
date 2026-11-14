@@ -43,10 +43,15 @@ export function attachMurpianoSignature(sig: HTMLAnchorElement): () => void {
   // never nudged out of hover by the plaque's own transform.
   const zone = sig.closest<HTMLElement>('.mp-signature-zone') || sig;
 
-  const reduceMotion = typeof window.matchMedia === 'function'
-    ? window.matchMedia('(prefers-reduced-motion: reduce)')
-    : { matches: false };
-  const tracks = EYES.map((e) => ({ el: svg.querySelector<SVGGElement>(e.track), cx: e.cx, cy: e.cy }));
+  const reduceMotion =
+    typeof window.matchMedia === 'function'
+      ? window.matchMedia('(prefers-reduced-motion: reduce)')
+      : { matches: false };
+  const tracks = EYES.map((e) => ({
+    el: svg.querySelector<SVGGElement>(e.track),
+    cx: e.cx,
+    cy: e.cy,
+  }));
   const foreleg = svg.querySelector<SVGPathElement>('.mp-cat--foreleg-silhouette');
   const pawHead = svg.querySelector<SVGGElement>('.mp-cat--paw-head');
   const elbowJoint = svg.querySelector<SVGCircleElement>('.mp-cat--elbow-joint');
@@ -54,7 +59,13 @@ export function attachMurpianoSignature(sig: HTMLAnchorElement): () => void {
   const name = sig.querySelector<HTMLElement>('.mp-signature__name');
   const contact = sig.querySelector<HTMLElement>('.mp-signature__contact');
   const glowEl = sig.querySelector<HTMLElement>('.mp-signature__glow');
-  const eyeSpecs = EYE_SPECS.map((e) => ({ el: svg.querySelector<SVGRectElement>(e.sel), x0: e.x0, y0: e.y0, x1: e.x1, y1: e.y1 }));
+  const eyeSpecs = EYE_SPECS.map((e) => ({
+    el: svg.querySelector<SVGRectElement>(e.sel),
+    x0: e.x0,
+    y0: e.y0,
+    x1: e.x1,
+    y1: e.y1,
+  }));
 
   if (!foreleg || !pawHead || !elbowJoint || !shoulderRound || !name || !contact) return () => {};
 
@@ -169,7 +180,8 @@ export function attachMurpianoSignature(sig: HTMLAnchorElement): () => void {
         oy /= ellipse;
       }
       tracks.forEach((t) => {
-        if (t.el) t.el.setAttribute('transform', 'translate(' + ox.toFixed(2) + ',' + oy.toFixed(2) + ')');
+        if (t.el)
+          t.el.setAttribute('transform', 'translate(' + ox.toFixed(2) + ',' + oy.toFixed(2) + ')');
       });
       return;
     }
@@ -250,7 +262,8 @@ export function attachMurpianoSignature(sig: HTMLAnchorElement): () => void {
     };
     const normalSum: Point = { x: upperNormal.x + lowerNormal.x, y: upperNormal.y + lowerNormal.y };
     const norm = Math.hypot(normalSum.x, normalSum.y);
-    const jointNormal: Point = norm < 0.15 ? lowerNormal : { x: normalSum.x / norm, y: normalSum.y / norm };
+    const jointNormal: Point =
+      norm < 0.15 ? lowerNormal : { x: normalSum.x / norm, y: normalSum.y / norm };
     const radians = (rotation * Math.PI) / 180;
     const wristNormal: Point = {
       x: lowerNormal.x * Math.cos(radians) - lowerNormal.y * Math.sin(radians),
@@ -291,7 +304,9 @@ export function attachMurpianoSignature(sig: HTMLAnchorElement): () => void {
         fmt(y),
         'C',
         coords(plus({ x, y }, wristNormal, -10)),
-        coords(plus({ x: x - (x - wrist.x) * 0.34, y: y - (y - wrist.y) * 0.34 }, wristNormal, -12)),
+        coords(
+          plus({ x: x - (x - wrist.x) * 0.34, y: y - (y - wrist.y) * 0.34 }, wristNormal, -12),
+        ),
         coords(wristLower),
         'C',
         coords(midpoint(wristLower, elbowLower, 0.34)),
@@ -317,14 +332,24 @@ export function attachMurpianoSignature(sig: HTMLAnchorElement): () => void {
     shoulderRound!.setAttribute('ry', fmt(mix(24, 27, reachingLeft)));
     shoulderRound!.setAttribute(
       'transform',
-      'translate(' + fmt(SHOULDER.x + upperDx * 13) + ' ' + fmt(SHOULDER.y + upperDy * 13) + ') rotate(' + fmt(upperAngle) + ')',
+      'translate(' +
+        fmt(SHOULDER.x + upperDx * 13) +
+        ' ' +
+        fmt(SHOULDER.y + upperDy * 13) +
+        ') rotate(' +
+        fmt(upperAngle) +
+        ')',
     );
     const direction = (Math.atan2(y - elbow.y, x - elbow.x) * 180) / Math.PI;
-    pawHead!.setAttribute('transform', 'translate(' + fmt(x) + ' ' + fmt(y) + ') rotate(' + fmt(direction) + ')');
+    pawHead!.setAttribute(
+      'transform',
+      'translate(' + fmt(x) + ' ' + fmt(y) + ') rotate(' + fmt(direction) + ')',
+    );
   }
 
   function springName(dt: number) {
-    const target = awake && planted && sig.classList.contains('mp-signature--lean') && !hunting ? 3.8 : 0;
+    const target =
+      awake && planted && sig.classList.contains('mp-signature--lean') && !hunting ? 3.8 : 0;
     if (reduceMotion.matches) {
       nameAngle = target;
       nameVelocity = 0;
@@ -445,7 +470,13 @@ export function attachMurpianoSignature(sig: HTMLAnchorElement): () => void {
     planted = false;
     timers.forEach((id) => window.clearTimeout(id));
     timers.length = 0;
-    sig.classList.remove('mp-signature--awake', 'mp-signature--eyes-on', 'mp-signature--paw-visible', 'mp-signature--lean', 'mp-signature--hunt');
+    sig.classList.remove(
+      'mp-signature--awake',
+      'mp-signature--eyes-on',
+      'mp-signature--paw-visible',
+      'mp-signature--lean',
+      'mp-signature--hunt',
+    );
     resetEyes();
   }
 

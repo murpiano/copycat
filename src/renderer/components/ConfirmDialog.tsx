@@ -35,14 +35,27 @@ export function ConfirmDialog({
   useEffect(() => {
     function trapFocus(event: KeyboardEvent) {
       if (event.key !== 'Tab') return;
-      const buttons = Array.from(dialogRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? []);
-      if (!buttons.length) { event.preventDefault(); return; }
+      const buttons = Array.from(
+        dialogRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)') ?? [],
+      );
+      if (!buttons.length) {
+        event.preventDefault();
+        return;
+      }
       const first = buttons[0];
       const last = buttons[buttons.length - 1];
-      if (event.shiftKey && (document.activeElement === first || !dialogRef.current?.contains(document.activeElement))) {
-        event.preventDefault(); last.focus();
-      } else if (!event.shiftKey && (document.activeElement === last || !dialogRef.current?.contains(document.activeElement))) {
-        event.preventDefault(); first.focus();
+      if (
+        event.shiftKey &&
+        (document.activeElement === first || !dialogRef.current?.contains(document.activeElement))
+      ) {
+        event.preventDefault();
+        last.focus();
+      } else if (
+        !event.shiftKey &&
+        (document.activeElement === last || !dialogRef.current?.contains(document.activeElement))
+      ) {
+        event.preventDefault();
+        first.focus();
       }
     }
     window.addEventListener('keydown', trapFocus, true);
@@ -53,17 +66,42 @@ export function ConfirmDialog({
   }, []);
   return (
     <Overlay onClose={() => {}}>
-      <div ref={dialogRef} className="popup confirm-dialog" role="alertdialog" aria-modal="true" aria-label={title} aria-describedby={messageId} aria-busy={busy}>
+      <div
+        ref={dialogRef}
+        className="popup confirm-dialog"
+        role="alertdialog"
+        aria-modal="true"
+        aria-label={title}
+        aria-describedby={messageId}
+        aria-busy={busy}
+      >
         <div className="popup-head">
           <div className="popup-title">{title}</div>
         </div>
-        <p id={messageId} className="confirm-message">{message}</p>
-        {error && <p className="field-hint" role="alert">{error}</p>}
+        <p id={messageId} className="confirm-message">
+          {message}
+        </p>
+        {error && (
+          <p className="field-hint" role="alert">
+            {error}
+          </p>
+        )}
         <div className="dialog-actions">
-          <button type="button" className="button ghost" onClick={onCancel} disabled={busy} autoFocus>
+          <button
+            type="button"
+            className="button ghost"
+            onClick={onCancel}
+            disabled={busy}
+            autoFocus
+          >
             {cancelLabel}
           </button>
-          <button type="button" className={danger ? 'button danger' : 'button primary'} onClick={onConfirm} disabled={busy}>
+          <button
+            type="button"
+            className={danger ? 'button danger' : 'button primary'}
+            onClick={onConfirm}
+            disabled={busy}
+          >
             {confirmLabel}
           </button>
         </div>

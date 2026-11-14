@@ -15,10 +15,16 @@ import type { ClipboardItem } from '../shared/types';
 export function App() {
   const t = useT();
   const language = useLanguage();
-  const theme = useClipboardStore((state) => (state.settings?.theme === 'light' ? 'light' : 'dark'));
+  const theme = useClipboardStore((state) =>
+    state.settings?.theme === 'light' ? 'light' : 'dark',
+  );
 
-  useEffect(() => { document.documentElement.lang = language; }, [language]);
-  useEffect(() => { document.documentElement.setAttribute('data-theme', theme); }, [theme]);
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
   const {
     items,
     search,
@@ -219,10 +225,7 @@ export function App() {
       />
       {/* While the sidebar is being arranged, nothing else accepts input.
           `inert` is not in React 18's typings yet, hence the cast. */}
-      <div
-        className="main"
-        {...((navReorderMode ? { inert: '' } : {}) as Record<string, string>)}
-      >
+      <div className="main" {...((navReorderMode ? { inert: '' } : {}) as Record<string, string>)}>
         <div className="topbar">
           <SearchBar value={search} onChange={setSearch} />
         </div>
@@ -274,9 +277,19 @@ export function App() {
           // A card made while a category is open belongs to it by default.
           initialTags={activeCategory ? [activeCategory.toLowerCase()] : []}
           initialStarred={!activeCategory && nav === 'starred'}
-          creationGroup={activeCategory ? null : nav === 'files' ? activeFileGroup ?? 'all' : nav === 'text' ? 'text' : null}
+          creationGroup={
+            activeCategory
+              ? null
+              : nav === 'files'
+                ? (activeFileGroup ?? 'all')
+                : nav === 'text'
+                  ? 'text'
+                  : null
+          }
           onClose={() => composeItem(false)}
-          onSave={(title, content, tags, creation) => createItem({ title, content, tags, ...creation })}
+          onSave={(title, content, tags, creation) =>
+            createItem({ title, content, tags, ...creation })
+          }
           onCategoryAdd={addCategory}
         />
       )}
@@ -305,9 +318,13 @@ export function App() {
           message={[
             `«${itemDisplayTitle(deleteTarget, language)}».`,
             deleteTarget.starred ? t('Блок добавлен в избранное.') : '',
-            deleteTarget.tags.length ? `${t('Блок включён в категории:')} ${deleteTarget.tags.join(', ')}.` : '',
+            deleteTarget.tags.length
+              ? `${t('Блок включён в категории:')} ${deleteTarget.tags.join(', ')}.`
+              : '',
             t('Блок будет удалён из истории и всех разделов.'),
-          ].filter(Boolean).join(' ')}
+          ]
+            .filter(Boolean)
+            .join(' ')}
           confirmLabel={t('Удалить')}
           cancelLabel={t('Отмена')}
           danger

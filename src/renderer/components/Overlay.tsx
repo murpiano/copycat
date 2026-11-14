@@ -17,7 +17,12 @@ interface OverlayProps {
  * the backdrop, or past the window edge — would count as a click on the
  * backdrop and shut the dialog mid-selection.
  */
-export function Overlay({ onClose, children, dismissOnBackdrop = true, dragBackdrop = false }: OverlayProps) {
+export function Overlay({
+  onClose,
+  children,
+  dismissOnBackdrop = true,
+  dragBackdrop = false,
+}: OverlayProps) {
   const pressedBackdrop = useRef(false);
 
   function handleMouseDown(event: MouseEvent<HTMLDivElement>) {

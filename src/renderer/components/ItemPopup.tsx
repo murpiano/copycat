@@ -38,15 +38,14 @@ export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
 
   return (
     <Overlay onClose={onClose}>
-      <div
-        className="popup"
-        data-type={item.type}
-        role="dialog"
-        aria-label={t('Содержимое')}
-      >
+      <div className="popup" data-type={item.type} role="dialog" aria-label={t('Содержимое')}>
         <div className="popup-head">
-          <div className="item-card-badge static">{item.type === 'file' ? fileIcon(item, 15) : badgeIcon(item.type, 15)}</div>
-          <div className="popup-title" title={itemDisplayTitle(item, language)}>{itemDisplayTitle(item, language)}</div>
+          <div className="item-card-badge static">
+            {item.type === 'file' ? fileIcon(item, 15) : badgeIcon(item.type, 15)}
+          </div>
+          <div className="popup-title" title={itemDisplayTitle(item, language)}>
+            {itemDisplayTitle(item, language)}
+          </div>
           <span className="item-card-time">{formatAge(item.createdAt, language)}</span>
           <button
             className="item-card-action"
@@ -79,10 +78,7 @@ export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
             <img src={window.copycat.toFileUrl(item.content)} alt={t('Предпросмотр изображения')} />
           </div>
         ) : (
-          <div
-            ref={contentRef}
-            className={selecting ? 'popup-content selecting' : 'popup-content'}
-          >
+          <div ref={contentRef} className={selecting ? 'popup-content selecting' : 'popup-content'}>
             {item.content}
           </div>
         )}
@@ -96,7 +92,20 @@ export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
             ))}
           </div>
         )}
-        {item.type !== 'text' && <button type="button" className="button open-object" onClick={() => { void window.copycat.openItem(item.id).then(() => setOpenError(false)).catch(() => setOpenError(true)); }}>{t('Открыть')}</button>}
+        {item.type !== 'text' && (
+          <button
+            type="button"
+            className="button open-object"
+            onClick={() => {
+              void window.copycat
+                .openItem(item.id)
+                .then(() => setOpenError(false))
+                .catch(() => setOpenError(true));
+            }}
+          >
+            {t('Открыть')}
+          </button>
+        )}
         {(item.missing || openError) && (
           <div className="field-hint popup-missing" role="alert">
             <span>{t('Исходный объект не найден.')}</span>

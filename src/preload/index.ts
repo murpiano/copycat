@@ -27,8 +27,10 @@ function toFileUrl(filePath: string): string {
 const api: CopycatAPI = {
   getItems: (query: GetItemsQuery) => ipcRenderer.invoke(IPC.GET_ITEMS, query),
   createItem: (input: CreateItemInput) => ipcRenderer.invoke(IPC.CREATE_ITEM, input),
-  pickObject: (mode: 'file' | 'folder', group?: import('../shared/file-kind').FileGroup): Promise<PickedObject | null> =>
-    ipcRenderer.invoke(IPC.PICK_OBJECT, mode, group),
+  pickObject: (
+    mode: 'file' | 'folder',
+    group?: import('../shared/file-kind').FileGroup,
+  ): Promise<PickedObject | null> => ipcRenderer.invoke(IPC.PICK_OBJECT, mode, group),
   openItem: (id: number) => ipcRenderer.invoke(IPC.OPEN_ITEM, id),
   copyItem: (id: number) => ipcRenderer.invoke(IPC.COPY_ITEM, id),
   pasteItem: (id: number) => ipcRenderer.invoke(IPC.PASTE_ITEM, id),
@@ -45,16 +47,14 @@ const api: CopycatAPI = {
   relinkItem: (id: number, newPath: string) => ipcRenderer.invoke(IPC.RELINK_ITEM, id, newPath),
   getSettings: () => ipcRenderer.invoke(IPC.GET_SETTINGS),
   setHotkey: (accelerator: string) => ipcRenderer.invoke(IPC.SET_HOTKEY, accelerator),
-  setHotkeyCapture: (capturing: boolean) =>
-    ipcRenderer.invoke(IPC.SET_HOTKEY_CAPTURE, capturing),
+  setHotkeyCapture: (capturing: boolean) => ipcRenderer.invoke(IPC.SET_HOTKEY_CAPTURE, capturing),
   onHotkeyCaptureCanceled: (cb: () => void) => {
     const listener = () => cb();
     ipcRenderer.on(IPC.HOTKEY_CAPTURE_CANCELED, listener);
     return () => ipcRenderer.removeListener(IPC.HOTKEY_CAPTURE_CANCELED, listener);
   },
   toFileUrl,
-  updateSettings: (input: UpdateSettingsInput) =>
-    ipcRenderer.invoke(IPC.UPDATE_SETTINGS, input),
+  updateSettings: (input: UpdateSettingsInput) => ipcRenderer.invoke(IPC.UPDATE_SETTINGS, input),
   hideWindow: () => ipcRenderer.invoke(IPC.HIDE_WINDOW),
   onWindowShown: (cb: () => void) => {
     const listener = () => cb();

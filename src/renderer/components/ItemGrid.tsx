@@ -59,14 +59,20 @@ export function ItemGrid({
   function recomputeVisibleRows() {
     const el = sectionRef.current;
     if (!el) return;
-    const columns = Math.max(1, Math.floor((el.clientWidth + GRID_GAP) / (GRID_MIN_CARD_WIDTH + GRID_GAP)));
+    const columns = Math.max(
+      1,
+      Math.floor((el.clientWidth + GRID_GAP) / (GRID_MIN_CARD_WIDTH + GRID_GAP)),
+    );
     const totalRows = Math.ceil(items.length / columns);
     if (reorderMode) {
       setVisibleRows({ columns, startRow: 0, endRow: totalRows });
       return;
     }
     const startRow = Math.max(0, Math.floor(el.scrollTop / GRID_ROW_STEP) - OVERSCAN_ROWS);
-    const endRow = Math.min(totalRows, Math.ceil((el.scrollTop + el.clientHeight) / GRID_ROW_STEP) + OVERSCAN_ROWS);
+    const endRow = Math.min(
+      totalRows,
+      Math.ceil((el.scrollTop + el.clientHeight) / GRID_ROW_STEP) + OVERSCAN_ROWS,
+    );
     setVisibleRows({ columns, startRow, endRow });
   }
 
@@ -83,7 +89,10 @@ export function ItemGrid({
   const startIndex = visibleRows.startRow * visibleRows.columns;
   const endIndex = Math.min(items.length, visibleRows.endRow * visibleRows.columns);
   const topRows = visibleRows.startRow;
-  const bottomRows = Math.max(0, Math.ceil(items.length / visibleRows.columns) - visibleRows.endRow);
+  const bottomRows = Math.max(
+    0,
+    Math.ceil(items.length / visibleRows.columns) - visibleRows.endRow,
+  );
 
   function handleDragOver(overId: number) {
     if (dragId.current === null) return;
@@ -121,7 +130,16 @@ export function ItemGrid({
             <span>{t('Создать')}</span>
           </button>
         )}
-        {showTop && items.length > 0 && <button className="grid-reorder-toggle grid-top" onClick={() => sectionRef.current?.scrollTo({ top: 0, behavior: 'smooth' })} aria-label={t('В начало')}><ArrowUpIcon size={15} /><span>{t('В начало')}</span></button>}
+        {showTop && items.length > 0 && (
+          <button
+            className="grid-reorder-toggle grid-top"
+            onClick={() => sectionRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
+            aria-label={t('В начало')}
+          >
+            <ArrowUpIcon size={15} />
+            <span>{t('В начало')}</span>
+          </button>
+        )}
       </div>
 
       {items.length === 0 ? (
@@ -136,7 +154,10 @@ export function ItemGrid({
           }}
         >
           {topRows > 0 && (
-            <div className="item-grid-spacer" style={{ gridColumn: '1 / -1', gridRow: `span ${topRows}` }} />
+            <div
+              className="item-grid-spacer"
+              style={{ gridColumn: '1 / -1', gridRow: `span ${topRows}` }}
+            />
           )}
           {items.slice(startIndex, endIndex).map((item) => (
             <ItemCard
@@ -156,7 +177,10 @@ export function ItemGrid({
             />
           ))}
           {bottomRows > 0 && (
-            <div className="item-grid-spacer" style={{ gridColumn: '1 / -1', gridRow: `span ${bottomRows}` }} />
+            <div
+              className="item-grid-spacer"
+              style={{ gridColumn: '1 / -1', gridRow: `span ${bottomRows}` }}
+            />
           )}
         </div>
       )}

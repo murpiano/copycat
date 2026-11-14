@@ -17,9 +17,21 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
     // when a hidden window is raised again.
     const focus = (): void => {
       const state = useClipboardStore.getState();
-      if (state.expandedId !== null || state.editingId !== null || state.composing || state.settingsOpen) return;
+      if (
+        state.expandedId !== null ||
+        state.editingId !== null ||
+        state.composing ||
+        state.settingsOpen
+      )
+        return;
       const active = document.activeElement;
-      if (active && active !== document.body && active !== document.documentElement && active !== inputRef.current) return;
+      if (
+        active &&
+        active !== document.body &&
+        active !== document.documentElement &&
+        active !== inputRef.current
+      )
+        return;
       inputRef.current?.focus();
     };
     focus();
@@ -29,7 +41,22 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
 
   return (
     <div className="search-field">
-      {value ? <button type="button" className="search-clear" aria-label={t('Очистить поиск')} title={t('Очистить поиск')} onClick={() => { onChange(''); inputRef.current?.focus(); }}><CloseIcon size={16} /></button> : <SearchIcon size={16} />}
+      {value ? (
+        <button
+          type="button"
+          className="search-clear"
+          aria-label={t('Очистить поиск')}
+          title={t('Очистить поиск')}
+          onClick={() => {
+            onChange('');
+            inputRef.current?.focus();
+          }}
+        >
+          <CloseIcon size={16} />
+        </button>
+      ) : (
+        <SearchIcon size={16} />
+      )}
       <label>
         <span className="visually-hidden">{t('Поиск по буферу обмена')}</span>
         <input
