@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { CloseIcon, SearchIcon } from './icons';
+import styles from './SearchBar.module.css';
 import { useT } from '../i18n';
 import { useClipboardStore } from '../store/useClipboardStore';
 
@@ -40,11 +41,11 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
   }, []);
 
   return (
-    <div className="search-field">
+    <div className={styles.searchField}>
       {value ? (
         <button
           type="button"
-          className="search-clear"
+          className={styles.searchClear}
           aria-label={t('Очистить поиск')}
           title={t('Очистить поиск')}
           onClick={() => {
@@ -58,14 +59,14 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
         <SearchIcon size={16} />
       )}
       <label>
-        <span className="visually-hidden">{t('Поиск по буферу обмена')}</span>
+        <span className={styles.visuallyHidden}>{t('Поиск по буферу обмена')}</span>
         <input
           ref={inputRef}
           type="text"
           placeholder={t('Поиск по буферу обмена...')}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="search-bar"
+          className={styles.searchBar}
         />
       </label>
     </div>

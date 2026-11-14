@@ -1,0 +1,415 @@
+@keyframes card-jiggle {
+  0% {
+    transform: rotate(-0.7deg) translateY(0);
+  }
+  50% {
+    transform: rotate(0.7deg) translateY(-1px);
+  }
+  100% {
+    transform: rotate(-0.7deg) translateY(0);
+  }
+}
+
+.itemCard {
+  /* Width comes from the grid track (.item-grid), which shrinks down to a
+     width where three clamped lines of content are still readable. */
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  background: var(--surface);
+  transition:
+    border-color 130ms ease,
+    box-shadow 130ms ease,
+    transform 110ms ease;
+}
+
+.itemCard:hover {
+  border-color: var(--nav-active-border);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.36);
+  transform: translateY(-2px);
+}
+
+.itemCard:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Reorder mode: the shaking card signals it can be dragged. */
+.jiggle {
+  animation: card-jiggle 220ms ease-in-out infinite;
+  cursor: grab;
+}
+
+.jiggle:hover {
+  transform: none;
+}
+
+.jiggle:active {
+  cursor: grabbing;
+}
+
+.jiggle,
+.jiggle * {
+  cursor: grab !important;
+  user-select: none !important;
+}
+
+.jiggle:active,
+.jiggle:active * {
+  cursor: grabbing !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jiggle {
+    animation: none;
+    border-color: var(--accent-text);
+  }
+}
+
+.itemCardBar {
+  flex: 0 0 3px;
+}
+
+.itemCard[data-type='text'] {
+  background:
+    linear-gradient(90deg, rgba(69, 161, 249, 0.14) 0px, rgba(69, 161, 249, 0) 26px), var(--surface);
+}
+
+.itemCard[data-type='image'],
+.itemCard[data-type='file'] {
+  background:
+    linear-gradient(90deg, rgba(106, 215, 153, 0.11) 0px, rgba(106, 215, 153, 0) 26px),
+    var(--surface);
+}
+
+.itemCard[data-type='text'] .itemCardBar {
+  background: linear-gradient(180deg, #45a1f9 0%, #3e95f2 100%);
+}
+
+.itemCard[data-type='image'] .itemCardBar,
+.itemCard[data-type='file'] .itemCardBar {
+  background: linear-gradient(180deg, #6ad799 0%, #68d195 100%);
+}
+
+.itemCardBody {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+}
+
+.itemCardFooter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+  min-height: 28px;
+}
+
+.itemCard[data-type='text'] .itemCardFooter {
+  min-height: 0;
+}
+
+.itemCardFooter .itemCardTags {
+  min-width: 0;
+  max-height: 28px;
+  overflow: hidden;
+}
+
+.itemOpen {
+  flex: 0 0 auto;
+  opacity: 0;
+  pointer-events: none;
+  border: 1px solid var(--surface-border);
+  border-radius: 7px;
+  background: var(--open-bg);
+  color: var(--open-text);
+  font-size: 11px;
+  min-width: 78px;
+  height: 28px;
+  padding: 0 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease,
+    transform 90ms ease;
+}
+
+.itemCard:hover .itemOpen,
+.itemOpen:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.itemOpen:hover {
+  background: var(--open-hover);
+  border-color: var(--nav-active-border);
+  color: var(--text);
+}
+
+.itemOpen:active {
+  transform: scale(0.94);
+}
+
+.itemOpen:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+.itemOpenError {
+  position: absolute;
+  left: 10px;
+  bottom: 34px;
+  color: var(--accent-danger);
+  background: var(--surface);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.itemRelinkLink {
+  font: inherit;
+  color: var(--accent-text);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.itemRelinkLink:hover {
+  color: var(--text);
+}
+
+.popupMissing {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.itemCardHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.itemCardBadge {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  transition:
+    transform 110ms ease,
+    filter 110ms ease;
+}
+
+.itemCardBadge:hover {
+  transform: scale(1.1);
+  filter: brightness(1.25);
+}
+
+.itemCardBadge:active {
+  transform: scale(0.94);
+}
+
+/* The popup's badge is decoration, not the copy button. */
+.static {
+  cursor: default;
+}
+
+.static:hover {
+  transform: none;
+  filter: none;
+}
+
+.itemCard[data-type='text'] .itemCardBadge {
+  background: linear-gradient(135deg, #2b4a7d 0%, #24416f 100%);
+  color: #6ea2db;
+}
+
+.itemCard[data-type='image'] .itemCardBadge,
+.itemCard[data-type='file'] .itemCardBadge {
+  background: linear-gradient(135deg, #3a6a58 0%, #2d5449 100%);
+  color: #88e1b0;
+}
+
+.itemCardKind {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: relative;
+}
+
+.itemCardKind:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  top: calc(100% + 6px);
+  max-width: min(320px, 70vw);
+  padding: 6px 8px;
+  border: 1px solid var(--surface-border);
+  border-radius: 6px;
+  background: var(--tooltip-bg);
+  color: var(--tooltip-ink);
+  font-size: 11px;
+  font-weight: 400;
+  white-space: normal;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+}
+
+.itemCardTime {
+  font-size: 11px;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+.itemCardAction {
+  display: flex;
+  padding: 3px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-faint);
+  cursor: pointer;
+  transition:
+    color 110ms ease,
+    background 110ms ease,
+    transform 90ms ease;
+}
+
+.itemCardAction:hover {
+  color: var(--text);
+  background: var(--hover-overlay);
+}
+
+.itemCardAction:active {
+  transform: scale(0.88);
+}
+
+.starred {
+  color: var(--accent-star);
+}
+
+.delete:hover {
+  color: var(--accent-danger);
+  background: rgba(224, 93, 93, 0.12);
+}
+
+.starred:hover {
+  color: var(--accent-star);
+}
+
+.itemCardContent {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-dim);
+  word-break: break-word;
+  /* The preview keeps the line breaks the full text has, so a snippet looks
+     the same clamped as it does expanded. */
+  white-space: pre-wrap;
+  /* Pointer by default — the card is one big button. The caret appears only
+     once a selection actually starts (.selecting, set on selectstart). */
+  cursor: pointer;
+  /* Partial copy by hand must keep working, so the text stays selectable. */
+  user-select: text;
+  border-radius: 6px;
+  transition: color 110ms ease;
+}
+
+.selecting {
+  cursor: text;
+}
+
+.itemCardContent:hover {
+  color: var(--text);
+}
+
+.itemCardContent::selection,
+.popupContent::selection {
+  background: rgba(69, 161, 249, 0.35);
+}
+
+.itemCardPreview {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background: var(--preview-bg);
+  cursor: pointer;
+}
+
+.itemCardPreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.itemCardTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tagChip {
+  padding: 3px 9px;
+  border: 1px solid var(--chip-border);
+  border-radius: 999px;
+  background: var(--chip-bg);
+  color: var(--text-dim);
+  font-size: 10.5px;
+}
+
+.selectable {
+  cursor: pointer;
+  transition:
+    border-color 110ms ease,
+    background 110ms ease,
+    color 110ms ease,
+    transform 90ms ease;
+}
+
+.selectable:hover {
+  border-color: var(--nav-active-border);
+  color: var(--text);
+}
+
+.selectable:active {
+  transform: scale(0.95);
+}
+
+.selectable.on {
+  border-color: var(--accent-text);
+  background: rgba(69, 161, 249, 0.16);
+  color: var(--text);
+}

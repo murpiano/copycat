@@ -1,0 +1,78 @@
+.editDialog {
+  width: min(560px, 100%);
+}
+
+.editDialogTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.creationTypes {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.creationTypeFixed {
+  cursor: default;
+}
+
+.objectPicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.objectPath {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.categoryPicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.categoryNew {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.categoryNew .fieldInput {
+  width: 160px;
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+/* Reused from form.module.css via local alias */
+.fieldInput {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--field-border);
+  border-radius: 9px;
+  background: var(--field-bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease;
+}
+
+.fieldInput:hover {
+  border-color: var(--nav-active-border);
+}
+
+.fieldInput:focus {
+  outline: none;
+  border-color: var(--accent-text);
+}
+
+.resizeNone {
+  resize: none;
+}

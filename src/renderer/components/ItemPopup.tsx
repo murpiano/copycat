@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { clsx } from 'clsx';
 import type { ClipboardItem } from '../../shared/types';
 import { badgeIcon, copyLabel, fileIcon, formatAge, itemDisplayTitle } from './ItemCard';
 import { CloseIcon, CopyIcon, PencilIcon } from './icons';
@@ -6,6 +7,10 @@ import { useSelectionCursor } from '../useSelectionCursor';
 import { Overlay } from './Overlay';
 import { useLanguage, useT } from '../i18n';
 import { useClipboardStore } from '../store/useClipboardStore';
+import cardStyles from './ItemCard.module.css';
+import popupStyles from '../shared/popup.module.css';
+import formStyles from '../shared/form.module.css';
+import uiStyles from '../shared/ui.module.css';
 
 interface ItemPopupProps {
   item: ClipboardItem;
@@ -38,17 +43,22 @@ export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
 
   return (
     <Overlay onClose={onClose}>
-      <div className="popup" data-type={item.type} role="dialog" aria-label={t('Содержимое')}>
-        <div className="popup-head">
-          <div className="item-card-badge static">
+      <div
+        className={popupStyles.popup}
+        data-type={item.type}
+        role="dialog"
+        aria-label={t('Содержимое')}
+      >
+        <div className={popupStyles.popupHead}>
+          <div className={clsx(cardStyles.itemCardBadge, cardStyles.static)}>
             {item.type === 'file' ? fileIcon(item, 15) : badgeIcon(item.type, 15)}
           </div>
-          <div className="popup-title" title={itemDisplayTitle(item, language)}>
+          <div className={popupStyles.popupTitle} title={itemDisplayTitle(item, language)}>
             {itemDisplayTitle(item, language)}
           </div>
-          <span className="item-card-time">{formatAge(item.createdAt, language)}</span>
+          <span className={cardStyles.itemCardTime}>{formatAge(item.createdAt, language)}</span>
           <button
-            className="item-card-action"
+            className={cardStyles.itemCardAction}
             aria-label={t(copyLabel(item))}
             title={t(copyLabel(item))}
             onClick={() => onCopy(item.id)}
@@ -56,7 +66,7 @@ export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
             <CopyIcon size={15} />
           </button>
           <button
-            className="item-card-action"
+            className={cardStyles.itemCardAction}
             aria-label={t('Редактировать')}
             title={t('Редактировать')}
             onClick={() => onEdit(item.id)}
@@ -64,7 +74,7 @@ export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
             <PencilIcon size={15} />
           </button>
           <button
-            className="item-card-action"
+            className={cardStyles.itemCardAction}
             aria-label={t('Закрыть')}
             title={t('Закрыть')}
             onClick={onClose}
@@ -74,19 +84,22 @@ export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
         </div>
 
         {item.type === 'image' ? (
-          <div className="popup-image">
+          <div className={popupStyles.popupImage}>
             <img src={window.copycat.toFileUrl(item.content)} alt={t('Предпросмотр изображения')} />
           </div>
         ) : (
-          <div ref={contentRef} className={selecting ? 'popup-content selecting' : 'popup-content'}>
+          <div
+            ref={contentRef}
+            className={clsx(popupStyles.popupContent, selecting && cardStyles.selecting)}
+          >
             {item.content}
           </div>
         )}
 
         {item.tags.length > 0 && (
-          <div className="item-card-tags">
+          <div className={cardStyles.itemCardTags}>
             {item.tags.map((tag) => (
-              <span key={tag} className="tag-chip">
+              <span key={tag} className={cardStyles.tagChip}>
                 {tag}
               </span>
             ))}
@@ -95,7 +108,7 @@ export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
         {item.type !== 'text' && (
           <button
             type="button"
-            className="button open-object"
+            className={clsx(uiStyles.button, uiStyles.openObject)}
             onClick={() => {
               void window.copycat
                 .openItem(item.id)
@@ -107,9 +120,13 @@ export function ItemPopup({ item, onClose, onCopy, onEdit }: ItemPopupProps) {
           </button>
         )}
         {(item.missing || openError) && (
-          <div className="field-hint popup-missing" role="alert">
+          <div className={clsx(formStyles.fieldHint, cardStyles.popupMissing)} role="alert">
             <span>{t('Исходный объект не найден.')}</span>
-            <button type="button" className="item-relink-link" onClick={() => void handleRelink()}>
+            <button
+              type="button"
+              className={cardStyles.itemRelinkLink}
+              onClick={() => void handleRelink()}
+            >
               {t('Указать расположение')}
             </button>
           </div>

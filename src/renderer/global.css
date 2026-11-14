@@ -1,0 +1,386 @@
+:root {
+  color-scheme: dark;
+  /* Electron/Chromium uses the 5px WebKit rules below. Standard scrollbar
+     overrides here would supersede that geometry and make it wide again. */
+  scrollbar-color: auto;
+  scrollbar-width: auto;
+
+  --bg-core: #0e1930;
+  --bg-mid: #0b1226;
+  --bg-edge: #080e1d;
+
+  --surface: #141f38;
+  --surface-border: #223154;
+  --divider: #162038;
+
+  --text: #eef1f6;
+  --text-dim: #93a0b4;
+  --text-faint: #5f6b80;
+
+  --nav-active-bg: #1b2746;
+  --nav-active-border: #2d3f6b;
+
+  --field-bg: #1a2640;
+  --field-border: #283a58;
+
+  --accent-text: #45a1f9;
+  --accent-image: #a57df6;
+  --accent-file: #6ad799;
+  --accent-star: #e8b339;
+  --accent-danger: #e05d5d;
+  --open-bg: var(--surface);
+  --open-hover: var(--nav-active-bg);
+  --open-text: var(--text-dim);
+
+  --scrollbar-thumb: #27365a;
+  --hover-overlay: rgba(255, 255, 255, 0.08);
+  --chip-bg: #1a2744;
+  --chip-border: #283a58;
+  --preview-bg: #1a2640;
+  --image-frame-bg: #101c36;
+  --overlay-scrim: rgba(4, 8, 20, 0.64);
+  --tooltip-bg: #1f2c4a;
+  --tooltip-ink: #f3f5f9;
+
+  /* The dark theme needs a white backdrop behind the logo artwork to read
+     clearly; the light theme already gives it enough contrast on its own. */
+  --logo-bg: #ffffff;
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  /* Muted, slightly warm neutrals instead of stark white/near-black, so the
+     light theme doesn't read as glaring next to the dark one. */
+  --bg-core: #e3e7ed;
+  --bg-mid: #eaedf2;
+  --bg-edge: #f1f3f6;
+
+  --surface: #f7f8fa;
+  --surface-border: #dadfe6;
+  --divider: #c2c9d2;
+
+  --text: #2b313c;
+  --text-dim: #626b79;
+  --text-faint: #8d94a1;
+
+  --nav-active-bg: #dce7f8;
+  --nav-active-border: #bcd0ee;
+
+  --field-bg: #eef0f3;
+  --field-border: #d6dbe2;
+
+  --accent-text: #2f6fc4;
+  --accent-image: #7c5bc0;
+  --accent-file: #289764;
+  --accent-star: #b87a16;
+  --accent-danger: #c23f3a;
+
+  --scrollbar-thumb: #c5cbd4;
+  --hover-overlay: rgba(20, 20, 20, 0.05);
+  --chip-bg: #e9ecf0;
+  --chip-border: #d0d5dc;
+  --preview-bg: #e9ecf0;
+  --image-frame-bg: #dde1e7;
+  --overlay-scrim: rgba(20, 24, 32, 0.35);
+
+  /* :root always matches, so its --logo-bg would otherwise leak in here too;
+     the light theme reads fine on its own and gets no backdrop. */
+  --logo-bg: transparent;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Nothing is selectable by default: dragging across the sidebar or a card's
+   header used to smear a blue highlight over labels nobody wants to copy.
+   The places that hold real content opt back in below. */
+body {
+  user-select: none;
+}
+
+/* Form fields stay selectable: editing their text requires it. */
+input,
+textarea {
+  user-select: text;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--bg-edge);
+  color: var(--text);
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* mp-signature: kept in global because murpianoSignature.ts uses
+   querySelector and classList.toggle against these class names at runtime —
+   CSS Modules would hash them and break those DOM lookups. */
+.mp-signature {
+  box-sizing: border-box;
+  display: inline-flex;
+  position: relative;
+  z-index: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 1px 14px;
+  border: 1px solid color-mix(in srgb, currentColor 9%, transparent);
+  border-radius: 8px;
+  background: #eae7df;
+  color: #272925;
+  box-shadow:
+    0 2px 3px rgba(0, 0, 0, 0.08),
+    0 6px 15px rgba(0, 0, 0, 0.1);
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  vertical-align: middle;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 460ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Keep the same fixed palette even if the host styles links on hover,
+   focus or after visiting them. */
+.mp-signature:is(:link, :visited, :hover, :focus, :active) {
+  background-color: #eae7df;
+  color: #272925;
+}
+
+.mp-signature__label {
+  display: inline-block;
+  color: #272925;
+}
+
+.mp-signature__label strong {
+  font-weight: 700;
+  color: #272925;
+}
+
+.mp-signature__name {
+  position: relative;
+  display: inline-block;
+  transform-origin: 7% 48%;
+  transform: rotate(0deg);
+  will-change: transform;
+}
+
+.mp-signature__contact {
+  position: absolute;
+  right: 2px;
+  top: 2px;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.mp-signature__mark {
+  display: block;
+  flex: 0 0 auto;
+  width: 30px;
+  height: 34px;
+  /* The cat silhouette and piano bed are always strictly black — not
+     theme-adjustable. Only the plaque background and the text color are. */
+  color: #000;
+  overflow: visible;
+}
+
+.mp-signature__mark .mp-cat--idle,
+.mp-signature__mark .mp-cat--hello {
+  transform-origin: 50% 50%;
+  transition: opacity 700ms cubic-bezier(0.45, 0, 0.25, 1);
+}
+
+.mp-signature__mark .mp-cat--idle {
+  opacity: 1;
+}
+
+.mp-signature__mark .mp-cat--hello {
+  opacity: 0;
+}
+
+.mp-cat--piano-static {
+  pointer-events: none;
+}
+
+.mp-cat--piano-whites {
+  fill: #fff;
+}
+
+.mp-cat--paw {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+
+.mp-signature--paw-visible .mp-cat--paw {
+  opacity: 1;
+}
+
+.mp-cat--pads {
+  opacity: 0;
+  transition: opacity 100ms ease-out;
+}
+
+.mp-signature--hunt .mp-cat--pads {
+  opacity: 1;
+}
+
+.mp-cat--lift-void {
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.mp-signature--paw-visible .mp-cat--lift-void {
+  opacity: 1;
+}
+
+.mp-cat--eyes {
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.mp-signature--eyes-on .mp-cat--eyes {
+  opacity: 1;
+}
+
+.mp-eye-track-l,
+.mp-eye-track-r {
+  transition: transform 95ms ease-out;
+}
+
+.mp-signature-zone {
+  /* Same footprint as the plaque, not bigger — but never transformed
+     itself, so the lift below (applied only to the inner .mp-signature)
+     can never nudge a stationary cursor out from under the hover target. */
+  display: inline-block;
+}
+
+.mp-signature-zone:hover .mp-signature,
+.mp-signature-zone:focus-within .mp-signature {
+  transform: translateY(-2px);
+}
+
+.mp-signature__glow {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  box-shadow: 0 0 10px 2.5px rgba(216, 178, 92, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.mp-signature--awake .mp-cat--idle {
+  opacity: 0;
+}
+
+.mp-signature--awake .mp-cat--hello {
+  opacity: 1;
+}
+
+.mp-signature--hunt .mp-eye-l,
+.mp-signature--hunt .mp-eye-r {
+  x: 32.5px;
+  y: 50.5px;
+  width: 13px;
+  height: 13px;
+  rx: 6.5px;
+  ry: 6.5px;
+  fill: #ff6257;
+  filter: drop-shadow(0 0 1.5px #ff4545) drop-shadow(0 0 4px #e92727);
+}
+
+.mp-signature--hunt .mp-eye-r {
+  x: 60.5px;
+}
+
+.mp-signature:focus-visible {
+  outline: 2px solid #272925;
+  outline-offset: 4px;
+}
+
+.mp-signature:active,
+.mp-signature:active .mp-eye-l,
+.mp-signature:active .mp-eye-r {
+  animation: none;
+}
+
+.mp-signature:active {
+  transform: translateY(-1px) scale(0.98);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.1),
+    0 3px 8px rgba(0, 0, 0, 0.09);
+  transition-duration: 130ms, 180ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mp-signature,
+  .mp-signature__mark .mp-cat--idle,
+  .mp-signature__mark .mp-cat--hello,
+  .mp-signature__name,
+  .mp-cat--paw,
+  .mp-cat--pads,
+  .mp-cat--lift-void,
+  .mp-cat--eyes,
+  .mp-eye-track-l,
+  .mp-eye-track-r {
+    transition: none;
+  }
+  .mp-signature-zone:hover .mp-signature,
+  .mp-signature-zone:focus-within .mp-signature,
+  .mp-signature:active {
+    transform: none;
+    animation: none;
+  }
+  .mp-signature--eyes-on,
+  .mp-signature--eyes-on .mp-eye-l,
+  .mp-signature--eyes-on .mp-eye-r {
+    animation: none;
+  }
+}

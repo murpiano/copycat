@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, type DragEvent } from 'react';
+import { clsx } from 'clsx';
 import appIcon from '../../../resources/small/app-logo.png';
 import { ConfirmDialog } from './ConfirmDialog';
 import { useT } from '../i18n';
+import styles from './Sidebar.module.css';
 import type { NavKey, SidebarEntry } from '../store/useClipboardStore';
 import {
   DEFAULT_FILE_SECTION_ORDER,
@@ -159,18 +161,19 @@ export function Sidebar({
       return (
         <div key="files">
           <div
-            className={[
-              'nav-item nav-row',
-              reorderMode ? 'jiggle' : '',
-              hiddenNavEntries.includes(key) ? 'nav-hidden' : '',
-            ].join(' ')}
+            className={clsx(
+              styles.navItem,
+              styles.navRow,
+              reorderMode && styles.jiggle,
+              hiddenNavEntries.includes(key) && styles.navHidden,
+            )}
             {...navDragProps(key)}
             onClick={() => {
               if (!reorderMode) setFilesOpen((value) => !value);
             }}
           >
             <button
-              className="nav-row-main"
+              className={styles.navRowMain}
               aria-expanded={filesOpen}
               onClick={(event) => {
                 event.stopPropagation();
@@ -182,7 +185,7 @@ export function Sidebar({
             </button>
             {reorderMode && (
               <button
-                className="nav-visibility"
+                className={styles.navVisibility}
                 aria-label={t(hiddenNavEntries.includes(key) ? 'Показать Файлы' : 'Скрыть Файлы')}
                 onClick={(event) => {
                   event.stopPropagation();
@@ -193,7 +196,7 @@ export function Sidebar({
               </button>
             )}
             <button
-              className={filesOpen ? 'nav-chevron open' : 'nav-chevron'}
+              className={clsx(styles.navChevron, filesOpen && styles.open)}
               aria-label={t('Группы файлов')}
               onClick={(event) => {
                 event.stopPropagation();
@@ -204,23 +207,22 @@ export function Sidebar({
             </button>
           </div>
           {filesOpen && (
-            <div className="category-list">
+            <div className={styles.categoryList}>
               {fileSectionOrder
                 .filter((section) => reorderMode || !hiddenFileSections.includes(section))
                 .map((section) => (
                   <div
                     key={section}
-                    className={[
-                      'category-item',
+                    className={clsx(
+                      styles.categoryItem,
                       nav === 'files' &&
-                      !activeCategory &&
-                      !reorderMode &&
-                      activeFileGroup === (section === 'all' ? null : section)
-                        ? 'active'
-                        : '',
-                      reorderMode ? 'jiggle' : '',
-                      hiddenFileSections.includes(section) ? 'nav-hidden' : '',
-                    ].join(' ')}
+                        !activeCategory &&
+                        !reorderMode &&
+                        activeFileGroup === (section === 'all' ? null : section) &&
+                        styles.active,
+                      reorderMode && styles.jiggle,
+                      hiddenFileSections.includes(section) && styles.navHidden,
+                    )}
                     draggable={reorderMode}
                     onDragStart={() => {
                       dragged.current = { kind: 'file', id: section };
@@ -239,7 +241,7 @@ export function Sidebar({
                     }}
                   >
                     <button
-                      className="category-item-main"
+                      className={styles.categoryItemMain}
                       onClick={(event) => {
                         event.stopPropagation();
                         if (!reorderMode) onFileGroupSelect(section === 'all' ? null : section);
@@ -249,7 +251,7 @@ export function Sidebar({
                     </button>
                     {reorderMode && (
                       <button
-                        className="nav-visibility"
+                        className={styles.navVisibility}
                         aria-label={`${t(hiddenFileSections.includes(section) ? 'Показать' : 'Скрыть')} ${t(FILE_LABELS[section])}`}
                         onClick={(event) => {
                           event.stopPropagation();
@@ -268,18 +270,17 @@ export function Sidebar({
     return (
       <div
         key={key}
-        className={[
-          nav === key && !activeCategory && !reorderMode ? 'nav-item active' : 'nav-item',
-          reorderMode ? 'jiggle' : '',
-          hiddenNavEntries.includes(key) ? 'nav-hidden' : '',
-        ]
-          .filter(Boolean)
-          .join(' ')}
+        className={clsx(
+          styles.navItem,
+          nav === key && !activeCategory && !reorderMode && styles.active,
+          reorderMode && styles.jiggle,
+          hiddenNavEntries.includes(key) && styles.navHidden,
+        )}
         {...navDragProps(key)}
         onClick={() => !reorderMode && onNavChange(key)}
       >
         <button
-          className="nav-row-main"
+          className={styles.navRowMain}
           onClick={(event) => {
             event.stopPropagation();
             if (!reorderMode) onNavChange(key);
@@ -290,7 +291,7 @@ export function Sidebar({
         </button>
         {reorderMode && (
           <button
-            className="nav-visibility"
+            className={styles.navVisibility}
             aria-label={`${t(hiddenNavEntries.includes(key) ? 'Показать' : 'Скрыть')} ${t(NAV_ITEMS[key].label)}`}
             onClick={(event) => {
               event.stopPropagation();
@@ -312,16 +313,17 @@ export function Sidebar({
             itself is the drag handle for this whole entry, so it jiggles
             like any other nav-item while sections are being arranged. */}
         <div
-          className={[
-            'nav-item nav-row',
-            reorderMode ? 'jiggle' : '',
-            hiddenNavEntries.includes('categories') ? 'nav-hidden' : '',
-          ].join(' ')}
+          className={clsx(
+            styles.navItem,
+            styles.navRow,
+            reorderMode && styles.jiggle,
+            hiddenNavEntries.includes('categories') && styles.navHidden,
+          )}
           {...navDragProps('categories')}
           onClick={() => !reorderMode && setCategoriesOpen((open) => !open)}
         >
           <button
-            className="nav-row-main"
+            className={styles.navRowMain}
             aria-expanded={categoriesOpen}
             onClick={(event) => {
               event.stopPropagation();
@@ -333,7 +335,7 @@ export function Sidebar({
           </button>
           {reorderMode && (
             <button
-              className="nav-visibility"
+              className={styles.navVisibility}
               aria-label={t(
                 hiddenNavEntries.includes('categories') ? 'Показать Категории' : 'Скрыть Категории',
               )}
@@ -347,7 +349,7 @@ export function Sidebar({
           )}
           {categoriesOpen && !reorderMode && (
             <button
-              className="nav-row-add"
+              className={styles.navRowAdd}
               aria-label={t('Добавить категорию')}
               title={t('Добавить категорию')}
               onClick={(event) => {
@@ -359,7 +361,7 @@ export function Sidebar({
             </button>
           )}
           <button
-            className={categoriesOpen ? 'nav-chevron open' : 'nav-chevron'}
+            className={clsx(styles.navChevron, categoriesOpen && styles.open)}
             aria-label={t(categoriesOpen ? 'Свернуть категории' : 'Развернуть категории')}
             onClick={(event) => {
               event.stopPropagation();
@@ -371,10 +373,10 @@ export function Sidebar({
         </div>
 
         {categoriesOpen && (
-          <div className="category-list">
+          <div className={styles.categoryList}>
             {draft !== null && (
               <input
-                className="category-input"
+                className={styles.categoryInput}
                 autoFocus
                 value={draft}
                 placeholder={t('Название категории')}
@@ -392,15 +394,12 @@ export function Sidebar({
               .map((name) => (
                 <div
                   key={name}
-                  className={[
-                    activeCategory === name && !reorderMode
-                      ? 'category-item active'
-                      : 'category-item',
-                    reorderMode ? 'jiggle' : '',
-                    hiddenCategories.includes(name) ? 'nav-hidden' : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
+                  className={clsx(
+                    styles.categoryItem,
+                    activeCategory === name && !reorderMode && styles.active,
+                    reorderMode && styles.jiggle,
+                    hiddenCategories.includes(name) && styles.navHidden,
+                  )}
                   draggable={reorderMode}
                   onDragStart={() => {
                     dragged.current = { kind: 'category', id: name };
@@ -412,7 +411,7 @@ export function Sidebar({
                   onClick={() => !reorderMode && onCategorySelect(name)}
                 >
                   <button
-                    className="category-item-main"
+                    className={styles.categoryItemMain}
                     onClick={(event) => {
                       event.stopPropagation();
                       if (!reorderMode) onCategorySelect(name);
@@ -422,7 +421,7 @@ export function Sidebar({
                   </button>
                   {reorderMode && (
                     <button
-                      className="nav-visibility"
+                      className={styles.navVisibility}
                       aria-label={`${t(hiddenCategories.includes(name) ? 'Показать' : 'Скрыть')} ${name}`}
                       onClick={(event) => {
                         event.stopPropagation();
@@ -434,7 +433,7 @@ export function Sidebar({
                   )}
                   {reorderMode && (
                     <button
-                      className="nav-visibility category-delete"
+                      className={clsx(styles.navVisibility, styles.categoryDelete)}
                       aria-label={`${t('Удалить категорию')} ${name}`}
                       title={t('Удалить категорию')}
                       onClick={(event) => {
@@ -454,18 +453,18 @@ export function Sidebar({
   }
 
   return (
-    <div className={reorderMode ? 'sidebar reordering' : 'sidebar'}>
-      <div className="sidebar-head">
-        <div className="sidebar-title-group">
-          <span className="sidebar-logo-badge">
-            <img className="sidebar-logo" src={appIcon} alt="" />
+    <div className={clsx(styles.sidebar, reorderMode && styles.reordering)}>
+      <div className={styles.sidebarHead}>
+        <div className={styles.sidebarTitleGroup}>
+          <span className={styles.sidebarLogoBadge}>
+            <img className={styles.sidebarLogo} src={appIcon} alt="" />
           </span>
-          <span className="sidebar-title">CopyCat</span>
+          <span className={styles.sidebarTitle}>CopyCat</span>
         </div>
         {reorderMode ? (
-          <div className="sidebar-head-actions">
+          <div className={styles.sidebarHeadActions}>
             <button
-              className="icon-button"
+              className={styles.iconButton}
               aria-label={t('Отмена')}
               title={t('Отмена')}
               onClick={onReorderCancel}
@@ -473,7 +472,7 @@ export function Sidebar({
               <CloseIcon size={16} />
             </button>
             <button
-              className="icon-button done"
+              className={clsx(styles.iconButton, styles.done)}
               aria-label={t('Готово')}
               title={t('Готово')}
               onClick={onReorderDone}
@@ -482,13 +481,17 @@ export function Sidebar({
             </button>
           </div>
         ) : (
-          <button className="icon-button" aria-label={t('Настройки')} onClick={onSettingsOpen}>
+          <button
+            className={styles.iconButton}
+            aria-label={t('Настройки')}
+            onClick={onSettingsOpen}
+          >
             <SettingsIcon size={17} />
           </button>
         )}
       </div>
 
-      <nav className="sidebar-nav">
+      <nav className={styles.sidebarNav}>
         {navOrder
           .filter((key) => reorderMode || !hiddenNavEntries.includes(key))
           .map((key) => (key === 'categories' ? renderCategories() : renderNavItem(key)))}

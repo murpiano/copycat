@@ -1,0 +1,88 @@
+.searchField {
+  flex: 1 1 auto;
+  position: relative;
+  max-width: 560px;
+  -webkit-app-region: no-drag;
+}
+
+.searchField svg {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-dim);
+  pointer-events: none;
+}
+
+.searchClear {
+  position: absolute;
+  z-index: 1;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-dim);
+}
+
+.searchClear svg {
+  left: auto;
+  top: auto;
+  position: static;
+  transform: none;
+  color: inherit;
+  transition:
+    color 110ms ease,
+    transform 110ms ease;
+}
+
+.searchClear:hover {
+  color: var(--accent-text);
+  background: var(--nav-active-bg);
+}
+
+.searchClear:hover svg {
+  transform: scale(1.18);
+}
+
+.searchClear:active {
+  transform: translateY(-50%) scale(0.94);
+}
+
+.searchClear:focus-visible {
+  outline: 2px solid var(--accent-text);
+}
+
+.searchBar {
+  width: 100%;
+  padding: 13px 18px 13px 44px;
+  border: 1px solid var(--field-border);
+  border-radius: 999px;
+  background: var(--field-bg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  font-size: 13.5px;
+  outline: none;
+}
+
+.searchBar::placeholder {
+  color: var(--text-faint);
+}
+
+.searchBar:focus {
+  border-color: var(--nav-active-border);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}

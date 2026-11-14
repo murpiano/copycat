@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react';
+import { clsx } from 'clsx';
 import type { ClipboardItem, CreateItemInput, PickedObject } from '../../shared/types';
 import { fileGroupOf, type FileGroup } from '../../shared/file-kind';
 import { KIND_LABEL, fileIcon } from './ItemCard';
+import styles from './ItemEditDialog.module.css';
+import popupStyles from '../shared/popup.module.css';
+import formStyles from '../shared/form.module.css';
+import uiStyles from '../shared/ui.module.css';
+import cardStyles from './ItemCard.module.css';
 import {
   AudioIcon,
   BoxIcon,
@@ -231,24 +237,26 @@ export function ItemEditDialog({
   return (
     <Overlay onClose={requestClose} dismissOnBackdrop={false}>
       <div
-        className="popup edit-dialog"
+        className={clsx(popupStyles.popup, styles.editDialog)}
         role="dialog"
         aria-label={t(item ? 'Редактирование' : 'Новый блок')}
       >
-        <div className="popup-head">
-          <div className="popup-title edit-dialog-title">
+        <div className={popupStyles.popupHead}>
+          <div className={clsx(popupStyles.popupTitle, styles.editDialogTitle)}>
             {headerIcon}
             {t(item ? 'Редактирование' : 'Новый блок')}
           </div>
           {!item && (
-            <div className="creation-types">
+            <div className={styles.creationTypes}>
               {creationGroup === null ? (
                 <>
                   <button
                     type="button"
-                    className={
-                      mode === 'text' ? 'button settings-choice active' : 'button settings-choice'
-                    }
+                    className={clsx(
+                      uiStyles.button,
+                      uiStyles.settingsChoice,
+                      mode === 'text' && uiStyles.active,
+                    )}
                     aria-pressed={mode === 'text'}
                     onClick={() => setMode('text')}
                   >
@@ -256,9 +264,11 @@ export function ItemEditDialog({
                   </button>
                   <button
                     type="button"
-                    className={
-                      mode === 'object' ? 'button settings-choice active' : 'button settings-choice'
-                    }
+                    className={clsx(
+                      uiStyles.button,
+                      uiStyles.settingsChoice,
+                      mode === 'object' && uiStyles.active,
+                    )}
                     aria-pressed={mode === 'object'}
                     onClick={() => setMode('object')}
                   >
@@ -266,7 +276,14 @@ export function ItemEditDialog({
                   </button>
                 </>
               ) : (
-                <span className="button settings-choice active creation-type-fixed">
+                <span
+                  className={clsx(
+                    uiStyles.button,
+                    uiStyles.settingsChoice,
+                    uiStyles.active,
+                    styles.creationTypeFixed,
+                  )}
+                >
                   {fixedLabel}
                 </span>
               )}
@@ -275,7 +292,7 @@ export function ItemEditDialog({
           {!item && (
             <button
               type="button"
-              className={starred ? 'item-card-action starred' : 'item-card-action'}
+              className={clsx(cardStyles.itemCardAction, starred && cardStyles.starred)}
               aria-label={t(starred ? 'Убрать из избранного' : 'В избранное')}
               aria-pressed={starred}
               title={t('Избранное')}
@@ -285,7 +302,7 @@ export function ItemEditDialog({
             </button>
           )}
           <button
-            className="item-card-action"
+            className={cardStyles.itemCardAction}
             aria-label={t('Закрыть')}
             title={t('Закрыть')}
             onClick={requestClose}
@@ -294,10 +311,10 @@ export function ItemEditDialog({
           </button>
         </div>
 
-        <label className="field">
-          <span className="field-label">{t('Название')}</span>
+        <label className={formStyles.field}>
+          <span className={formStyles.fieldLabel}>{t('Название')}</span>
           <input
-            className="field-input"
+            className={styles.fieldInput}
             autoFocus={item !== null}
             value={title}
             disabled={!item && mode === 'object' && !picked}
@@ -313,29 +330,30 @@ export function ItemEditDialog({
         </label>
 
         {item || mode === 'text' ? (
-          <label className="field field-grow">
-            <span className="field-label">{contentLabel}</span>
+          <label className={clsx(formStyles.field, formStyles.fieldGrow)}>
+            <span className={formStyles.fieldLabel}>{contentLabel}</span>
             <textarea
-              className="field-input field-textarea resize-none"
+              className={clsx(styles.fieldInput, formStyles.fieldTextarea, styles.resizeNone)}
               autoFocus={item === null}
               value={content}
               onChange={(e) => setContent(e.target.value)}
             />
           </label>
         ) : (
-          <div className="field field-grow">
-            <span className="field-label">{t('Содержимое')}</span>
-            <div className="object-picker">
+          <div className={clsx(formStyles.field, formStyles.fieldGrow)}>
+            <span className={formStyles.fieldLabel}>{t('Содержимое')}</span>
+            <div className={styles.objectPicker}>
               <button
                 type="button"
-                className={
+                className={clsx(
+                  uiStyles.button,
                   picked &&
-                  (creationGroup === 'folders'
-                    ? picked.kind === 'folder'
-                    : picked.kind !== 'folder')
-                    ? 'button settings-choice active'
-                    : 'button'
-                }
+                    (creationGroup === 'folders'
+                      ? picked.kind === 'folder'
+                      : picked.kind !== 'folder')
+                    ? clsx(uiStyles.settingsChoice, uiStyles.active)
+                    : undefined,
+                )}
                 aria-pressed={Boolean(
                   picked &&
                   (creationGroup === 'folders'
@@ -362,7 +380,10 @@ export function ItemEditDialog({
               {(creationGroup === null || creationGroup === 'all') && (
                 <button
                   type="button"
-                  className={picked?.kind === 'folder' ? 'button settings-choice active' : 'button'}
+                  className={clsx(
+                    uiStyles.button,
+                    picked?.kind === 'folder' && clsx(uiStyles.settingsChoice, uiStyles.active),
+                  )}
                   aria-pressed={picked?.kind === 'folder'}
                   onClick={() => void chooseObject('folder')}
                 >
@@ -372,7 +393,7 @@ export function ItemEditDialog({
             </div>
             {picked && (
               <input
-                className="field-input object-path"
+                className={clsx(styles.fieldInput, styles.objectPath)}
                 aria-label={t('Путь к объекту')}
                 readOnly
                 value={picked.path}
@@ -382,23 +403,27 @@ export function ItemEditDialog({
           </div>
         )}
 
-        <div className="field">
-          <span className="field-label">{t('Категории')}</span>
-          <div className="category-picker">
+        <div className={formStyles.field}>
+          <span className={formStyles.fieldLabel}>{t('Категории')}</span>
+          <div className={styles.categoryPicker}>
             {options.map((tag) => (
               <button
                 key={tag}
                 type="button"
-                className={tags.includes(tag) ? 'tag-chip selectable on' : 'tag-chip selectable'}
+                className={clsx(
+                  cardStyles.tagChip,
+                  cardStyles.selectable,
+                  tags.includes(tag) && cardStyles.on,
+                )}
                 aria-pressed={tags.includes(tag)}
                 onClick={() => toggleTag(tag)}
               >
                 {tag}
               </button>
             ))}
-            <span className="category-new">
+            <span className={styles.categoryNew}>
               <input
-                className="field-input"
+                className={styles.fieldInput}
                 value={draft}
                 placeholder={t('Новая категория')}
                 onChange={(e) => setDraft(e.target.value)}
@@ -408,7 +433,7 @@ export function ItemEditDialog({
               />
               <button
                 type="button"
-                className="item-card-action"
+                className={cardStyles.itemCardAction}
                 aria-label={t('Добавить')}
                 onClick={addDraft}
               >
@@ -419,17 +444,21 @@ export function ItemEditDialog({
         </div>
 
         {saveError && (
-          <div className="field-hint" role="alert">
+          <div className={formStyles.fieldHint} role="alert">
             {saveError}
           </div>
         )}
-        <div className="dialog-actions">
-          <button type="button" className="button ghost" onClick={requestClose}>
+        <div className={formStyles.dialogActions}>
+          <button
+            type="button"
+            className={clsx(uiStyles.button, uiStyles.ghost)}
+            onClick={requestClose}
+          >
             {t('Отмена')}
           </button>
           <button
             type="button"
-            className="button primary"
+            className={clsx(uiStyles.button, uiStyles.primary)}
             disabled={busy || (!item && (mode === 'text' ? !content.trim() : !picked))}
             onClick={() => void save()}
           >

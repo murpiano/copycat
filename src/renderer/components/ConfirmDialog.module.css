@@ -1,0 +1,11 @@
+.confirmDialog {
+  width: min(420px, 100%);
+}
+
+.confirmMessage {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-dim);
+}

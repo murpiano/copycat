@@ -1,0 +1,122 @@
+.button {
+  padding: 8px 16px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease,
+    transform 90ms ease;
+}
+
+.button:active {
+  transform: scale(0.97);
+}
+
+.ghost {
+  border-color: var(--surface-border);
+  background: transparent;
+  color: var(--text-dim);
+}
+
+.ghost:hover {
+  border-color: var(--nav-active-border);
+  background: var(--nav-active-bg);
+  color: var(--text);
+}
+
+.primary {
+  background: var(--accent-text);
+  color: #06101f;
+  font-weight: 600;
+}
+
+.primary:hover {
+  filter: brightness(1.1);
+}
+
+.danger {
+  background: var(--accent-danger);
+  color: #160707;
+  font-weight: 600;
+}
+
+.danger:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+
+.wide {
+  width: 100%;
+}
+
+/* Choice button: segmented control variant used in settings and edit dialog */
+.settingsChoice {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  font-size: 12px;
+}
+
+.settingsChoice.active,
+.active.settingsChoice {
+  border-color: var(--nav-active-border);
+  background: var(--nav-active-bg);
+  color: var(--accent-text);
+}
+
+/* Open-object button: appears in ItemPopup for files/images */
+.openObject {
+  background: var(--open-bg);
+  border: 1px solid var(--surface-border);
+  color: var(--open-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-width: 88px;
+  min-height: 30px;
+}
+
+.openObject:hover {
+  background: var(--open-hover);
+  border-color: var(--nav-active-border);
+  color: var(--text);
+}
+
+.openObject:active {
+  transform: scale(0.94);
+}
+
+.openObject:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+/* Icon button: square icon-only button used in Sidebar and dialogs */
+.iconButton {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  color: var(--text);
+}
+
+.iconButton:active {
+  transform: scale(0.97);
+}
+
+.done {
+  color: var(--accent-text);
+}

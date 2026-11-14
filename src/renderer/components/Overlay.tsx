@@ -1,4 +1,5 @@
 import { useRef, type MouseEvent, type ReactNode } from 'react';
+import styles from './Overlay.module.css';
 
 interface OverlayProps {
   onClose: () => void;
@@ -37,8 +38,8 @@ export function Overlay({
   }
 
   return (
-    <div className="overlay" onMouseDown={handleMouseDown} onClick={handleClick}>
-      {dragBackdrop && <div className="overlay-drag-strip" />}
+    <div className={styles.overlay} onMouseDown={handleMouseDown} onClick={handleClick}>
+      {dragBackdrop && <div className={styles.overlayDragStrip} />}
       {children}
     </div>
   );

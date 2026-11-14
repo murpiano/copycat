@@ -1,4 +1,6 @@
 import { useState, type DragEvent, type MouseEvent } from 'react';
+import { clsx } from 'clsx';
+import styles from './ItemCard.module.css';
 import { useSelectionCursor } from '../useSelectionCursor';
 import type { ClipboardItem, ItemType } from '../../shared/types';
 import {
@@ -148,7 +150,7 @@ export function ItemCard({
 
   return (
     <div
-      className={reorderMode ? 'item-card jiggle' : 'item-card'}
+      className={clsx(styles.itemCard, reorderMode && styles.jiggle)}
       data-type={item.type}
       draggable={reorderMode}
       onDragStart={() => onDragStart(item.id)}
@@ -157,23 +159,23 @@ export function ItemCard({
       onDragEnd={onDrop}
       onClick={handleCardClick}
     >
-      <div className="item-card-bar" />
-      <div className="item-card-body">
-        <div className="item-card-head">
+      <div className={styles.itemCardBar} />
+      <div className={styles.itemCardBody}>
+        <div className={styles.itemCardHead}>
           <button
-            className="item-card-badge"
+            className={styles.itemCardBadge}
             aria-label={t(copyLabel(item))}
             title={t(copyLabel(item))}
             onClick={actOnly(() => onCopy(item.id))}
           >
             {item.type === 'file' ? fileIcon(item) : badgeIcon(item.type)}
           </button>
-          <div className="item-card-kind" title={title} data-tooltip={title}>
+          <div className={styles.itemCardKind} title={title} data-tooltip={title}>
             {title}
           </div>
           <button
             aria-label={t(item.starred ? 'Убрать из избранного' : 'В избранное')}
-            className={item.starred ? 'item-card-action starred' : 'item-card-action'}
+            className={clsx(styles.itemCardAction, item.starred && styles.starred)}
             title={t('В избранное')}
             onClick={actOnly(() => onToggleStar(item.id))}
           >
@@ -181,7 +183,7 @@ export function ItemCard({
           </button>
           <button
             aria-label={t('Редактировать')}
-            className="item-card-action"
+            className={styles.itemCardAction}
             title={t('Редактировать')}
             onClick={actOnly(() => onEdit(item.id))}
           >
@@ -189,7 +191,7 @@ export function ItemCard({
           </button>
           <button
             aria-label={t('Удалить')}
-            className="item-card-action delete"
+            className={clsx(styles.itemCardAction, styles.delete)}
             title={t('Удалить')}
             onClick={actOnly(() => onDelete(item.id))}
           >
@@ -198,7 +200,7 @@ export function ItemCard({
         </div>
 
         {item.type === 'image' ? (
-          <div className="item-card-preview">
+          <div className={styles.itemCardPreview}>
             <img
               src={window.copycat.toFileUrl(item.thumbPath ?? item.content)}
               alt={t('Предпросмотр изображения')}
@@ -207,17 +209,17 @@ export function ItemCard({
         ) : (
           <div
             ref={contentRef}
-            className={selecting ? 'item-card-content selecting' : 'item-card-content'}
+            className={clsx(styles.itemCardContent, selecting && styles.selecting)}
           >
             {item.content}
           </div>
         )}
 
-        <div className="item-card-footer">
+        <div className={styles.itemCardFooter}>
           {item.type !== 'text' && !reorderMode && (
             <button
               type="button"
-              className="item-open"
+              className={styles.itemOpen}
               onClick={actOnly(() => {
                 void window.copycat
                   .openItem(item.id)
@@ -228,20 +230,20 @@ export function ItemCard({
               {t('Открыть')}
             </button>
           )}
-          <div className="item-card-tags" title={item.tags.join(', ')}>
+          <div className={styles.itemCardTags} title={item.tags.join(', ')}>
             {item.tags.map((tag) => (
-              <span key={tag} className="tag-chip">
+              <span key={tag} className={styles.tagChip}>
                 {tag}
               </span>
             ))}
           </div>
         </div>
         {(item.missing || openError) && (
-          <div className="item-open-error" role="alert">
+          <div className={styles.itemOpenError} role="alert">
             <span>{t('Исходный объект не найден.')}</span>
             <button
               type="button"
-              className="item-relink-link"
+              className={styles.itemRelinkLink}
               onClick={actOnly(() => void handleRelink())}
             >
               {t('Указать расположение')}
