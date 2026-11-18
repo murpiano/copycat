@@ -31,12 +31,12 @@
   "body": {
     "required": false,
     "blankLineBefore": true,
-    "maxLineLength": 72
+    "maxLineLength": 0
   },
   "footer": {
     "required": false,
     "blankLineBefore": true,
-    "maxLineLength": 72,
+    "maxLineLength": 0,
     "format": "token: value",
     "token": {
       "source": "any",
