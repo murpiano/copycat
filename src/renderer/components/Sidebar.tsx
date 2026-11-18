@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type DragEvent } from 'react';
+import { useEffect, useRef, useState, type DragEvent, type JSX } from 'react';
 import { clsx } from 'clsx';
 import appIcon from '../../../resources/small/app-logo.png';
 import { ConfirmDialog } from './ConfirmDialog';
