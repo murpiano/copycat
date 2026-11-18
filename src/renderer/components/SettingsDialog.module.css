@@ -1,0 +1,77 @@
+.settingsDialog {
+  width: min(420px, 100%);
+  min-height: 0;
+}
+
+/* While Settings sits over the app, a thin strip across the top keeps the
+ * background window's own header draggable — matching the app's normal
+ * header height — without turning the whole dimmed backdrop into a drag
+ * handle, so a click anywhere else on it still closes the popup. */
+.overlayDragStrip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 72px;
+  -webkit-app-region: drag;
+}
+
+.closeBtn {
+  -webkit-app-region: no-drag;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.settingsButtonGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 4px 0 12px;
+}
+
+.clearSubsections {
+  margin: 0;
+}
+
+.settingsExclusions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px 14px;
+}
+
+.hotkeyField {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--field-border);
+  border-radius: 9px;
+  background: var(--field-bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  text-align: center;
+  transition:
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+.hotkeyField:hover {
+  border-color: var(--nav-active-border);
+  background: var(--nav-active-bg);
+  color: var(--text);
+}
+
+.hotkeyField.capturing {
+  border-color: var(--accent-text);
+  color: var(--accent-text);
+}
+
+/* Selector needs to reach into popup.module.css class — use :global or rely
+   on shared import. Using local class to override. */
+.popupHead {
+  -webkit-app-region: drag;
+}

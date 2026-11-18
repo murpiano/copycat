@@ -1,0 +1,32 @@
+.overlay {
+  -webkit-app-region: no-drag;
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 36px;
+  background: var(--overlay-scrim);
+  backdrop-filter: blur(2px);
+  cursor: pointer;
+  animation: overlay-in 120ms ease-out;
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.overlayDragStrip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 72px;
+  -webkit-app-region: drag;
+}

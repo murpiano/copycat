@@ -11,6 +11,11 @@ export default defineConfig({
   renderer: {
     root: 'src/renderer',
     plugins: [react()],
+    css: {
+      modules: {
+        localsConvention: 'camelCaseOnly',
+      },
+    },
     build: {
       rollupOptions: {
         input: 'src/renderer/index.html',

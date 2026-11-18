@@ -1,5 +1,10 @@
 import { Overlay } from './Overlay';
 import { useEffect, useId, useRef } from 'react';
+import { clsx } from 'clsx';
+import styles from './ConfirmDialog.module.css';
+import popupStyles from '../shared/popup.module.css';
+import formStyles from '../shared/form.module.css';
+import uiStyles from '../shared/ui.module.css';
 
 interface ConfirmDialogProps {
   title: string;
@@ -68,28 +73,28 @@ export function ConfirmDialog({
     <Overlay onClose={() => {}}>
       <div
         ref={dialogRef}
-        className="popup confirm-dialog"
+        className={clsx(popupStyles.popup, styles.confirmDialog)}
         role="alertdialog"
         aria-modal="true"
         aria-label={title}
         aria-describedby={messageId}
         aria-busy={busy}
       >
-        <div className="popup-head">
-          <div className="popup-title">{title}</div>
+        <div className={popupStyles.popupHead}>
+          <div className={popupStyles.popupTitle}>{title}</div>
         </div>
-        <p id={messageId} className="confirm-message">
+        <p id={messageId} className={styles.confirmMessage}>
           {message}
         </p>
         {error && (
-          <p className="field-hint" role="alert">
+          <p className={formStyles.fieldHint} role="alert">
             {error}
           </p>
         )}
-        <div className="dialog-actions">
+        <div className={formStyles.dialogActions}>
           <button
             type="button"
-            className="button ghost"
+            className={clsx(uiStyles.button, uiStyles.ghost)}
             onClick={onCancel}
             disabled={busy}
             autoFocus
@@ -98,7 +103,7 @@ export function ConfirmDialog({
           </button>
           <button
             type="button"
-            className={danger ? 'button danger' : 'button primary'}
+            className={clsx(uiStyles.button, danger ? uiStyles.danger : uiStyles.primary)}
             onClick={onConfirm}
             disabled={busy}
           >

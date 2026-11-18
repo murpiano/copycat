@@ -1,0 +1,90 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldGrow {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.fieldPair {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.fieldAlignEnd {
+  align-items: flex-end;
+}
+
+.fieldLabel {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.fieldInput {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--field-border);
+  border-radius: 9px;
+  background: var(--field-bg);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease;
+}
+
+.fieldInput:hover {
+  border-color: var(--nav-active-border);
+}
+
+.fieldInput:focus {
+  outline: none;
+  border-color: var(--accent-text);
+}
+
+.fieldTextarea {
+  min-height: 140px;
+  max-height: 320px;
+  resize: none;
+  line-height: 1.55;
+}
+
+.fieldRow {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.fieldRow input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--accent-text);
+  cursor: pointer;
+}
+
+.fieldHint {
+  font-size: 11.5px;
+  color: var(--text-faint);
+}
+
+.dialogActions {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.dialogActionsSplit {
+  justify-content: space-between;
+  align-items: center;
+}

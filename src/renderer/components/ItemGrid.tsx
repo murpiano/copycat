@@ -1,12 +1,14 @@
 import { useLayoutEffect, useRef, useState } from 'react';
+import { clsx } from 'clsx';
 import type { ClipboardItem } from '../../shared/types';
 import { ItemCard } from './ItemCard';
 import { ArrowUpIcon, CheckIcon, CloseIcon, PencilIcon, PlusIcon } from './icons';
 import { useT } from '../i18n';
+import styles from './ItemGrid.module.css';
 
-// Mirrors the .item-grid rule in index.css (auto-fill columns, fixed row
-// height): kept in sync by hand since the grid is windowed by row from here,
-// not measured from the DOM on every scroll tick.
+// Mirrors the .itemGrid rule in ItemGrid.module.css (auto-fill columns, fixed
+// row height): kept in sync by hand since the grid is windowed by row from
+// here, not measured from the DOM on every scroll tick.
 const GRID_MIN_CARD_WIDTH = 260;
 const GRID_GAP = 24;
 const GRID_ROW_HEIGHT = 186;
@@ -106,11 +108,11 @@ export function ItemGrid({
   }
 
   return (
-    <div className="grid-section">
-      <div className="grid-toolbar">
+    <div className={styles.gridSection}>
+      <div className={styles.gridToolbar}>
         {canReorder && (
           <button
-            className={reorderMode ? 'grid-reorder-toggle active' : 'grid-reorder-toggle'}
+            className={clsx(styles.gridReorderToggle, reorderMode && styles.active)}
             aria-pressed={reorderMode}
             title={t(reorderMode ? 'Готово' : 'Изменить порядок')}
             onClick={onToggleReorder}
@@ -120,19 +122,23 @@ export function ItemGrid({
           </button>
         )}
         {reorderMode ? (
-          <button className="grid-reorder-toggle" title={t('Отменить')} onClick={onCancelReorder}>
+          <button
+            className={styles.gridReorderToggle}
+            title={t('Отменить')}
+            onClick={onCancelReorder}
+          >
             <CloseIcon size={15} />
             <span>{t('Отмена')}</span>
           </button>
         ) : (
-          <button className="grid-reorder-toggle" title={t('Создать')} onClick={onCompose}>
+          <button className={styles.gridReorderToggle} title={t('Создать')} onClick={onCompose}>
             <PlusIcon size={15} />
             <span>{t('Создать')}</span>
           </button>
         )}
         {showTop && items.length > 0 && (
           <button
-            className="grid-reorder-toggle grid-top"
+            className={clsx(styles.gridReorderToggle, styles.gridTop)}
             onClick={() => sectionRef.current?.scrollTo({ top: 0, behavior: 'smooth' })}
             aria-label={t('В начало')}
           >
@@ -143,10 +149,10 @@ export function ItemGrid({
       </div>
 
       {items.length === 0 ? (
-        <div className="empty-state">{t('Ничего не найдено')}</div>
+        <div className={styles.emptyState}>{t('Ничего не найдено')}</div>
       ) : (
         <div
-          className="item-grid"
+          className={styles.itemGrid}
           ref={sectionRef}
           onScroll={(event) => {
             setShowTop(event.currentTarget.scrollTop > 220);

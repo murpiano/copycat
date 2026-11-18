@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { clsx } from 'clsx';
+import styles from './App.module.css';
 import { useClipboardStore } from './store/useClipboardStore';
 import { Sidebar } from './components/Sidebar';
 import { SearchBar } from './components/SearchBar';
@@ -194,7 +196,7 @@ export function App() {
   }
 
   return (
-    <div className={navReorderMode ? 'app arranging' : 'app'}>
+    <div className={clsx(styles.app, navReorderMode && styles.arranging)}>
       <Sidebar
         nav={nav}
         navOrder={navOrder}
@@ -225,8 +227,11 @@ export function App() {
       />
       {/* While the sidebar is being arranged, nothing else accepts input.
           `inert` is not in React 18's typings yet, hence the cast. */}
-      <div className="main" {...((navReorderMode ? { inert: '' } : {}) as Record<string, string>)}>
-        <div className="topbar">
+      <div
+        className={styles.main}
+        {...((navReorderMode ? { inert: '' } : {}) as Record<string, string>)}
+      >
+        <div className={styles.topbar}>
           <SearchBar value={search} onChange={setSearch} />
         </div>
         <ItemGrid

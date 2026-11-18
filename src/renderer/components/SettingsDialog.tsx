@@ -5,12 +5,18 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
 } from 'react';
+import { clsx } from 'clsx';
 import type { AppSettings, ClearHistoryInput, ClearHistoryScope } from '../../shared/types';
 import { DEFAULT_FILE_SECTION_ORDER, type FileGroup } from '../../shared/file-kind';
 import { CloseIcon } from './icons';
 import { Overlay } from './Overlay';
 import { useT } from '../i18n';
 import { attachMurpianoSignature } from './murpianoSignature';
+import styles from './SettingsDialog.module.css';
+import popupStyles from '../shared/popup.module.css';
+import formStyles from '../shared/form.module.css';
+import uiStyles from '../shared/ui.module.css';
+import cardStyles from './ItemCard.module.css';
 
 const MURPIANO_URL = 'https://github.com/murpiano';
 
@@ -447,41 +453,45 @@ export function SettingsDialog({
     return (
       <Overlay onClose={() => setClearOpen(false)} dismissOnBackdrop={false} dragBackdrop>
         <div
-          className="popup settings-dialog clear-history-dialog"
+          className={clsx(popupStyles.popup, styles.settingsDialog)}
           role="dialog"
           aria-label={t('Очистить историю')}
         >
-          <div className="popup-head">
-            <div className="popup-title">{t('Очистить историю')}</div>
+          <div className={clsx(popupStyles.popupHead, styles.popupHead)}>
+            <div className={popupStyles.popupTitle}>{t('Очистить историю')}</div>
             <button
-              className="item-card-action"
+              className={clsx(cardStyles.itemCardAction, styles.closeBtn)}
               aria-label={t('Закрыть')}
               onClick={() => setClearOpen(false)}
             >
               <CloseIcon size={15} />
             </button>
           </div>
-          <div className="popup-body">
-            <div className="settings-button-grid">
+          <div className={popupStyles.popupBody}>
+            <div className={styles.settingsButtonGrid}>
               {periodButtons.map(([value, label]) => (
                 <button
                   key={value}
-                  className={
-                    period === value ? 'button settings-choice active' : 'button settings-choice'
-                  }
+                  className={clsx(
+                    uiStyles.button,
+                    uiStyles.settingsChoice,
+                    period === value && uiStyles.active,
+                  )}
                   onClick={() => setPeriod(value)}
                 >
                   {t(label)}
                 </button>
               ))}
             </div>
-            <div className="settings-button-grid">
+            <div className={styles.settingsButtonGrid}>
               {scopeButtons.map(([value, label]) => (
                 <button
                   key={value}
-                  className={
-                    scope === value ? 'button settings-choice active' : 'button settings-choice'
-                  }
+                  className={clsx(
+                    uiStyles.button,
+                    uiStyles.settingsChoice,
+                    scope === value && uiStyles.active,
+                  )}
                   onClick={() => {
                     setScope(value);
                     setCategory('');
@@ -494,18 +504,18 @@ export function SettingsDialog({
               ))}
             </div>
             {scope === 'file' && (
-              <div className="settings-button-grid clear-subsections">
+              <div className={clsx(styles.settingsButtonGrid, styles.clearSubsections)}>
                 {[
                   ['all', 'Все файлы'],
                   ...fileGroups.map((group): [string, string] => [group, fileLabels[group]]),
                 ].map(([value, label]) => (
                   <button
                     key={value}
-                    className={
-                      (fileGroup ?? 'all') === value
-                        ? 'button settings-choice active'
-                        : 'button settings-choice'
-                    }
+                    className={clsx(
+                      uiStyles.button,
+                      uiStyles.settingsChoice,
+                      (fileGroup ?? 'all') === value && uiStyles.active,
+                    )}
                     onClick={() => {
                       setFileGroup(value === 'all' ? null : (value as FileGroup));
                       resetExclusions(scope);
@@ -517,18 +527,18 @@ export function SettingsDialog({
               </div>
             )}
             {scope === 'category' && (
-              <div className="settings-button-grid clear-subsections">
+              <div className={clsx(styles.settingsButtonGrid, styles.clearSubsections)}>
                 {[
                   ['', 'Все категории'],
                   ...categories.map((name): [string, string] => [name, name]),
                 ].map(([value, label]) => (
                   <button
                     key={value || '__all_categories'}
-                    className={
-                      category === value
-                        ? 'button settings-choice active'
-                        : 'button settings-choice'
-                    }
+                    className={clsx(
+                      uiStyles.button,
+                      uiStyles.settingsChoice,
+                      category === value && uiStyles.active,
+                    )}
                     onClick={() => {
                       setCategory(value);
                       resetExclusions(scope);
@@ -539,13 +549,13 @@ export function SettingsDialog({
                 ))}
               </div>
             )}
-            <div className="field">
-              <span className="field-label">
+            <div className={formStyles.field}>
+              <span className={formStyles.fieldLabel}>
                 {t('Удалить из выбранного раздела/подраздела всё, кроме:')}
               </span>
-              <div className="settings-exclusions">
+              <div className={styles.settingsExclusions}>
                 {options.map(([value, label]) => (
-                  <label className="field-row" key={value}>
+                  <label className={clsx(formStyles.field, formStyles.fieldRow)} key={value}>
                     <input
                       type="checkbox"
                       checked={exclude.includes(value)}
@@ -557,20 +567,20 @@ export function SettingsDialog({
               </div>
             </div>
             {clearError && (
-              <div role="alert" className="field-hint">
+              <div role="alert" className={formStyles.fieldHint}>
                 {t(clearError)}
               </div>
             )}
-            <div className="dialog-actions">
+            <div className={formStyles.dialogActions}>
               <button
-                className="button ghost"
+                className={clsx(uiStyles.button, uiStyles.ghost)}
                 disabled={clearing}
                 onClick={() => setClearOpen(false)}
               >
                 {t('Отмена')}
               </button>
               <button
-                className="button danger"
+                className={clsx(uiStyles.button, uiStyles.danger)}
                 disabled={clearing}
                 onClick={() => void confirmClear()}
               >
@@ -585,11 +595,15 @@ export function SettingsDialog({
 
   return (
     <Overlay onClose={() => void requestClose()} dragBackdrop>
-      <div className="popup settings-dialog" role="dialog" aria-label={t('Настройки')}>
-        <div className="popup-head">
-          <div className="popup-title">{t('Настройки')}</div>
+      <div
+        className={clsx(popupStyles.popup, styles.settingsDialog)}
+        role="dialog"
+        aria-label={t('Настройки')}
+      >
+        <div className={clsx(popupStyles.popupHead, styles.popupHead)}>
+          <div className={popupStyles.popupTitle}>{t('Настройки')}</div>
           <button
-            className="item-card-action"
+            className={clsx(cardStyles.itemCardAction, styles.closeBtn)}
             aria-label={t('Закрыть')}
             title={t('Закрыть')}
             onClick={() => void requestClose()}
@@ -598,12 +612,12 @@ export function SettingsDialog({
           </button>
         </div>
 
-        <div className="popup-body">
-          <div className="field">
-            <span className="field-label">{t('Горячая клавиша')}</span>
+        <div className={popupStyles.popupBody}>
+          <div className={formStyles.field}>
+            <span className={formStyles.fieldLabel}>{t('Горячая клавиша')}</span>
             <button
               type="button"
-              className={capturing ? 'hotkey-field capturing' : 'hotkey-field'}
+              className={clsx(styles.hotkeyField, capturing && styles.capturing)}
               aria-label={t('Горячая клавиша')}
               onClick={() => void startCapture()}
               onKeyDown={capturing ? (e) => void captureKey(e) : undefined}
@@ -614,12 +628,14 @@ export function SettingsDialog({
                   ? formatAccelerator(settings.hotkey)
                   : '—'}
             </button>
-            {(error || saved) && <span className="field-hint">{t(error ?? 'Сохранено')}</span>}
+            {(error || saved) && (
+              <span className={formStyles.fieldHint}>{t(error ?? 'Сохранено')}</span>
+            )}
           </div>
 
-          <div className="field">
-            <span className="field-label">{t('Разделы')}</span>
-            <label className="field field-row">
+          <div className={formStyles.field}>
+            <span className={formStyles.fieldLabel}>{t('Разделы')}</span>
+            <label className={clsx(formStyles.field, formStyles.fieldRow)}>
               <input
                 type="checkbox"
                 checked={settings?.categoriesExpanded ?? false}
@@ -627,7 +643,7 @@ export function SettingsDialog({
               />
               <span>{t('Развернуть раздел категорий')}</span>
             </label>
-            <label className="field field-row">
+            <label className={clsx(formStyles.field, formStyles.fieldRow)}>
               <input
                 type="checkbox"
                 checked={settings?.filesExpanded ?? false}
@@ -635,29 +651,37 @@ export function SettingsDialog({
               />
               <span>{t('Развернуть раздел файлов')}</span>
             </label>
-            <button type="button" className="button ghost wide" onClick={onNavReorderStart}>
+            <button
+              type="button"
+              className={clsx(uiStyles.button, uiStyles.ghost, uiStyles.wide)}
+              onClick={onNavReorderStart}
+            >
               {t('Настроить разделы')}
             </button>
           </div>
 
-          <div className="field">
-            <span className="field-label">{t('История')}</span>
-            <button type="button" className="button ghost wide" onClick={() => setClearOpen(true)}>
+          <div className={formStyles.field}>
+            <span className={formStyles.fieldLabel}>{t('История')}</span>
+            <button
+              type="button"
+              className={clsx(uiStyles.button, uiStyles.ghost, uiStyles.wide)}
+              onClick={() => setClearOpen(true)}
+            >
               {t('Очистить историю')}
             </button>
           </div>
 
-          <div className="field-pair">
-            <div className="field">
-              <span className="field-label">{t('Язык')}</span>
-              <div className="settings-button-grid" role="group" aria-label={t('Язык')}>
+          <div className={formStyles.fieldPair}>
+            <div className={formStyles.field}>
+              <span className={formStyles.fieldLabel}>{t('Язык')}</span>
+              <div className={styles.settingsButtonGrid} role="group" aria-label={t('Язык')}>
                 <button
                   type="button"
-                  className={
-                    settings?.language !== 'en'
-                      ? 'button settings-choice active'
-                      : 'button settings-choice'
-                  }
+                  className={clsx(
+                    uiStyles.button,
+                    uiStyles.settingsChoice,
+                    settings?.language !== 'en' && uiStyles.active,
+                  )}
                   aria-pressed={settings?.language !== 'en'}
                   onClick={() => onLanguageChange('ru')}
                 >
@@ -665,11 +689,11 @@ export function SettingsDialog({
                 </button>
                 <button
                   type="button"
-                  className={
-                    settings?.language === 'en'
-                      ? 'button settings-choice active'
-                      : 'button settings-choice'
-                  }
+                  className={clsx(
+                    uiStyles.button,
+                    uiStyles.settingsChoice,
+                    settings?.language === 'en' && uiStyles.active,
+                  )}
                   aria-pressed={settings?.language === 'en'}
                   onClick={() => onLanguageChange('en')}
                 >
@@ -677,16 +701,16 @@ export function SettingsDialog({
                 </button>
               </div>
             </div>
-            <div className="field field-align-end">
-              <span className="field-label">{t('Тема')}</span>
-              <div className="settings-button-grid" role="group" aria-label={t('Тема')}>
+            <div className={clsx(formStyles.field, formStyles.fieldAlignEnd)}>
+              <span className={formStyles.fieldLabel}>{t('Тема')}</span>
+              <div className={styles.settingsButtonGrid} role="group" aria-label={t('Тема')}>
                 <button
                   type="button"
-                  className={
-                    settings?.theme !== 'light'
-                      ? 'button settings-choice active'
-                      : 'button settings-choice'
-                  }
+                  className={clsx(
+                    uiStyles.button,
+                    uiStyles.settingsChoice,
+                    settings?.theme !== 'light' && uiStyles.active,
+                  )}
                   aria-pressed={settings?.theme !== 'light'}
                   onClick={() => onThemeChange('dark')}
                 >
@@ -694,11 +718,11 @@ export function SettingsDialog({
                 </button>
                 <button
                   type="button"
-                  className={
-                    settings?.theme === 'light'
-                      ? 'button settings-choice active'
-                      : 'button settings-choice'
-                  }
+                  className={clsx(
+                    uiStyles.button,
+                    uiStyles.settingsChoice,
+                    settings?.theme === 'light' && uiStyles.active,
+                  )}
                   aria-pressed={settings?.theme === 'light'}
                   onClick={() => onThemeChange('light')}
                 >
@@ -708,9 +732,13 @@ export function SettingsDialog({
             </div>
           </div>
 
-          <div className="dialog-actions dialog-actions--split">
+          <div className={clsx(formStyles.dialogActions, formStyles.dialogActionsSplit)}>
             <MurpianoSignature />
-            <button type="button" className="button ghost" onClick={() => void requestClose()}>
+            <button
+              type="button"
+              className={clsx(uiStyles.button, uiStyles.ghost)}
+              onClick={() => void requestClose()}
+            >
               {t('Закрыть')}
             </button>
           </div>

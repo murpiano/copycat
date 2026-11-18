@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import styles from './TagEditor.module.css';
+import cardStyles from './ItemCard.module.css';
 import type { ClipboardItem } from '../../shared/types';
 
 interface TagEditorProps {
@@ -17,9 +19,9 @@ export function TagEditor({ item, onAddTag, onRemoveTag }: TagEditorProps) {
   }
 
   return (
-    <div className="tag-editor">
+    <div className={styles.tagEditor}>
       {item.tags.map((tag) => (
-        <span key={tag} className="tag-chip">
+        <span key={tag} className={cardStyles.tagChip}>
           {tag}
           <button aria-label={`remove-${tag}`} onClick={() => onRemoveTag(item.id, tag)}>
             ×
