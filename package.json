@@ -29,7 +29,7 @@
   "dependencies": {
     "better-sqlite3": "^11.3.0",
     "clsx": "^2.1.1",
-    "electron-updater": "^6.3.9",
+    "electron-updater": "^6.8.11",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "zustand": "^5.1.0"
@@ -51,10 +51,10 @@
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^8.72.2",
     "@typescript-eslint/parser": "^8.72.2",
-    "@vitejs/plugin-react": "^4.3.2",
-    "electron": "^32.1.2",
-    "electron-builder": "^25.1.8",
-    "electron-vite": "^2.3.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "electron": "^43.8.11",
+    "electron-builder": "^26.18.0",
+    "electron-vite": "^6.0.0",
     "eslint": "^10.15.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react-hooks": "^7.1.1",
@@ -66,6 +66,6 @@
     "prettier": "^3.10.1",
     "ts-jest": "^29.2.5",
     "typescript": "^5.6.3",
-    "vite": "^5.4.8"
+    "vite": "^8.3.8"
   }
 }
